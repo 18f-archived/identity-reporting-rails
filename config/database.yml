@@ -29,6 +29,10 @@ development:
     <<: *defaults
     adapter: postgresql
     replica: true
+  worker_jobs:
+    <<: *defaults
+    database: identity_reporting_rails_worker_jobs_<%= Rails.env %>
+    migrations_paths: db/worker_jobs_migrate
 
 test:
   primary: &test
@@ -44,6 +48,33 @@ test:
     <<: *test
     adapter: postgresql
     replica: true
+  worker_jobs:
+    <<: *test
+    database: <%= "identity_reporting_rails_test#{ENV['TEST_ENV_NUMBER']}" %>
+    migrations_paths: db/worker_jobs_migrate
+
+<%
+  worker_pool = if Identity::Hostdata.instance_role == 'worker'
+    GoodJobConnectionPoolSize.calculate_worker_pool_size(
+      queues: IdentityConfig.store.good_job_queues,
+      cron_enabled: true,
+      max_threads: IdentityConfig.store.good_job_max_threads,
+    )
+  else
+    IdentityConfig.store.database_pool_reporting
+  end
+%>
+
+<%
+  primary_pool = if Identity::Hostdata.instance_role == 'worker'
+    GoodJobConnectionPoolSize.calculate_primary_pool_size(
+      queues: IdentityConfig.store.good_job_queues,
+      max_threads: IdentityConfig.store.good_job_max_threads,
+    )
+  else
+    IdentityConfig.store.database_pool_reporting
+  end
+%>
 
 production:
   primary:
@@ -53,6 +84,7 @@ production:
     username: <%= IdentityConfig.store.database_username %>
     host: <%= IdentityConfig.store.database_socket.present? ?  IdentityConfig.store.database_socket : IdentityConfig.store.database_host %>
     password: <%= IdentityConfig.store.database_password %>
+    pool: <%= primary_pool %>
     advisory_locks: <%= !IdentityConfig.store.database_socket.present? %>
     prepared_statements: <%= !IdentityConfig.store.database_socket.present? %>
     sslmode: <%= IdentityConfig.store.database_sslmode %>
@@ -65,6 +97,17 @@ production:
     username: <%= IdentityConfig.store.database_readonly_username %>
     host: <%= IdentityConfig.store.database_read_replica_host %>
     password: <%= IdentityConfig.store.database_readonly_password %>
+    pool: <%= primary_pool %>
     sslmode: <%= IdentityConfig.store.database_sslmode %>
     sslrootcert: '/usr/local/share/aws/rds-combined-ca-bundle.pem'
     replica: true
+  worker_jobs:
+    <<: *defaults
+    database: <%= IdentityConfig.store.database_worker_jobs_name %>
+    username: <%= IdentityConfig.store.database_worker_jobs_username %>
+    host: <%= IdentityConfig.store.database_worker_jobs_host %>
+    password: <%= IdentityConfig.store.database_worker_jobs_password %>
+    pool: <%= worker_pool %>
+    sslmode: <%= IdentityConfig.store.database_worker_jobs_sslmode %>
+    sslrootcert: '/usr/local/share/aws/rds-combined-ca-bundle.pem'
+    migrations_paths: db/worker_jobs_migrate
