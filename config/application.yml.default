@@ -13,11 +13,15 @@
 # if you're sharing your code publicly.
 
 # Make sure any new entries you add are enclosed in single quotes.
-database_pool_idp: 5
+database_pool_reporting: 5
 database_socket: ''
 database_sslmode: 'verify-full'
 database_statement_timeout: 2_500
 database_timeout: 5_000
+database_worker_jobs_sslmode: 'verify-full'
+good_job_max_threads: 5
+good_job_queues: 'default:5;low:1;*'
+good_job_queue_select_limit: 5_000
 rack_mini_profiler: false
 rack_timeout_service_timeout_seconds: 15
 redis_throttle_url: redis://localhost:6379/1
@@ -33,6 +37,10 @@ development:
   database_readonly_password: ''
   database_readonly_username: ''
   database_username: ''
+  database_worker_jobs_name: ''
+  database_worker_jobs_username: ''
+  database_worker_jobs_host: ''
+  database_worker_jobs_password: ''
   domain_name: localhost:3000
 
 # These values serve as defaults for all production-like environments
@@ -44,6 +52,10 @@ production:
   database_readonly_password: ''
   database_readonly_username: ''
   database_username: ''
+  database_worker_jobs_name: ''
+  database_worker_jobs_username: ''
+  database_worker_jobs_host: ''
+  database_worker_jobs_password: ''
   redis_throttle_url: redis://redis.login.gov.internal:6379/1
   redis_url: redis://redis.login.gov.internal:6379
 
@@ -55,4 +67,8 @@ test:
   database_readonly_password: ''
   database_readonly_username: ''
   database_username: ''
+  database_worker_jobs_name: ''
+  database_worker_jobs_username: ''
+  database_worker_jobs_host: ''
+  database_worker_jobs_password: ''
   domain_name: www.example.com
