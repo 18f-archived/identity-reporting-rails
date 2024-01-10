@@ -51,5 +51,6 @@ group :test do
   gem 'rspec-retry'
   gem 'rspec_junit_formatter'
   gem 'shoulda-matchers', '~> 4.0', require: false
+  gem 'webmock'
   gem 'zonebie'
 end

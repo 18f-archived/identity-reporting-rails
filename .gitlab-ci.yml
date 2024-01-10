@@ -1,0 +1,129 @@
+# Jobs defined here use the idp/ci docker image from ECR by default. To find
+# other available images:
+# aws ecr describe-repositories | jq '.repositories[].repositoryUri'
+# Images are built via the identity-devops GitLab pipeline.
+
+variables:
+  GITLAB_CI: 'true'
+  ECR_REGISTRY: '${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
+  IDP_CI_SHA: 'sha256:f0bb8e05d803675cfc84d0183d6776646b25efc0d93b31773af5f376e861ffdb'
+
+default:
+  image: '${ECR_REGISTRY}/idp/ci@${IDP_CI_SHA}'
+
+.bundle_install: &bundle_install
+  - bundle check || bundle install --deployment --jobs=4 --retry=3 --without deploy development doc production --path vendor/ruby
+
+.build_cache:
+  - &ruby_cache
+    key:
+      files:
+        - Gemfile.lock
+    paths:
+      - vendor/ruby
+    policy: pull
+
+stages:
+  - build
+  - test
+  - after_test
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "external_pull_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "external_pull_request_event" || $CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "stages/prod"'
+    - if: '$CI_MERGE_REQUEST_IID || $CI_EXTERNAL_PULL_REQUEST_IID'
+
+install:
+  stage: build
+  variables:
+    RAILS_ENV: test
+  cache:
+    - <<: *ruby_cache
+      policy: pull-push
+
+  script:
+    - *bundle_install
+
+specs:
+  stage: test
+  needs:
+    - job: install
+  parallel: 22
+  cache:
+    - <<: *ruby_cache
+  variables:
+    AWS_ACCESS_KEY_ID: test
+    AWS_DEFAULT_REGION: us-west-2
+    AWS_REGION: us-west-2
+    AWS_SECRET_ACCESS_KEY: test
+    COVERAGE: 'true'
+    DOCKER_DB_HOST: db-postgres
+    POSTGRES_DB: identity_reporting_rails_test
+    POSTGRES_USER: postgres_user
+    POSTGRES_PASSWORD: postgres_password
+    POSTGRES_HOST_AUTH_METHOD: trust
+    RAILS_ENV: test
+  services:
+    - name: postgres:13
+      alias: db-postgres
+      command: ['--fsync=false', '--synchronous_commit=false', '--full_page_writes=false']
+    - name: redis:7.0
+      alias: db-redis
+  artifacts:
+    expire_in: 31d
+    when: always
+    paths:
+      - coverage/
+      - rspec.xml
+      - rspec_json/
+    reports:
+      junit: rspec.xml
+  script:
+    - *bundle_install
+    - "echo -e \"test:\n  redis_url: 'redis://redis:6379/0'\n  redis_throttle_url: 'redis://redis:6379/1'\" > config/application.yml"
+    - bundle exec rake db:create db:migrate --trace
+    - bundle exec rake db:seed
+    - bundle exec rake knapsack:rspec["--format documentation --format RspecJunitFormatter --out rspec.xml --format json --out rspec_json/${CI_NODE_INDEX}.json"]
+
+lint:
+  stage: test
+  needs:
+    - job: install
+  cache:
+    - <<: *ruby_cache
+  script:
+    - *bundle_install
+    - make lint
+  artifacts:
+    expire_in: 31d
+    when: always
+    paths:
+      - rubocop.xml
+    reports:
+      junit: rubocop.xml
+
+coverage:
+  stage: after_test
+  cache:
+    - <<: *ruby_cache
+  script:
+    - *bundle_install
+    - bundle exec spec/simplecov_merger.rb
+    - mv coverage/coverage/* coverage/
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/coverage.xml
+    name: coverage
+    expire_in: 31d
+    paths:
+      - rspec_json/rspec.json
+      - knapsack_rspec_report.json
+      - coverage/index.html
+      - coverage/assets/
+      - coverage/coverage.xml
