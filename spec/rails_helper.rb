@@ -34,16 +34,6 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     Rails.application.load_seed
-
-    begin
-      REDIS_POOL.with { |client| client.info }
-    rescue RuntimeError => error
-      # rubocop:disable Rails/Output
-      puts error
-      puts 'It appears Redis is not running, but it is required for (some) specs to run'
-      exit 1
-      # rubocop:enable Rails/Output
-    end
   end
 
   config.before(:each) do

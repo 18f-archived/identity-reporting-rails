@@ -71,8 +71,6 @@ specs:
     - name: postgres:13
       alias: db-postgres
       command: ['--fsync=false', '--synchronous_commit=false', '--full_page_writes=false']
-    - name: redis:7.0
-      alias: db-redis
   artifacts:
     expire_in: 31d
     when: always
@@ -84,7 +82,6 @@ specs:
       junit: rspec.xml
   script:
     - *bundle_install
-    - "echo -e \"test:\n  redis_url: 'redis://redis:6379/0'\n  redis_throttle_url: 'redis://redis:6379/1'\" > config/application.yml"
     - bundle exec rake db:create db:migrate --trace
     - bundle exec rake db:seed
     - bundle exec rake knapsack:rspec["--format documentation --format RspecJunitFormatter --out rspec.xml --format json --out rspec_json/${CI_NODE_INDEX}.json"]
