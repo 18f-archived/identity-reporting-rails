@@ -118,10 +118,6 @@ class IdentityConfig
     config.add(:good_job_queue_select_limit, type: :integer)
     config.add(:good_job_queues, type: :string)
     config.add(:rack_mini_profiler, type: :boolean)
-    config.add(:redis_pool_size, type: :integer)
-    config.add(:redis_throttle_pool_size, type: :integer)
-    config.add(:redis_throttle_url, type: :string)
-    config.add(:redis_url, type: :string)
 
     @key_types = config.key_types
     @unused_keys = config_map.keys - config.written_env.keys

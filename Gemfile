@@ -13,7 +13,6 @@ gem 'puma', '>= 5.6.7'
 gem 'pg'
 gem 'rack', '>= 2.2.3.1'
 gem 'redacted_struct'
-gem 'redis', '>= 3.2.0'
 gem 'tzinfo-data', platforms: %i[ windows jruby ]
 
 group :development do
@@ -51,5 +50,6 @@ group :test do
   gem 'rspec-retry'
   gem 'rspec_junit_formatter'
   gem 'shoulda-matchers', '~> 4.0', require: false
+  gem 'webmock'
   gem 'zonebie'
 end
