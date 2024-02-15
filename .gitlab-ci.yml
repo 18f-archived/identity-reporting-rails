@@ -9,7 +9,7 @@ variables:
   IDP_CI_SHA: 'sha256:f0bb8e05d803675cfc84d0183d6776646b25efc0d93b31773af5f376e861ffdb'
 
 default:
-  image: ruby:3.2.2
+  image: '${ECR_REGISTRY}/idp/ci@${IDP_CI_SHA}'
 
 .bundle_install: &bundle_install
   - bundle check || bundle install --deployment --jobs=4 --retry=3 --without deploy development doc production --path vendor/ruby
@@ -63,14 +63,12 @@ specs:
     COVERAGE: 'true'
     DOCKER_DB_HOST: db-postgres
     POSTGRES_DB: identity_reporting_rails_test
-    POSTGRES_HOST: postgres
-    POSTGRES_PORT: 5432
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: postgres
+    POSTGRES_USER: postgres_user
+    POSTGRES_PASSWORD: postgres_password
     POSTGRES_HOST_AUTH_METHOD: trust
     RAILS_ENV: test
   services:
-    - name: postgres:latest
+    - name: postgis/postgres:13-3.3
       alias: db-postgres
       command: ['--fsync=false', '--synchronous_commit=false', '--full_page_writes=false']
   artifacts:
