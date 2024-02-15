@@ -9,7 +9,7 @@ variables:
   IDP_CI_SHA: 'sha256:f0bb8e05d803675cfc84d0183d6776646b25efc0d93b31773af5f376e861ffdb'
 
 default:
-  image: '${ECR_REGISTRY}/idp/ci@${IDP_CI_SHA}'
+  image: ruby:3.2.2
 
 .bundle_install: &bundle_install
   - bundle check || bundle install --deployment --jobs=4 --retry=3 --without deploy development doc production --path vendor/ruby
