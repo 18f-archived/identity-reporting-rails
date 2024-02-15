@@ -124,4 +124,3 @@ coverage:
       - coverage/index.html
       - coverage/assets/
       - coverage/coverage.xml
-
