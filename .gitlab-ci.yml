@@ -8,7 +8,8 @@ variables:
   ECR_REGISTRY: '${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
   IDP_CI_SHA: 'sha256:f0bb8e05d803675cfc84d0183d6776646b25efc0d93b31773af5f376e861ffdb'
 
-image: "ruby:3.2.2"
+.base:
+  image: ruby:3.2.2-bullseye
 
 .bundle_install: &bundle_install
   - bundle check || bundle install --deployment --jobs=4 --retry=3 --without deploy development doc production --path vendor/ruby
@@ -49,6 +50,7 @@ install:
 
 specs:
   stage: test
+  extends: .base
   needs:
     - job: install
   parallel: 22
@@ -69,7 +71,7 @@ specs:
     POSTGRES_HOST_AUTH_METHOD: trust
     RAILS_ENV: test
   services:
-    - name: postgres
+    - name: postgres:latest
       alias: db-postgres
       command: ['--fsync=false', '--synchronous_commit=false', '--full_page_writes=false']
   artifacts:
