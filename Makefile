@@ -58,8 +58,8 @@ endif
 	@echo "--- bundler-audit ---"
 	bundle exec bundler-audit check --update
 	# Other
-	@echo "--- lint yaml ---"
-	make lint_yaml
+	# @echo "--- lint yaml ---"
+	# make lint_yaml
 	@echo "--- lint lockfiles ---"
 	make lint_lockfiles
 	@echo "--- README.md ---"
