@@ -63,7 +63,8 @@ module SimpleCov
     #         ...
     #
     # This brittle function reads the third nested key to get each original absolute path, and
-    # replaces it with the current host's absolute path with everything before 'identity-reporting-rails'.
+    # replaces it with the current host's absolute path with everything
+    # before 'identity-reporting-rails'.
     #
     def self.fix_gitlab_paths
       Dir['coverage/**/.resultset.json'].each do |file|
