@@ -61,7 +61,7 @@ experience and any useful information to this document.
 
 - These instructions assume you're on a Mac; if not, you will have to
   work out the equivalent directions based on these.
-- As of this writing, the correct Ruby version for Identity Reporting is 3.2.2.
+- As of this writing, the correct Ruby version for Identity Reporting is 3.3.0.
   Use whatever the current version is.
 
 #### Finding out where you have openssl 1.1 installed
@@ -82,11 +82,11 @@ configuration of its own, so we must use `asdf` to (re-)install Ruby.
 
 Remove the existing Ruby version, if present:
 
-`asdf uninstall ruby 3.2.2`
+`asdf uninstall ruby 3.3.0`
 
 And re-install, using the correct OpenSSL installation:
 
-`RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)" asdf install ruby 3.2.2`
+`RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)" asdf install ruby 3.3.0`
 
 ##### Rebuilding Ruby using `chruby`
 
@@ -104,7 +104,7 @@ Make sure ruby-build is up to date
 
 And then rebuild Ruby (this assumes your Rubies are in ~/.rubies)
 
-`RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)" ruby-build 3.2.2 ~/.rubies/3.2.2`
+`RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)" ruby-build 3.3.0 ~/.rubies/3.3.0`
 
 #### Exiting your shell
 

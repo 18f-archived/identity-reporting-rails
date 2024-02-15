@@ -18,7 +18,7 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'public/**/*'
-  TargetRubyVersion: 3.2.2
+  TargetRubyVersion: 3.3.0
   TargetRailsVersion: 7.1
   UseCache: true
   DisabledByDefault: true
