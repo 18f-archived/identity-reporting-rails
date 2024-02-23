@@ -6,7 +6,8 @@
 variables:
   GITLAB_CI: 'true'
   ECR_REGISTRY: '${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
-  IDP_CI_SHA: 'sha256:f0bb8e05d803675cfc84d0183d6776646b25efc0d93b31773af5f376e861ffdb'
+  IDP_CI_SHA: 'sha256:756a1d450b422720dee36cb9a6217687bcad1e40b780219d360989861ce94212'
+  JUNIT_OUTPUT: 'true'
 
 default:
   image: '${ECR_REGISTRY}/idp/ci@${IDP_CI_SHA}'
@@ -82,6 +83,7 @@ specs:
       junit: rspec.xml
   script:
     - *bundle_install
+    - cp config/application.yml.default config/application.yml
     - bundle exec rake db:create db:migrate --trace
     - bundle exec rake db:seed
     - bundle exec rake knapsack:rspec["--format documentation --format RspecJunitFormatter --out rspec.xml --format json --out rspec_json/${CI_NODE_INDEX}.json"]

@@ -1,8 +1,8 @@
-# Login.gov Identity Reporting Rails
+### Login.gov Identity Reporting Rails
 
- Backend reporting and management for data warehouse.
+Backend reporting and management for data warehouse.
 
- ### Purpose of the Rails App
+### Purpose of the Rails App
 
 The Reporting Rails application is developed to fulfill various essential functions. Its primary objectives include providing administrative access within the Virtual Private Cloud (VPC), executing background jobs, and overseeing data warehouse migrations in our source code.
 
@@ -23,6 +23,8 @@ The app allows us to manage data warehouse migrations directly within the source
 ### Other Functionalities
 
 In addition to these primary purposes, our Rails app may include other functionalities and features that support our specific use cases and requirements.
+
+**This file is auto-generated**. Run `make README.md` to regenerate its contents.
 
 ## Getting Started
 
