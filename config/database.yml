@@ -5,7 +5,7 @@ postgresql: &postgresql
   port: 5432
 
 defaults: &defaults
-  host: localhost
+  host: <%= ENV['DOCKER_DB_HOST'] || 'localhost' %>
   pool: 5
   <<: *postgresql
   # timeout settings
