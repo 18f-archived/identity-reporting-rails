@@ -7,6 +7,7 @@ require 'rails/all'
 Bundler.require(*Rails.groups)
 
 require_relative '../lib/good_job_connection_pool_size'
+require_relative '../lib/identity_job_log_subscriber'
 require_relative '../lib/identity_config'
 require_relative '../lib/version_headers'
 require 'identity/logging/railtie'
