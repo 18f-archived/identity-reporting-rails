@@ -29,7 +29,7 @@ group :development, :test do
   gem 'nokogiri', '~> 1.16.2'
   gem 'pg_query', require: false
   gem 'pry-byebug'
-  gem 'pry-doc'
+  gem 'pry-doc', '>= 1.5.0'
   gem 'pry-rails'
   gem 'psych'
   gem 'rspec', '~> 3.12.0'
