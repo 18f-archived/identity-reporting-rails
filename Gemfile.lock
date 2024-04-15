@@ -400,7 +400,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  activerecord7-redshift-adapter-pennylane
+  activerecord7-redshift-adapter-pennylane (~> 1.0, >= 1.0.4)
   better_errors (>= 2.5.1)
   bootsnap (~> 1.0)
   brakeman
