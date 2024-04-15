@@ -61,4 +61,7 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Workaround for redshift adapter as reported here https://github.com/aamine/activerecord4-redshift-adapter/issues/2
+  config.active_record.dump_schema_after_migration = false
 end

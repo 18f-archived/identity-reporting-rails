@@ -76,4 +76,7 @@ Rails.application.configure do
   # ]
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # Workaround for redshift adapter as reported here https://github.com/aamine/activerecord4-redshift-adapter/issues/2
+  config.active_record.dump_schema_after_migration = false
 end
