@@ -22,7 +22,7 @@ group :development do
 end
 
 group :development, :test do
-  gem 'activerecord7-redshift-adapter', '~> 1.1'
+  gem 'activerecord7-redshift-adapter-pennylane'
   gem 'brakeman', require: false
   gem 'bullet', '~> 7.0'
   gem 'knapsack'
