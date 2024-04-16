@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 git_source(:github) { |repo_name| "https://github.com/#{repo_name}.git" }
 
 ruby "~> #{File.read(File.join(__dir__, '.ruby-version')).strip}"
+gem 'activerecord7-redshift-adapter-pennylane', '~> 1.0', '>= 1.0.4'
 gem 'rails', '~> 7.1.3'
 gem 'bootsnap', '~> 1.0', require: false
 gem 'faker'
@@ -22,7 +23,6 @@ group :development do
 end
 
 group :development, :test do
-  gem 'activerecord7-redshift-adapter-pennylane', '~> 1.0', '>= 1.0.4'
   gem 'brakeman', require: false
   gem 'bullet', '~> 7.0'
   gem 'knapsack'
