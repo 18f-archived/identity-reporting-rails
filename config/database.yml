@@ -111,9 +111,9 @@ production:
     sslmode: <%= IdentityConfig.store.database_worker_jobs_sslmode %>
     sslrootcert: '/usr/local/share/aws/rds-combined-ca-bundle.pem'
     migrations_paths: db/worker_jobs_migrate
-  datawarehouse:
+  data_warehouse:
     adapter: redshift
-    host: <%= IdentityConfig.store.redshift_host %>
+    host: <%= URI.parse("redshift://#{IdentityConfig.store.redshift_host}").host %>
     port: 5439
     database: <%= IdentityConfig.store.redshift_database_name %>
     username: <%= IdentityConfig.store.redshift_username %>
