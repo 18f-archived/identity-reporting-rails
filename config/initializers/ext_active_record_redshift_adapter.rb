@@ -10,12 +10,16 @@ module IdentityReporting
     # separately than keyword options.
     # This monkeypatch accepts either form
     def create_database(name, positional_options = {}, **keyword_options)
-      positional_options_transformed = positional_options.transform_values { |str| str.last(5) }
-      keyword_options_transformed = keyword_options.transform_values { |str| str.last(5) }
+      positional_options_transformed = positional_options.transform_values do |val|
+        val.is_a?(String) || val.is_a?(Array) ? val.last(5) : val
+      end
+      keyword_options_transformed = keyword_options.transform_values do |val|
+        val.is_a?(String) || val.is_a?(Array) ? val.last(5) : val
+      end
 
       puts "positional_options: #{positional_options_transformed.inspect}"
       puts "keyword_options: #{keyword_options_transformed.inspect}"
-      super(name, **positional_options.merge(keyword_options).transform_keys(&:to_sym))
+      super(name, **positional_options_transformed.merge(keyword_options_transformed).transform_keys(&:to_sym))
     end
   end
 end
