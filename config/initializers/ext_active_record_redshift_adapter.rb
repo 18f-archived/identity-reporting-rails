@@ -10,7 +10,7 @@ module IdentityReporting
     # separately than keyword options.
     # This monkeypatch accepts either form
     def create_database(name, positional_options = {}, **keyword_options)
-      super(name, **positional_options.merge(keyword_options))
+      super(name, **positional_options.merge(keyword_options).transform_keys(&:to_sym))
     end
   end
 end
