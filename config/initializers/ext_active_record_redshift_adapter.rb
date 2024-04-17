@@ -15,7 +15,7 @@ module IdentityReporting
       end
 
       puts "positional_options: #{positional_options_transformed.inspect}"
-      puts "final: #{**positional_options_transformed.merge(keyword_options).transform_keys(&:to_sym)}"
+      puts "final: #{positional_options_transformed.merge(keyword_options).transform_keys(&:to_sym)}"
       super(name, **positional_options.merge(keyword_options).transform_keys(&:to_sym))
     end
   end
