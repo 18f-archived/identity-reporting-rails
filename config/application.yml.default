@@ -81,3 +81,4 @@ test:
   redshift_host: ''
   redshift_password: ''
   redshift_username: ''
+  
