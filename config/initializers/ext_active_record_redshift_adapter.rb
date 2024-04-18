@@ -1,5 +1,6 @@
 if ActiveRecord.version >= Gem::Version.new('7.2.0')
-  warn "Unexpected ActiveRecord version, double check that the constructor monkeypatch is still needed"
+  warn 'Unexpected ActiveRecord version, double check that the constructor ' \
+       'monkeypatch is still needed'
 end
 
 require 'active_record/connection_adapters/redshift_adapter'
