@@ -14,8 +14,8 @@ module IdentityReporting
         val.is_a?(String) || val.is_a?(Array) ? val.last(5) : val
       end
 
+      puts "name: #{name}"
       puts "positional_options: #{positional_options_transformed.inspect}"
-      puts "final: #{positional_options_transformed.merge(keyword_options).transform_keys(&:to_sym)}"
       super(name, **positional_options.merge(keyword_options).transform_keys(&:to_sym))
     end
   end
