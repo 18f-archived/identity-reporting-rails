@@ -118,6 +118,10 @@ class IdentityConfig
     config.add(:good_job_queue_select_limit, type: :integer)
     config.add(:good_job_queues, type: :string)
     config.add(:rack_mini_profiler, type: :boolean)
+    config.add(:redshift_database_name, type: :string)
+    config.add(:redshift_host, type: :string)
+    config.add(:redshift_password, type: :string)
+    config.add(:redshift_username, type: :string)
     config.add(:secret_key_base, type: :string)
 
     @key_types = config.key_types
