@@ -4,7 +4,6 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}.git" }
 ruby "~> #{File.read(File.join(__dir__, '.ruby-version')).strip}"
 gem 'activerecord7-redshift-adapter-pennylane', '~> 1.0', '>= 1.0.4',
     require: 'active_record/connection_adapters/redshift_adapter'
-gem 'rails', '~> 7.1.3'
 gem 'bootsnap', '~> 1.0', require: false
 gem 'faker'
 gem 'good_job', '~> 3.0'
@@ -14,6 +13,7 @@ gem 'identity_validations', github: '18F/identity-validations', tag: 'v0.7.2'
 gem 'puma', '>= 5.6.7'
 gem 'pg'
 gem 'rack', '>= 2.2.3.1'
+gem 'rails', '~> 7.1.3'
 gem 'redacted_struct'
 gem 'tzinfo-data', platforms: %i[ windows jruby ]
 
@@ -44,13 +44,13 @@ end
 
 group :test do
   gem 'bundler-audit', require: false
-  gem 'simplecov', '~> 0.22.0', require: false
-  gem 'simplecov-cobertura'
-  gem 'simplecov_json_formatter'
   gem 'factory_bot_rails', '>= 6.2.0'
   gem 'rack-test', '>= 1.1.0'
   gem 'rspec-retry'
   gem 'rspec_junit_formatter'
+  gem 'simplecov', '~> 0.22.0', require: false
+  gem 'simplecov-cobertura'
+  gem 'simplecov_json_formatter'
   gem 'shoulda-matchers', '~> 4.0', require: false
   gem 'webmock'
   gem 'zonebie'
