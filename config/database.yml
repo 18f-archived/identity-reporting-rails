@@ -21,6 +21,9 @@ defaults: &defaults
     statement_timeout: <%= IdentityConfig.store.database_statement_timeout %>
 
 development:
+  data_warehouse:
+    <<: *defaults
+    adapter: postgresql
   primary:
     <<: *defaults
     adapter: postgresql
@@ -35,6 +38,9 @@ development:
     migrations_paths: db/worker_jobs_migrate
 
 test:
+  data_warehouse:
+    <<: *defaults
+    adapter: postgresql
   primary: &test
     <<: *defaults
     adapter: postgresql
@@ -77,6 +83,14 @@ test:
 %>
 
 production:
+  data_warehouse:
+    adapter: redshift
+    host: <%= URI.parse("redshift://#{IdentityConfig.store.redshift_host}").host %>
+    port: 5439
+    database: <%= IdentityConfig.store.redshift_database_name %>
+    username: <%= IdentityConfig.store.redshift_username %>
+    password: <%= IdentityConfig.store.redshift_password %>
+    encoding: utf8
   primary:
     <<: *defaults
     adapter: postgresql
@@ -111,11 +125,3 @@ production:
     sslmode: <%= IdentityConfig.store.database_worker_jobs_sslmode %>
     sslrootcert: '/usr/local/share/aws/rds-combined-ca-bundle.pem'
     migrations_paths: db/worker_jobs_migrate
-  data_warehouse:
-    adapter: redshift
-    host: <%= URI.parse("redshift://#{IdentityConfig.store.redshift_host}").host %>
-    port: 5439
-    database: <%= IdentityConfig.store.redshift_database_name %>
-    username: <%= IdentityConfig.store.redshift_username %>
-    password: <%= IdentityConfig.store.redshift_password %>
-    encoding: utf8
