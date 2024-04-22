@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_13_185739) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_22_141820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -91,4 +91,9 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_13_185739) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "test_redshifts", force: :cascade do |t|
+    t.text "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 end

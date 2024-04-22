@@ -119,3 +119,4 @@ production:
     username: <%= IdentityConfig.store.redshift_username %>
     password: <%= IdentityConfig.store.redshift_password %>
     encoding: utf8
+    migrations_paths: db/primary_migrate
