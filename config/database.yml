@@ -24,6 +24,7 @@ development:
   data_warehouse:
     <<: *defaults
     adapter: postgresql
+    database: analytics
   primary:
     <<: *defaults
     adapter: postgresql
@@ -41,6 +42,7 @@ test:
   data_warehouse:
     <<: *defaults
     adapter: postgresql
+    database: analytics
   primary: &test
     <<: *defaults
     adapter: postgresql
