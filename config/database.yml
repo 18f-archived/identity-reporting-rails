@@ -33,6 +33,10 @@ development:
     <<: *defaults
     database: identity_reporting_rails_worker_jobs_<%= Rails.env %>
     migrations_paths: db/worker_jobs_migrate
+  data_warehouse:
+    <<: *defaults
+    database: identity_reporting_rails_data_warehouse_<%= Rails.env %>
+    migrations_paths: db/data_warehouse_migrate
 
 test:
   primary: &test
@@ -52,6 +56,10 @@ test:
     <<: *test
     database: <%= "identity_reporting_rails_test#{ENV['TEST_ENV_NUMBER']}" %>
     migrations_paths: db/worker_jobs_migrate
+  data_warehouse:
+    <<: *test
+    database: <%= "identity_reporting_rails_test#{ENV['TEST_ENV_NUMBER']}" %>
+    migrations_paths: db/data_warehouse_migrate
 
 <%
   worker_pool = if Identity::Hostdata.instance_role == 'worker'
@@ -119,3 +127,4 @@ production:
     username: <%= IdentityConfig.store.redshift_username %>
     password: <%= IdentityConfig.store.redshift_password %>
     encoding: utf8
+    migrations_paths: db/data_warehouse_migrate
