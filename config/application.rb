@@ -20,13 +20,12 @@ module IdentityReportingRails
       Identity::Hostdata.logger.level = log_level
     end
 
-    configuration = Identity::Hostdata::ConfigReader.new(
+    Identity::Hostdata.load_config!(
       app_root: Rails.root,
-      logger: Identity::Hostdata.logger,
-    ).read_configuration(
-      Rails.env, write_copy_to: Rails.root.join('tmp', 'application.yml')
+      rails_env: Rails.env,
+      write_copy_to: Rails.root.join('tmp', 'application.yml'),
+      &IdentityConfig::CONFIG_BUILDER
     )
-    IdentityConfig.build_store(configuration)
 
     console do
       if ENV['ALLOW_CONSOLE_DB_WRITE_ACCESS'] != 'true' &&

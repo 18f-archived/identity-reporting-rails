@@ -1,11 +1,12 @@
 GIT
   remote: https://github.com/18F/identity-hostdata.git
-  revision: 9e2e0441cd93307cbfc5d5b8d4b3b7b4219394fb
-  tag: v3.4.2
+  revision: 9574e05398833c531f450c3da99a6afde4ce68fc
+  tag: v4.0.0
   specs:
-    identity-hostdata (3.4.2)
+    identity-hostdata (4.0.0)
       activesupport (>= 6.1, < 8)
       aws-sdk-s3 (~> 1.8)
+      redacted_struct (>= 2.0)
 
 GIT
   remote: https://github.com/18F/identity-logging.git
@@ -297,7 +298,7 @@ GEM
       ffi (~> 1.0)
     rdoc (6.6.3.1)
       psych (>= 4.0.0)
-    redacted_struct (1.1.0)
+    redacted_struct (2.0.0)
     regexp_parser (2.8.3)
     reline (0.4.1)
       io-console (~> 0.5)
