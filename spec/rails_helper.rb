@@ -41,7 +41,7 @@ RSpec.configure do |config|
   end
 
   config.before(:each, type: :controller) do
-    @request.host = IdentityConfig.store.domain_name
+    @request.host = Identity::Hostdata.config.domain_name
   end
 
   config.before(:each) do

@@ -4,9 +4,9 @@ RSpec.describe GoodJobConnectionPoolSize do
   describe '.calculate_worker_pool_size' do
     it 'calculates pool size based and returns an integer' do
       connections = GoodJobConnectionPoolSize.calculate_worker_pool_size(
-        queues: IdentityConfig.store.good_job_queues,
+        queues: Identity::Hostdata.config.good_job_queues,
         cron_enabled: true,
-        max_threads: IdentityConfig.store.good_job_max_threads,
+        max_threads: Identity::Hostdata.config.good_job_max_threads,
       )
       expect(connections).to be_a(Integer)
     end
@@ -15,8 +15,8 @@ RSpec.describe GoodJobConnectionPoolSize do
   describe '.calculate_primary_pool_size' do
     it 'calculates pool size based and returns an integer' do
       connections = GoodJobConnectionPoolSize.calculate_primary_pool_size(
-        queues: IdentityConfig.store.good_job_queues,
-        max_threads: IdentityConfig.store.good_job_max_threads,
+        queues: Identity::Hostdata.config.good_job_queues,
+        max_threads: Identity::Hostdata.config.good_job_max_threads,
       )
       expect(connections).to be_a(Integer)
     end
@@ -27,17 +27,17 @@ RSpec.describe GoodJobConnectionPoolSize do
       queues = 'low:1;*'
       connections = GoodJobConnectionPoolSize.num_explicit_threads_from_queues(
         queues: queues,
-        max_threads: IdentityConfig.store.good_job_max_threads,
+        max_threads: Identity::Hostdata.config.good_job_max_threads,
       )
 
-      expect(connections).to eq(IdentityConfig.store.good_job_max_threads + 1)
+      expect(connections).to eq(Identity::Hostdata.config.good_job_max_threads + 1)
     end
 
     it 'sums individual queue sizes' do
       queues = 'low:1;medium:2;high:3;'
       connections = GoodJobConnectionPoolSize.num_explicit_threads_from_queues(
         queues: queues,
-        max_threads: IdentityConfig.store.good_job_max_threads,
+        max_threads: Identity::Hostdata.config.good_job_max_threads,
       )
 
       expect(connections).to eq(6)

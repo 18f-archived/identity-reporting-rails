@@ -8,7 +8,7 @@ gem 'rails', '~> 7.1.3'
 gem 'bootsnap', '~> 1.0', require: false
 gem 'faker'
 gem 'good_job', '~> 3.0'
-gem 'identity-hostdata', github: '18F/identity-hostdata', tag: 'v3.4.2'
+gem 'identity-hostdata', github: '18F/identity-hostdata', tag: 'v4.0.0'
 gem 'identity-logging', github: '18F/identity-logging', tag: 'v0.1.0'
 gem 'identity_validations', github: '18F/identity-validations', tag: 'v0.7.2'
 gem 'puma', '>= 5.6.7'

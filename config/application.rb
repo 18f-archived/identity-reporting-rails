@@ -20,18 +20,17 @@ module IdentityReportingRails
       Identity::Hostdata.logger.level = log_level
     end
 
-    configuration = Identity::Hostdata::ConfigReader.new(
+    Identity::Hostdata.load_config!(
       app_root: Rails.root,
-      logger: Identity::Hostdata.logger,
-    ).read_configuration(
-      Rails.env, write_copy_to: Rails.root.join('tmp', 'application.yml')
+      rails_env: Rails.env,
+      write_copy_to: Rails.root.join('tmp', 'application.yml'),
+      &IdentityConfig::CONFIG_BUILDER
     )
-    IdentityConfig.build_store(configuration)
 
     console do
       if ENV['ALLOW_CONSOLE_DB_WRITE_ACCESS'] != 'true' &&
-         IdentityConfig.store.database_readonly_username.present? &&
-         IdentityConfig.store.database_readonly_password.present?
+         Identity::Hostdata.config.database_readonly_username.present? &&
+         Identity::Hostdata.config.database_readonly_password.present?
         warn <<-EOS.squish
           WARNING: Loading database a configuration with the readonly database user.
           If you wish to make changes to records in the database set
@@ -53,11 +52,11 @@ module IdentityReportingRails
     config.good_job.execution_mode = :external
     config.good_job.poll_interval = 5
     config.good_job.enable_cron = true
-    config.good_job.max_threads = IdentityConfig.store.good_job_max_threads
-    config.good_job.queues = IdentityConfig.store.good_job_queues
+    config.good_job.max_threads = Identity::Hostdata.config.good_job_max_threads
+    config.good_job.queues = Identity::Hostdata.config.good_job_queues
     config.good_job.preserve_job_records = false
     config.good_job.enable_listen_notify = false
-    config.good_job.queue_select_limit = IdentityConfig.store.good_job_queue_select_limit
+    config.good_job.queue_select_limit = Identity::Hostdata.config.good_job_queue_select_limit
     # see config/initializers/job_configurations.rb for cron schedule
 
     includes_star_queue = config.good_job.queues.split(';').any? do |name_threads|
@@ -72,6 +71,6 @@ module IdentityReportingRails
 
     config.time_zone = 'UTC'
 
-    routes.default_url_options[:host] = IdentityConfig.store.domain_name
+    routes.default_url_options[:host] = Identity::Hostdata.config.domain_name
   end
 end
