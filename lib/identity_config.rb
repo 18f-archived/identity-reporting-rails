@@ -3,11 +3,6 @@ class IdentityConfig
   GIT_TAG = `git tag --points-at HEAD`.chomp.split("\n").first
   GIT_BRANCH = `git rev-parse --abbrev-ref HEAD`.chomp
 
-  # Shorthand to allow easy migration
-  def self.store
-    Identity::Hostdata.config
-  end
-
   # rubocop:disable Metrics/BlockLength
   CONFIG_BUILDER = proc do |config|
     #  ______________________________________
