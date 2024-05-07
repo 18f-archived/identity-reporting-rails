@@ -2,90 +2,109 @@ require 'rails_helper'
 require 'redshift_schema_updater'
 
 RSpec.describe RedshiftSchemaUpdater do
-  let!(:file_path) { 'include_columns.yml' }
+  let!(:file_path) { Rails.root.join('spec', 'fixtures', 'includes_columns.yml') }
+  let!(:users_table) { 'users' }
+  let!(:events_table) { 'events' }
+  let!(:expected_columns) { ['id', 'name', 'email', 'created_at', 'updated_at'] }
   let!(:yaml_data) do
     [
       {
-        'table' => 'table1',
-        'include_columns' => { 'column1' => { 'datatype' => 'string' } },
+        'table' => 'users',
+        'schema' => 'public',
+        'include_columns' => {
+          'id' => { 'datatype' => 'integer' },
+          'name' => { 'datatype' => 'string' },
+          'email' => { 'datatype' => 'string' },
+          'created_at' => { 'datatype' => 'datetime' },
+          'updated_at' => { 'datatype' => 'datetime' },
+        },
       },
       {
-        'table' => 'table2',
-        'include_columns' => { 'column2' => { 'datatype' => 'integer' } },
+        'table' => 'events',
+        'schema' => 'public',
+        'include_columns' => {
+          'id' => { 'datatype' => 'integer' },
+          'name' => { 'datatype' => 'string' },
+          'event_type' => { 'datatype' => 'integer' },
+          'created_at' => { 'datatype' => 'datetime' },
+          'updated_at' => { 'datatype' => 'datetime' },
+        },
       },
     ]
   end
 
   describe '.update_schema_from_yaml' do
-    context 'when YAML file exists' do
-      before do
-        allow(YAML).to receive(:load_file).with(file_path).and_return(yaml_data)
-        allow(Rails.logger).to receive(:error)
-      end
-
-      it 'establishes connection to the data warehouse' do
-        expect(ActiveRecord::Base).to receive(:establish_connection).with(:data_warehouse)
-        RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
-      end
-
-      it 'loads YAML file' do
-        expect(YAML).to receive(:load_file).with(file_path).and_return(yaml_data)
-        RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
-      end
-
-      it 'updates existing tables or creates new tables based on YAML data' do
-        allow(RedshiftSchemaUpdater).to receive(:table_exists?).with('table1').and_return(true)
-        allow(RedshiftSchemaUpdater).to receive(:table_exists?).with('table2').and_return(false)
-
-        expect(RedshiftSchemaUpdater).to receive(:update_existing_table).with(
-          'table1',
-          { 'column1' => { 'datatype' => 'string' } },
-        )
-        expect(RedshiftSchemaUpdater).to receive(:create_table).with(
-          'table2',
-          { 'column2' => { 'datatype' => 'integer' } },
-        )
+    context 'when table does not exist' do
+      it 'creates new table' do
+        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(false)
+        expect(RedshiftSchemaUpdater.send(:table_exists?, events_table)).to eq(false)
 
         RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
+
+        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(true)
+        expect(RedshiftSchemaUpdater.send(:table_exists?, events_table)).to eq(true)
       end
     end
 
-    context 'when YAML file does not exist' do
-      let(:file_path) { 'path/to/nonexistent/file.yml' }
+    context 'when table already exists' do
+      let(:existing_columns) { { 'id' => { 'datatype' => 'integer' } } }
 
       before do
-        allow(YAML).to receive(:load_file).with(file_path).and_raise(Errno::ENOENT)
-        allow(Rails.logger).to receive(:error)
+        RedshiftSchemaUpdater.send(:create_table, users_table, existing_columns)
       end
 
-      it 'logs an error' do
-        expect(Rails.logger).to receive(:error).with(/Error loading include columns YML file:/)
+      it 'adds new columns' do
+        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(true)
+        expect(ActiveRecord::Base.connection.columns(users_table).map(&:name)).to eq(['id'])
+
         RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
+
+        new_columns = ActiveRecord::Base.connection.columns(users_table).map(&:name)
+        expect(new_columns).to eq(expected_columns)
+      end
+    end
+
+    context 'when table already exists with extra columns' do
+      let(:existing_columns) do
+        { 'id' => { 'datatype' => 'integer' }, 'phone' => { 'datatype' => 'string' } }
+      end
+
+      before do
+        RedshiftSchemaUpdater.send(:create_table, users_table, existing_columns)
+      end
+
+      it 'updates columns and removes columns not exist in YAML file' do
+        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(true)
+        existing_columns = ActiveRecord::Base.connection.columns(users_table).map(&:name)
+        expect(existing_columns).to eq(['id', 'phone'])
+
+        RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
+
+        new_columns = ActiveRecord::Base.connection.columns(users_table).map(&:name)
+        expect(new_columns).to eq(expected_columns)
       end
     end
   end
 
   describe '.establish_data_warehouse_connection' do
     it 'establishes connection to the data warehouse' do
-      expect(ActiveRecord::Base).to receive(:establish_connection).with(:data_warehouse)
+      expect(ActiveRecord::Base).to receive(:establish_connection).
+        with(:data_warehouse).and_call_original
+
       RedshiftSchemaUpdater.send(:establish_data_warehouse_connection)
     end
   end
 
   describe '.load_yaml' do
     context 'when YAML file exists' do
-      before do
-        allow(YAML).to receive(:load_file).with(file_path).and_return(yaml_data)
-      end
-
       it 'loads YAML file' do
         expect(RedshiftSchemaUpdater.send(:load_yaml, file_path)).to eq(yaml_data)
       end
     end
 
     context 'when YAML file does not exist' do
+      let!(:file_path) { 'path/to/nonexistent/file.yml' }
       before do
-        allow(YAML).to receive(:load_file).with(file_path).and_raise(Errno::ENOENT)
         allow(Rails.logger).to receive(:error)
       end
 
@@ -100,59 +119,19 @@ RSpec.describe RedshiftSchemaUpdater do
     end
   end
 
-  describe '.table_exists?' do
-    it 'checks if table exists in the database' do
-      allow(ActiveRecord::Base.connection).to receive(:table_exists?).
-        with('example_table').and_return(true)
-      expect(RedshiftSchemaUpdater.send(:table_exists?, 'example_table')).to eq(true)
-    end
-  end
-
-  describe '.update_existing_table' do
-    let(:existing_columns) { [double(name: 'existing_column')] }
-    let(:columns) { { 'new_column' => { 'datatype' => 'string' } } }
-
-    before do
-      allow(ActiveRecord::Base.connection).to receive(:columns).and_return(existing_columns)
+  describe 'redshift_data_type_mappings' do
+    context 'when datatype is :json or :jsonb' do
+      it 'returns :super' do
+        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'json')).to eq(:super)
+        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'jsonb')).to eq(:super)
+      end
     end
 
-    it 'adds new columns and removes columns not in the YAML file' do
-      expect(RedshiftSchemaUpdater).to receive(:add_column).with(
-        'test_table',
-        'new_column',
-        'string',
-      )
-      expect(RedshiftSchemaUpdater).to receive(:remove_column).with('test_table', 'existing_column')
-      RedshiftSchemaUpdater.send(:update_existing_table, 'test_table', columns)
-    end
-  end
-
-  describe '.create_table' do
-    let(:columns) { { 'new_column' => { 'datatype' => 'string' } } }
-
-    it 'creates a new table with the specified columns' do
-      expect(ActiveRecord::Base.connection).to receive(:create_table).with(:test_table)
-      RedshiftSchemaUpdater.send(:create_table, 'test_table', columns)
-    end
-  end
-
-  describe '.add_column' do
-    it 'adds a new column to an existing table' do
-      expect(ActiveRecord::Base.connection).to receive(:add_column).with(
-        :test_table, :new_column,
-        :string
-      )
-      RedshiftSchemaUpdater.send(:add_column, 'test_table', 'new_column', 'string')
-    end
-  end
-
-  describe '.remove_column' do
-    it 'removes a column from an existing table' do
-      expect(ActiveRecord::Base.connection).to receive(:remove_column).with(
-        :test_table,
-        :column_to_remove,
-      )
-      RedshiftSchemaUpdater.send(:remove_column, 'test_table', 'column_to_remove')
+    context 'when datatype is not :json or :jsonb' do
+      it 'returns the input datatype symbol' do
+        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'integer')).to eq(:integer)
+        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'string')).to eq(:string)
+      end
     end
   end
 end

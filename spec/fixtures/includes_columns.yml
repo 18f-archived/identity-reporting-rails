@@ -1,0 +1,27 @@
+- table: users
+  schema: public
+  include_columns:
+    id:
+      datatype: integer
+    name:
+      datatype: string
+    email:
+      datatype: string
+    created_at:
+      datatype: datetime
+    updated_at:
+      datatype: datetime
+
+- table: events
+  schema: public
+  include_columns:
+    id:
+      datatype: integer
+    name:
+      datatype: string
+    event_type:
+      datatype: integer
+    created_at:
+      datatype: datetime
+    updated_at:
+      datatype: datetime

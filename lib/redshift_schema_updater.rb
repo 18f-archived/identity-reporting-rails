@@ -59,20 +59,30 @@ module RedshiftSchemaUpdater
         columns.each do |column_name, column_info|
           next if column_name == 'id'
 
-          t.send(column_info['datatype'].to_sym, column_name.to_sym)
+          t.send(redshift_data_type_mappings(column_info['datatype']), column_name.to_sym)
         end
       end
     end
 
     def add_column(table_name, column_name, data_type)
       ActiveRecord::Base.connection.add_column(
-        table_name.to_sym, column_name.to_sym,
-        data_type.to_sym
+        table_name.to_sym,
+        column_name.to_sym,
+        redshift_data_type_mappings(data_type),
       )
     end
 
     def remove_column(table_name, column_name)
       ActiveRecord::Base.connection.remove_column(table_name.to_sym, column_name.to_sym)
+    end
+
+    def redshift_data_type_mappings(datatype)
+      case datatype.to_sym
+      when :json, :jsonb
+        :super
+      else
+        datatype.to_sym
+      end
     end
   end
 end
