@@ -20,19 +20,6 @@ module RedshiftSchemaUpdater
       end
     end
 
-    private
-
-    def establish_data_warehouse_connection
-      ActiveRecord::Base.establish_connection(:data_warehouse)
-    end
-
-    def load_yaml(file_path)
-      YAML.load_file(file_path)
-    rescue StandardError => e
-      Rails.logger.error "Error loading include columns YML file: #{e.message}"
-      nil
-    end
-
     def table_exists?(table_name)
       ActiveRecord::Base.connection.table_exists?(table_name)
     end
@@ -59,7 +46,7 @@ module RedshiftSchemaUpdater
         columns.each do |column_name, column_info|
           next if column_name == 'id'
 
-          t.send(redshift_data_type_mappings(column_info['datatype']), column_name.to_sym)
+          t.send(redshift_data_type(column_info['datatype']), column_name.to_sym)
         end
       end
     end
@@ -68,7 +55,7 @@ module RedshiftSchemaUpdater
       ActiveRecord::Base.connection.add_column(
         table_name.to_sym,
         column_name.to_sym,
-        redshift_data_type_mappings(data_type),
+        redshift_data_type(data_type),
       )
     end
 
@@ -76,13 +63,26 @@ module RedshiftSchemaUpdater
       ActiveRecord::Base.connection.remove_column(table_name.to_sym, column_name.to_sym)
     end
 
-    def redshift_data_type_mappings(datatype)
+    def redshift_data_type(datatype)
       case datatype.to_sym
       when :json, :jsonb
         :super
       else
         datatype.to_sym
       end
+    end
+
+    private
+
+    def establish_data_warehouse_connection
+      ActiveRecord::Base.establish_connection(:data_warehouse)
+    end
+
+    def load_yaml(file_path)
+      YAML.load_file(file_path)
+    rescue StandardError => e
+      Rails.logger.error "Error loading include columns YML file: #{e.message}"
+      nil
     end
   end
 end

@@ -36,13 +36,13 @@ RSpec.describe RedshiftSchemaUpdater do
   describe '.update_schema_from_yaml' do
     context 'when table does not exist' do
       it 'creates new table' do
-        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(false)
-        expect(RedshiftSchemaUpdater.send(:table_exists?, events_table)).to eq(false)
+        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(false)
+        expect(RedshiftSchemaUpdater.table_exists?(events_table)).to eq(false)
 
         RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
 
-        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(true)
-        expect(RedshiftSchemaUpdater.send(:table_exists?, events_table)).to eq(true)
+        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(true)
+        expect(RedshiftSchemaUpdater.table_exists?(events_table)).to eq(true)
       end
     end
 
@@ -50,11 +50,11 @@ RSpec.describe RedshiftSchemaUpdater do
       let(:existing_columns) { { 'id' => { 'datatype' => 'integer' } } }
 
       before do
-        RedshiftSchemaUpdater.send(:create_table, users_table, existing_columns)
+        RedshiftSchemaUpdater.create_table(users_table, existing_columns)
       end
 
       it 'adds new columns' do
-        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(true)
+        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(true)
         expect(ActiveRecord::Base.connection.columns(users_table).map(&:name)).to eq(['id'])
 
         RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
@@ -70,11 +70,11 @@ RSpec.describe RedshiftSchemaUpdater do
       end
 
       before do
-        RedshiftSchemaUpdater.send(:create_table, users_table, existing_columns)
+        RedshiftSchemaUpdater.create_table(users_table, existing_columns)
       end
 
       it 'updates columns and removes columns not exist in YAML file' do
-        expect(RedshiftSchemaUpdater.send(:table_exists?, users_table)).to eq(true)
+        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(true)
         existing_columns = ActiveRecord::Base.connection.columns(users_table).map(&:name)
         expect(existing_columns).to eq(['id', 'phone'])
 
@@ -119,18 +119,18 @@ RSpec.describe RedshiftSchemaUpdater do
     end
   end
 
-  describe 'redshift_data_type_mappings' do
+  describe 'redshift_data_type' do
     context 'when datatype is :json or :jsonb' do
       it 'returns :super' do
-        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'json')).to eq(:super)
-        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'jsonb')).to eq(:super)
+        expect(RedshiftSchemaUpdater.redshift_data_type('json')).to eq(:super)
+        expect(RedshiftSchemaUpdater.redshift_data_type('jsonb')).to eq(:super)
       end
     end
 
     context 'when datatype is not :json or :jsonb' do
       it 'returns the input datatype symbol' do
-        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'integer')).to eq(:integer)
-        expect(RedshiftSchemaUpdater.send(:redshift_data_type_mappings, 'string')).to eq(:string)
+        expect(RedshiftSchemaUpdater.redshift_data_type('integer')).to eq(:integer)
+        expect(RedshiftSchemaUpdater.redshift_data_type('string')).to eq(:string)
       end
     end
   end
