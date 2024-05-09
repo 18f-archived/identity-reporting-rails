@@ -59,7 +59,9 @@ test:
   data_warehouse:
     <<: *test
     database: <%= "identity_reporting_rails_test#{ENV['TEST_ENV_NUMBER']}" %>
-    migrations_paths: db/data_warehouse_migrate
+    migrations_paths: 
+      - db/data_warehouse_migrate
+      - db/data_warehouse_test_migrate
 
 <%
   worker_pool = if Identity::Hostdata.instance_role == 'worker'
