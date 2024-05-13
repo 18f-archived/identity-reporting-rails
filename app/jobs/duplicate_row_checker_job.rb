@@ -5,7 +5,7 @@ class DuplicateRowCheckerJob
 
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
                       "#{@schema_name}.#{@table_name}"
-    
+
     if @schema_name == 'logs'
       result = ActiveRecord::Base.connection.execute(
         "
