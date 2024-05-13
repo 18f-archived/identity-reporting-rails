@@ -5,6 +5,10 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
   let(:idp_job) { DuplicateRowCheckerJob.new }
   let(:logs_job) { DuplicateRowCheckerJob.new }
 
+  before do
+    ActiveRecord::Base.establish_connection(:data_warehouse)
+  end
+
   describe '#perform' do
     context 'when there are duplicate articles' do
       before do
