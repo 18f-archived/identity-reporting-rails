@@ -5,8 +5,7 @@ class DuplicateRowCheckerJob
 
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
                       "#{@schema_name}.#{@table_name}"
-    establish_data_warehouse_connection
-
+    
     if @schema_name == 'logs'
       result = ActiveRecord::Base.connection.execute(
         "
@@ -39,11 +38,5 @@ class DuplicateRowCheckerJob
     end
 
     duplicates
-  end
-
-  private
-
-  def establish_data_warehouse_connection
-    ActiveRecord::Base.establish_connection(:data_warehouse) unless Rails.env.test?
   end
 end
