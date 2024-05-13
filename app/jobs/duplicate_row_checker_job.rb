@@ -1,12 +1,11 @@
 class DuplicateRowCheckerJob
   def perform(table_name, schema_name)
-    @table_name = table_name
-    @schema_name = schema_name
-
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
                       "#{@schema_name}.#{@table_name}"
+    @table_name = ActiveRecord::Base.connection.quote_table_name(table_name)
+    @schema_name = ActiveRecord::Base.connection.quote_table_name(schema_name)
 
-    if @schema_name == 'logs'
+    if schema_name == 'logs'
       result = ActiveRecord::Base.connection.execute(
         "
         SELECT message, COUNT(*)
@@ -14,7 +13,7 @@ class DuplicateRowCheckerJob
         WHERE CAN_JSON_PARSE(message)
         GROUP BY 1
         HAVING COUNT(*) > 1
-      ",
+        ",
       )
     else
       result = ActiveRecord::Base.connection.execute(
@@ -23,7 +22,7 @@ class DuplicateRowCheckerJob
         FROM #{@schema_name}.#{@table_name}
         GROUP BY id
         HAVING COUNT(*) > 1
-      ",
+        ",
       )
     end
 
