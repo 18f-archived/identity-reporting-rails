@@ -16,7 +16,8 @@ require 'factory_bot'
 # Checks for pending migrations before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
 
-# In order to segregate migrations for testing and production and ensure their successful execution, we need to comment out the line below.
+# In order to segregate migrations for testing and production and ensure their
+# successful execution, we need to comment out the line below.
 # ActiveRecord::Migration.maintain_test_schema!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
