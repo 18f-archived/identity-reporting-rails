@@ -2,8 +2,8 @@ require 'rails_helper'
 require 'factory_bot'
 
 RSpec.describe DuplicateRowCheckerJob, type: :job do
-  let(:idp_job) { DuplicateRowCheckerJob.new('articles', 'idp') }
-  let(:logs_job) { DuplicateRowCheckerJob.new('events', 'logs') }
+  let(:idp_job) { DuplicateRowCheckerJob.new }
+  let(:logs_job) { DuplicateRowCheckerJob.new }
 
   describe '#perform' do
     context 'when there are duplicate articles' do
@@ -14,7 +14,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'returns the duplicate articles' do
-        duplicates = idp_job.perform
+        duplicates = idp_job.perform('articles', 'idp')
         expect(duplicates).not_to be_empty
         expect(duplicates.first['id']).to eq(1)
       end
@@ -26,7 +26,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'returns the duplicate events' do
-        duplicates = logs_job.perform
+        duplicates = logs_job.perform('events', 'logs')
         expect(duplicates).not_to be_empty
         expect(duplicates.first['message']).to eq({ 'text' => 'Duplicate Message' }.to_json)
       end
@@ -38,7 +38,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'returns an empty array' do
-        duplicates = idp_job.perform
+        duplicates = idp_job.perform('articles', 'idp')
         expect(duplicates).to be_empty
       end
     end
@@ -49,7 +49,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'returns an empty array' do
-        duplicates = logs_job.perform
+        duplicates = logs_job.perform('events', 'logs')
         expect(duplicates).to be_empty
       end
     end

@@ -1,10 +1,8 @@
 class DuplicateRowCheckerJob
-  def initialize(table_name, schema_name = 'idp')
+  def perform(table_name, schema_name)
     @table_name = table_name
     @schema_name = schema_name
-  end
 
-  def perform
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
                       "#{@schema_name}.#{@table_name}"
     establish_data_warehouse_connection
@@ -23,7 +21,7 @@ class DuplicateRowCheckerJob
       result = ActiveRecord::Base.connection.execute(
         "
         SELECT id, COUNT(*)
-        FROM #{@table_name}
+        FROM #{@schema_name}.#{@table_name}
         GROUP BY id
         HAVING COUNT(*) > 1
       ",
