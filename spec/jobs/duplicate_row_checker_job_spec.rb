@@ -14,7 +14,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'returns the duplicate articles' do
-        duplicates = idp_job.perform('articles', 'idp')
+        duplicates = idp_job.perform('articles', 'idp', 'id')
         expect(duplicates).not_to be_empty
         expect(duplicates.first['id']).to eq(1)
       end
@@ -22,13 +22,13 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
 
     context 'when there are duplicate events' do
       before do
-        2.times { FactoryBot.create(:event, message: { text: 'Duplicate Message' }.to_json) }
+        2.times { FactoryBot.create(:event, message: { id: 1, text: 'Duplicate Message' }.to_json) }
       end
 
       it 'returns the duplicate events' do
-        duplicates = logs_job.perform('events', 'logs')
+        duplicates = logs_job.perform('events', 'logs', 'message')
         expect(duplicates).not_to be_empty
-        expect(duplicates.first['message']).to eq({ 'text' => 'Duplicate Message' }.to_json)
+        expect(duplicates.first['id']).to eq('1')
       end
     end
 
@@ -38,18 +38,18 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'returns an empty array' do
-        duplicates = idp_job.perform('articles', 'idp')
+        duplicates = idp_job.perform('articles', 'idp', 'id')
         expect(duplicates).to be_empty
       end
     end
 
     context 'when there are no duplicate events' do
       before do
-        FactoryBot.create(:event, message: { text: 'Unique Message' }.to_json)
+        FactoryBot.create(:event, message: { id: 1, text: 'Unique Message' }.to_json)
       end
 
       it 'returns an empty array' do
-        duplicates = logs_job.perform('events', 'logs')
+        duplicates = logs_job.perform('events', 'logs', 'message')
         expect(duplicates).to be_empty
       end
     end
