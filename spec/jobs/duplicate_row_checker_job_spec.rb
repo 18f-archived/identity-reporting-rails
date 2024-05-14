@@ -14,7 +14,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'logs a warning' do
-        expected_message = 'DuplicateRowCheckerJob: Found 1 duplicates in "idp"."articles"'
+        expected_message = 'DuplicateRowCheckerJob: Found 1 duplicate(s) in "idp"."articles"'
         expect(Rails.logger).to receive(:warn).with(expected_message)
         idp_job.perform(table_name: 'articles', schema_name: 'idp', uniq_by: 'id')
       end
@@ -26,7 +26,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       end
 
       it 'logs a warning' do
-        expected_message = 'DuplicateRowCheckerJob: Found 1 duplicates in "logs"."events"'
+        expected_message = 'DuplicateRowCheckerJob: Found 1 duplicate(s) in "logs"."events"'
         expect(Rails.logger).to receive(:warn).with(expected_message)
         logs_job.perform(table_name: 'events', schema_name: 'logs', uniq_by: 'message')
       end

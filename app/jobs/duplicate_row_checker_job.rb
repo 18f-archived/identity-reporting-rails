@@ -27,7 +27,7 @@ class DuplicateRowCheckerJob < ApplicationJob
 
     duplicates = DataWarehouseApplicationRecord.connection.execute(query)
     if duplicates.any?
-      Rails.logger.warn "DuplicateRowCheckerJob: Found #{duplicates.count} duplicates in " \
+      Rails.logger.warn "DuplicateRowCheckerJob: Found #{duplicates.count} duplicate(s) in " \
                         "#{@schema_name}.#{@table_name}"
     else
       Rails.logger.info "DuplicateRowCheckerJob: No duplicates found in " \
