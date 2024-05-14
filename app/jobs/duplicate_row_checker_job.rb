@@ -1,7 +1,7 @@
 class DuplicateRowCheckerJob < ApplicationJob
   queue_as :default
 
-  def perform(table_name, schema_name, uniq_by)
+  def perform(table_name:, schema_name:, uniq_by:)
     @table_name = DataWarehouseApplicationRecord.connection.quote_table_name(table_name)
     @schema_name = DataWarehouseApplicationRecord.connection.quote_table_name(schema_name)
 
@@ -25,17 +25,13 @@ class DuplicateRowCheckerJob < ApplicationJob
       SQL
     end
 
-    result = DataWarehouseApplicationRecord.connection.execute(query)
-    duplicates = result.to_a
-
+    duplicates = DataWarehouseApplicationRecord.connection.execute(query)
     if duplicates.any?
-      Rails.logger.info "DuplicateRowCheckerJob: Found #{duplicates.count} duplicates in " \
+      Rails.logger.warn "DuplicateRowCheckerJob: Found #{duplicates.count} duplicates in " \
                         "#{@schema_name}.#{@table_name}"
     else
       Rails.logger.info "DuplicateRowCheckerJob: No duplicates found in " \
                         "#{@schema_name}.#{@table_name}"
     end
-
-    duplicates
   end
 end

@@ -13,10 +13,10 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
         end
       end
 
-      it 'returns the duplicate articles' do
-        duplicates = idp_job.perform('articles', 'idp', 'id')
-        expect(duplicates).not_to be_empty
-        expect(duplicates.first['id']).to eq(1)
+      it 'logs a warning' do
+        expected_message = 'DuplicateRowCheckerJob: Found 1 duplicates in "idp"."articles"'
+        expect(Rails.logger).to receive(:warn).with(expected_message)
+        idp_job.perform(table_name: 'articles', schema_name: 'idp', uniq_by: 'id')
       end
     end
 
@@ -25,10 +25,10 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
         2.times { FactoryBot.create(:event, message: { id: 1, text: 'Duplicate Message' }.to_json) }
       end
 
-      it 'returns the duplicate events' do
-        duplicates = logs_job.perform('events', 'logs', 'message')
-        expect(duplicates).not_to be_empty
-        expect(duplicates.first['id']).to eq('1')
+      it 'logs a warning' do
+        expected_message = 'DuplicateRowCheckerJob: Found 1 duplicates in "logs"."events"'
+        expect(Rails.logger).to receive(:warn).with(expected_message)
+        logs_job.perform(table_name: 'events', schema_name: 'logs', uniq_by: 'message')
       end
     end
 
@@ -37,9 +37,9 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
         FactoryBot.create(:article, id: 1, title: 'Unique Title', content: 'Unique Content')
       end
 
-      it 'returns an empty array' do
-        duplicates = idp_job.perform('articles', 'idp', 'id')
-        expect(duplicates).to be_empty
+      it 'does not log a warning' do
+        expect(Rails.logger).not_to receive(:warn)
+        idp_job.perform(table_name: 'articles', schema_name: 'idp', uniq_by: 'id')
       end
     end
 
@@ -48,9 +48,9 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
         FactoryBot.create(:event, message: { id: 1, text: 'Unique Message' }.to_json)
       end
 
-      it 'returns an empty array' do
-        duplicates = logs_job.perform('events', 'logs', 'message')
-        expect(duplicates).to be_empty
+      it 'does not log a warning' do
+        expect(Rails.logger).not_to receive(:warn)
+        logs_job.perform(table_name: 'events', schema_name: 'logs', uniq_by: 'message')
       end
     end
   end
