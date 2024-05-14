@@ -1,5 +1,7 @@
 class DuplicateRowCheckerJob
   def perform(table_name, schema_name)
+    establish_data_warehouse_connection
+
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
                       "#{@schema_name}.#{@table_name}"
     @table_name = ActiveRecord::Base.connection.quote_table_name(table_name)
@@ -36,6 +38,17 @@ class DuplicateRowCheckerJob
                         "#{@schema_name}.#{@table_name}"
     end
 
+    close_data_warehouse_connection
     duplicates
+  end
+
+  private
+
+  def establish_data_warehouse_connection
+    ActiveRecord::Base.establish_connection(:data_warehouse)
+  end
+
+  def close_data_warehouse_connection
+    ActiveRecord::Base.remove_connection(:data_warehouse)
   end
 end
