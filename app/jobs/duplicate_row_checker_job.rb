@@ -18,9 +18,9 @@ class DuplicateRowCheckerJob < ApplicationJob
       SQL
     else
       query = <<-SQL
-        SELECT #{uniq_by}, COUNT(*)
+        SELECT id, COUNT(*)
         FROM #{@schema_name}.#{@table_name}
-        GROUP BY #{uniq_by}
+        GROUP BY id
         HAVING COUNT(*) > 1
       SQL
     end
