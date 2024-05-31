@@ -1,4 +1,4 @@
-class CreeateEventsAndProductionTable < ActiveRecord::Migration[7.1]
+class CreateEventsAndProductionTable < ActiveRecord::Migration[7.1]
   def change
     reversible do |dir|
       dir.up { execute 'CREATE SCHEMA IF NOT EXISTS logs' }
