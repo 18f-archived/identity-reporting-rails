@@ -1,7 +1,6 @@
 class AddColumnsToEventsAndProductionTable < ActiveRecord::Migration[7.1]
   def change
     # Add columns to 'logs.events' table
-    add_column 'logs.events', :cloudwatch_timestamp, :timestamp
     add_column 'logs.events', :id, :string
     add_column 'logs.events', :name, :string
     add_column 'logs.events', :time, :string
@@ -30,21 +29,20 @@ class AddColumnsToEventsAndProductionTable < ActiveRecord::Migration[7.1]
     add_column 'logs.events', :success, :boolean, default: false, null: false
 
     # Add columns to 'logs.production' table
-    add_column 'logs.productions', :cloudwatch_timestamp, :timestamp
-    add_column 'logs.productions', :uuid, :string
-    add_column 'logs.productions', :method, :string
-    add_column 'logs.productions', :path, :string
-    add_column 'logs.productions', :format, :string
-    add_column 'logs.productions', :controller, :string
-    add_column 'logs.productions', :action, :string
-    add_column 'logs.productions', :status, :string
-    add_column 'logs.productions', :duration, :string
-    add_column 'logs.productions', :git_sha, :string
-    add_column 'logs.productions', :git_branch, :string
-    add_column 'logs.productions', :pid, :integer, null: true
-    add_column 'logs.productions', :user_agent, :string
-    add_column 'logs.productions', :ip, :string
-    add_column 'logs.productions', :host, :string
-    add_column 'logs.productions', :trace_id, :string
+    add_column 'logs.production', :uuid, :string
+    add_column 'logs.production', :method, :string
+    add_column 'logs.production', :path, :string
+    add_column 'logs.production', :format, :string
+    add_column 'logs.production', :controller, :string
+    add_column 'logs.production', :action, :string
+    add_column 'logs.production', :status, :string
+    add_column 'logs.production', :duration, :string
+    add_column 'logs.production', :git_sha, :string
+    add_column 'logs.production', :git_branch, :string
+    add_column 'logs.production', :pid, :integer, null: true
+    add_column 'logs.production', :user_agent, :string
+    add_column 'logs.production', :ip, :string
+    add_column 'logs.production', :host, :string
+    add_column 'logs.production', :trace_id, :string
   end
 end
