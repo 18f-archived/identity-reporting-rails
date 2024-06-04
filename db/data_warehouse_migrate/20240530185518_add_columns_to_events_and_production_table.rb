@@ -1,7 +1,7 @@
 class AddColumnsToEventsAndProductionTable < ActiveRecord::Migration[7.1]
   def change
     # Add columns to 'logs.events' table
-    add_column 'logs.events', :cloudwatch_timestamp, :string
+    add_column 'logs.events', :cloudwatch_timestamp, :timestamp
     add_column 'logs.events', :id, :string
     add_column 'logs.events', :name, :string
     add_column 'logs.events', :time, :string
@@ -30,7 +30,7 @@ class AddColumnsToEventsAndProductionTable < ActiveRecord::Migration[7.1]
     add_column 'logs.events', :success, :boolean, default: false, null: false
 
     # Add columns to 'logs.production' table
-    add_column 'logs.productions', :cloudwatch_timestamp, :string
+    add_column 'logs.productions', :cloudwatch_timestamp, :timestamp
     add_column 'logs.productions', :uuid, :string
     add_column 'logs.productions', :method, :string
     add_column 'logs.productions', :path, :string
