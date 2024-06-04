@@ -15,7 +15,7 @@ set -x
 id
 which bundle
 
-bundle exec rake db:migrate:monitor_concurrent --trace
+bundle exec rake db:check_for_pending_migrations --trace
 
 set +x
 
