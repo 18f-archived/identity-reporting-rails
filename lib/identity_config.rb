@@ -43,12 +43,14 @@ class IdentityConfig
     config.add(:redshift_host, type: :string)
 
     "redshift!#{Identity::Hostdata.env}-analytics-awsuser".then do |redshift_secrets_manager_key|
-      config.add(:redshift_password,
+      config.add(
+        :redshift_password,
         secrets_manager_name: redshift_secrets_manager_key,
         secrets_manager_local_name: 'redshift!ENV-analytics-awsuser',
         type: :string,
       ) { |raw| JSON.parse(raw).fetch('password') }
-      config.add(:redshift_username,
+      config.add(
+        :redshift_username,
         secrets_manager_name: redshift_secrets_manager_key,
         secrets_manager_local_name: 'redshift!ENV-analytics-awsuser',
         type: :string,
