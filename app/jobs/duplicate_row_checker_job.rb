@@ -10,10 +10,10 @@ class DuplicateRowCheckerJob < ApplicationJob
 
     if uniq_by == 'message'
       query = <<-SQL
-        SELECT JSON_EXTRACT_PATH_TEXT(message, 'id') AS id, COUNT(*)
+        SELECT JSON_EXTRACT_PATH_TEXT(message, 'id') AS message_id, COUNT(*)
         FROM #{@schema_name}.#{@table_name}
         WHERE CAN_JSON_PARSE(message)
-        GROUP BY id
+        GROUP BY message_id
         HAVING COUNT(*) > 1
       SQL
     else
