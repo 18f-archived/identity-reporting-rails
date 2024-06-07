@@ -5,7 +5,7 @@ pattern =
 log_formatter = Aws::Log::Formatter.new(pattern)
 
 Aws.config.update(
-  region: Identity::Hostdata.config.aws_region,
+  region: 'us-west-2',
   logger: Rails.application.config.logger,
   log_formatter: log_formatter,
 )
