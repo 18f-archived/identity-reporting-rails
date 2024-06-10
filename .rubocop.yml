@@ -15,6 +15,8 @@ AllCops:
     - 'db/schema.rb'
     - 'db/worker_jobs_migrate/*'
     - 'db/worker_jobs_schema.rb'
+    - 'db/data_warehouse_migrate/*'
+    - 'db/data_warehouse_schema.rb'
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'public/**/*'
