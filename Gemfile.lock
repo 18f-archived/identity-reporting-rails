@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/18F/identity-hostdata.git
-  revision: 701bc92b74962f0a4bada264555e67a4c2d1a51b
+  revision: 8edd652b5219db841be4c8b4eb384c4c9f21b748
   branch: margolis-ssm-secrets
   specs:
     identity-hostdata (4.1.0)
