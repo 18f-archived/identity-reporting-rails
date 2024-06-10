@@ -42,17 +42,15 @@ class IdentityConfig
     config.add(:redshift_database_name, type: :string)
     config.add(:redshift_host, type: :string)
 
-    "redshift!#{Identity::Hostdata.env}-analytics-awsuser".then do |redshift_secrets_manager_key|
+    "redshift!#{Identity::Hostdata.env || 'local'}-analytics-awsuser".then do |redshift_secrets_manager_key|
       config.add(
         :redshift_password,
         secrets_manager_name: redshift_secrets_manager_key,
-        secrets_manager_local_name: 'redshift!ENV-analytics-awsuser',
         type: :string,
       ) { |raw| JSON.parse(raw).fetch('password') }
       config.add(
         :redshift_username,
         secrets_manager_name: redshift_secrets_manager_key,
-        secrets_manager_local_name: 'redshift!ENV-analytics-awsuser',
         type: :string,
       ) { |raw| JSON.parse(raw).fetch('username') }
       config.add(:secret_key_base, type: :string)
