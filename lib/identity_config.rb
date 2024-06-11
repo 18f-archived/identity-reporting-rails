@@ -41,9 +41,21 @@ class IdentityConfig
     config.add(:rack_mini_profiler, type: :boolean)
     config.add(:redshift_database_name, type: :string)
     config.add(:redshift_host, type: :string)
-    config.add(:redshift_password, type: :string)
-    config.add(:redshift_username, type: :string)
-    config.add(:secret_key_base, type: :string)
+
+    "redshift!#{Identity::Hostdata.env || 'local'}-analytics-awsuser".
+      then do |redshift_secrets_manager_key|
+        config.add(
+          :redshift_password,
+          secrets_manager_name: redshift_secrets_manager_key,
+          type: :string,
+        ) { |raw| JSON.parse(raw).fetch('password') }
+        config.add(
+          :redshift_username,
+          secrets_manager_name: redshift_secrets_manager_key,
+          type: :string,
+        ) { |raw| JSON.parse(raw).fetch('username') }
+        config.add(:secret_key_base, type: :string)
+      end
   end.freeze
   # rubocop:enable Metrics/BlockLength
 end

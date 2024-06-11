@@ -1,11 +1,12 @@
 GIT
   remote: https://github.com/18F/identity-hostdata.git
-  revision: 9574e05398833c531f450c3da99a6afde4ce68fc
-  tag: v4.0.0
+  revision: a80634b3723b6890e79676ab5c641bf55103d258
+  tag: v4.1.0
   specs:
-    identity-hostdata (4.0.0)
+    identity-hostdata (4.1.0)
       activesupport (>= 6.1, < 8)
       aws-sdk-s3 (~> 1.8)
+      aws-sdk-secretsmanager (>= 1.91)
       redacted_struct (>= 2.0)
 
 GIT
@@ -109,7 +110,7 @@ GEM
     ast (2.4.2)
     aws-eventstream (1.3.0)
     aws-partitions (1.863.0)
-    aws-sdk-core (3.190.0)
+    aws-sdk-core (3.196.1)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.8)
@@ -121,6 +122,9 @@ GEM
       aws-sdk-core (~> 3, >= 3.189.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.8)
+    aws-sdk-secretsmanager (1.95.0)
+      aws-sdk-core (~> 3, >= 3.193.0)
+      aws-sigv4 (~> 1.1)
     aws-sigv4 (1.8.0)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.2.0)
