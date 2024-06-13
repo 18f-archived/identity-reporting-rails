@@ -69,6 +69,7 @@ module IdentityReportingRails
     GoodJob.retry_on_unhandled_error = false
     GoodJob.on_thread_error = ->(exception) { NewRelic::Agent.notice_error(exception) }
 
+    config.logger = ActiveSupport::Logger.new(Rails.root.join('log', "#{Rails.env}.log"))
     config.time_zone = 'UTC'
 
     routes.default_url_options[:host] = Identity::Hostdata.config.domain_name
