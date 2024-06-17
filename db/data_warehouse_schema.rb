@@ -25,8 +25,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_30_185518) do
     t.string 'visitor_id'
     t.string 'visit_id'
     t.string 'log_filename'
-    t.boolean 'new_event', default: false, null: false
-    t.string 'path'
+    t.boolean 'new_event'
+    t.string 'path', limit: 12000
     t.string 'user_id'
     t.string 'locale'
     t.string 'user_ip'
@@ -36,15 +36,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_30_185518) do
     t.string 'trace_id'
     t.string 'git_sha'
     t.string 'git_branch'
-    t.string 'user_agent'
+    t.string 'user_agent', limit: 12000
     t.string 'browser_name'
     t.string 'browser_version'
     t.string 'browser_platform_name'
     t.string 'browser_platform_version'
     t.string 'browser_device_name'
-    t.boolean 'browser_mobile', default: false, null: false
-    t.boolean 'browser_bot', default: false, null: false
-    t.boolean 'success', default: false, null: false
+    t.boolean 'browser_mobile'
+    t.boolean 'browser_bot'
+    t.boolean 'success'
   end
 
   create_table 'production', id: false, force: :cascade do |t|
@@ -52,7 +52,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_30_185518) do
     t.datetime 'cloudwatch_timestamp', precision: nil
     t.string 'uuid'
     t.string 'method'
-    t.string 'path'
+    t.string 'path', limit: 12000
     t.string 'format'
     t.string 'controller'
     t.string 'action'
@@ -62,7 +62,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_30_185518) do
     t.string 'git_branch'
     t.datetime 'timestamp', precision: nil
     t.integer 'pid'
-    t.string 'user_agent'
+    t.string 'user_agent', limit: 12000
     t.string 'ip'
     t.string 'host'
     t.string 'trace_id'
