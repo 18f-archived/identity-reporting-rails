@@ -8,34 +8,32 @@ class DuplicateRowCheckerJob < ApplicationJob
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
     "#{@schema_name}.#{@table_name}"
 
+    query = build_query(uniq_by)
+
+    duplicates = DataWarehouseApplicationRecord.connection.exec_query(query)
+    log_result(duplicates)
+  end
+
+  private
+
+  def build_query(uniq_by)
     if uniq_by == 'message'
       id_key = extract_json_key(column: 'message', key: 'id')
-      query = <<-SQL
+      <<-SQL
         SELECT #{id_key} AS message_id, COUNT(*)
         FROM #{@schema_name}.#{@table_name}
         GROUP BY message_id
         HAVING COUNT(*) > 1
       SQL
     else
-      query = <<-SQL
+      <<-SQL
         SELECT id, COUNT(*)
         FROM #{@schema_name}.#{@table_name}
         GROUP BY id
         HAVING COUNT(*) > 1
       SQL
     end
-
-    duplicates = DataWarehouseApplicationRecord.connection.execute(query)
-    if duplicates.any?
-      Rails.logger.warn "DuplicateRowCheckerJob: Found #{duplicates.count} duplicate(s) in " \
-                        "#{@schema_name}.#{@table_name}"
-    else
-      Rails.logger.info "DuplicateRowCheckerJob: No duplicates found in " \
-                        "#{@schema_name}.#{@table_name}"
-    end
   end
-
-  private
 
   def extract_json_key(column:, key:)
     if Rails.env.production?
@@ -43,7 +41,17 @@ class DuplicateRowCheckerJob < ApplicationJob
       "#{column}.#{key}"
     else
       # Local/Test environment using JSONB Column type
-      "JSON_EXTRACT_PATH_TEXT(#{column}, '#{key}')"
+      "json_extract_path_text(#{column}, '#{key}')"
+    end
+  end
+
+  def log_result(duplicates)
+    if duplicates.any?
+      Rails.logger.warn "DuplicateRowCheckerJob: Found #{duplicates.count} duplicate(s) in " \
+                        "#{@schema_name}.#{@table_name}"
+    else
+      Rails.logger.info "DuplicateRowCheckerJob: No duplicates found in " \
+                        "#{@schema_name}.#{@table_name}"
     end
   end
 end
