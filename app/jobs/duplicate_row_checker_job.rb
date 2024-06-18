@@ -9,10 +9,10 @@ class DuplicateRowCheckerJob < ApplicationJob
     "#{@schema_name}.#{@table_name}"
 
     if uniq_by == 'message'
+      id_key = extract_json_key(column: 'message', key: 'id')
       query = <<-SQL
-        SELECT JSON_EXTRACT_PATH_TEXT(message, 'id') AS message_id, COUNT(*)
+        SELECT #{id_key} AS message_id, COUNT(*)
         FROM #{@schema_name}.#{@table_name}
-        WHERE CAN_JSON_PARSE(message)
         GROUP BY message_id
         HAVING COUNT(*) > 1
       SQL
@@ -32,6 +32,18 @@ class DuplicateRowCheckerJob < ApplicationJob
     else
       Rails.logger.info "DuplicateRowCheckerJob: No duplicates found in " \
                         "#{@schema_name}.#{@table_name}"
+    end
+  end
+
+  private
+
+  def extract_json_key(column:, key:)
+    if Rails.env.production?
+      # Redshift environment using SUPER Column type
+      "#{column}.#{key}"
+    else
+      # Local/Test environment using JSONB Column type
+      "JSON_EXTRACT_PATH_TEXT(#{column}, '#{key}')"
     end
   end
 end
