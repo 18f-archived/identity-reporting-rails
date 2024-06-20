@@ -8,24 +8,44 @@ class DuplicateRowCheckerJob < ApplicationJob
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
     "#{@schema_name}.#{@table_name}"
 
+    query = build_query(uniq_by)
+
+    duplicates = DataWarehouseApplicationRecord.connection.exec_query(query)
+    log_result(duplicates)
+  end
+
+  private
+
+  def build_query(uniq_by)
     if uniq_by == 'message'
-      query = <<-SQL
-        SELECT JSON_EXTRACT_PATH_TEXT(message, 'id') AS message_id, COUNT(*)
+      id_key = extract_json_key(column: 'message', key: 'id')
+      <<-SQL
+        SELECT #{id_key} AS message_id, COUNT(*)
         FROM #{@schema_name}.#{@table_name}
-        WHERE CAN_JSON_PARSE(message)
         GROUP BY message_id
         HAVING COUNT(*) > 1
       SQL
     else
-      query = <<-SQL
+      <<-SQL
         SELECT id, COUNT(*)
         FROM #{@schema_name}.#{@table_name}
         GROUP BY id
         HAVING COUNT(*) > 1
       SQL
     end
+  end
 
-    duplicates = DataWarehouseApplicationRecord.connection.execute(query)
+  def extract_json_key(column:, key:)
+    if Rails.env.production?
+      # Redshift environment using SUPER Column type
+      "#{column}.#{key}"
+    else
+      # Local/Test environment using JSONB Column type
+      "json_extract_path_text(#{column}, '#{key}')"
+    end
+  end
+
+  def log_result(duplicates)
     if duplicates.any?
       Rails.logger.warn "DuplicateRowCheckerJob: Found #{duplicates.count} duplicate(s) in " \
                         "#{@schema_name}.#{@table_name}"
