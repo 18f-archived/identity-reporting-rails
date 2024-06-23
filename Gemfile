@@ -16,6 +16,7 @@ gem 'pg'
 gem 'rack', '>= 2.2.3.1'
 gem 'redacted_struct'
 gem 'tzinfo-data', platforms: %i[ windows jruby ]
+gem 'pry-byebug'
 
 group :development do
   gem 'better_errors', '>= 2.5.1'
@@ -30,7 +31,6 @@ group :development, :test do
   gem 'listen'
   gem 'nokogiri', '>= 1.16.5'
   gem 'pg_query', require: false
-  gem 'pry-byebug'
   gem 'pry-doc', '>= 1.5.0'
   gem 'pry-rails'
   gem 'psych'
