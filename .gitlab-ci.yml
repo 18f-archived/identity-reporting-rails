@@ -126,3 +126,6 @@ coverage:
       - coverage/index.html
       - coverage/assets/
       - coverage/coverage.xml
+
+include:
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
