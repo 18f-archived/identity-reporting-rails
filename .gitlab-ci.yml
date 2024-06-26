@@ -8,6 +8,7 @@ variables:
   ECR_REGISTRY: '${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
   IDP_CI_SHA: 'sha256:756a1d450b422720dee36cb9a6217687bcad1e40b780219d360989861ce94212'
   JUNIT_OUTPUT: 'true'
+  DS_IMAGE_SUFFIX: "-fips"
 
 default:
   image: '${ECR_REGISTRY}/idp/ci@${IDP_CI_SHA}'
@@ -126,3 +127,6 @@ coverage:
       - coverage/index.html
       - coverage/assets/
       - coverage/coverage.xml
+
+include:
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
