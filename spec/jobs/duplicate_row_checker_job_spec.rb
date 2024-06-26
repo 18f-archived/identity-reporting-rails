@@ -22,7 +22,13 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
 
     context 'when there are duplicate events' do
       before do
-        2.times { FactoryBot.create(:event, message: { id: 1, text: 'Duplicate Message' }.to_json) }
+        2.times do |i|
+          FactoryBot.create(
+            :event,
+            message: { id: 1, text: 'Duplicate Message' }.to_json,
+            id: i.to_s,
+          )
+        end
       end
 
       it 'logs a warning' do
@@ -45,7 +51,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
 
     context 'when there are no duplicate events' do
       before do
-        FactoryBot.create(:event, message: { id: 1, text: 'Unique Message' }.to_json)
+        FactoryBot.create(:event, message: { id: 1, text: 'Unique Message' }.to_json, id: '1')
       end
 
       it 'does not log a warning' do
