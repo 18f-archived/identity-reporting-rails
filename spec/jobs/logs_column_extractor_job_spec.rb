@@ -56,7 +56,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
           )
         end
       end
-      it 'confirm the column extraction query is valid' do
+      it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
         msg = 'LogsColumnExtractorJob: Query executed successfully'
         expect(Rails.logger).to receive(:info).with(msg)
@@ -99,7 +99,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
           )
         end
       end
-      it 'confirm the column extraction query is valid' do
+      it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
         msg = 'LogsColumnExtractorJob: Query executed successfully'
         expect(Rails.logger).to receive(:info).with(msg)

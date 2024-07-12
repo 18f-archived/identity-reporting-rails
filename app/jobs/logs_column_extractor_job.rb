@@ -77,7 +77,7 @@ class LogsColumnExtractorJob < ApplicationJob
       #{@source_table_name} to target #{@schema_name}.#{@target_table_name}
     STR
 
-    Rails.logger.info "LogsColumnExtractorJob: Executing query: #{@query}"
+    Rails.logger.info 'LogsColumnExtractorJob: Executing queries...'
     DataWarehouseApplicationRecord.transaction do
       DataWarehouseApplicationRecord.connection.execute(lock_table_query)
       DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)

@@ -2,33 +2,35 @@ require 'rails_helper'
 require 'redshift_schema_updater'
 
 RSpec.describe RedshiftSchemaUpdater do
+  let!(:redshift_schema_updater) { RedshiftSchemaUpdater.new('idp') }
   let!(:file_path) { Rails.root.join('spec', 'fixtures', 'includes_columns.yml') }
-  let!(:users_table) { 'users' }
-  let!(:events_table) { 'events' }
+  let!(:file_path2) { Rails.root.join('spec', 'fixtures', 'includes_columns2.yml') }
+  let!(:users_table) { 'idp.users' }
+  let!(:events_table) { 'idp.events' }
   let!(:expected_columns) { ['id', 'name', 'email', 'created_at', 'updated_at'] }
   let!(:yaml_data) do
     [
       {
         'table' => 'users',
         'schema' => 'public',
-        'include_columns' => {
-          'id' => { 'datatype' => 'integer' },
-          'name' => { 'datatype' => 'string' },
-          'email' => { 'datatype' => 'string' },
-          'created_at' => { 'datatype' => 'datetime' },
-          'updated_at' => { 'datatype' => 'datetime' },
-        },
+        'include_columns' => [
+          { 'name' => 'id', 'datatype' => 'integer' },
+          { 'name' => 'name', 'datatype' => 'string' },
+          { 'name' => 'email', 'datatype' => 'string' },
+          { 'name' => 'created_at', 'datatype' => 'datetime' },
+          { 'name' => 'updated_at', 'datatype' => 'datetime' },
+        ],
       },
       {
         'table' => 'events',
         'schema' => 'public',
-        'include_columns' => {
-          'id' => { 'datatype' => 'integer' },
-          'name' => { 'datatype' => 'string' },
-          'event_type' => { 'datatype' => 'integer' },
-          'created_at' => { 'datatype' => 'datetime' },
-          'updated_at' => { 'datatype' => 'datetime' },
-        },
+        'include_columns' => [
+          { 'name' => 'id', 'datatype' => 'integer' },
+          { 'name' => 'name', 'datatype' => 'string' },
+          { 'name' => 'event_type', 'datatype' => 'integer' },
+          { 'name' => 'created_at', 'datatype' => 'datetime' },
+          { 'name' => 'updated_at', 'datatype' => 'datetime' },
+        ],
       },
     ]
   end
@@ -36,69 +38,98 @@ RSpec.describe RedshiftSchemaUpdater do
   describe '.update_schema_from_yaml' do
     context 'when table does not exist' do
       it 'creates new table' do
-        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(false)
-        expect(RedshiftSchemaUpdater.table_exists?(events_table)).to eq(false)
+        expect(redshift_schema_updater.table_exists?(users_table)).to eq(false)
+        expect(redshift_schema_updater.table_exists?(events_table)).to eq(false)
 
-        RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
+        redshift_schema_updater.update_schema_from_yaml(file_path)
 
-        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(true)
-        expect(RedshiftSchemaUpdater.table_exists?(events_table)).to eq(true)
+        expect(redshift_schema_updater.table_exists?(users_table)).to eq(true)
+        expect(redshift_schema_updater.table_exists?(events_table)).to eq(true)
       end
     end
 
     context 'when table already exists' do
-      let(:existing_columns) { { 'id' => { 'datatype' => 'integer' } } }
+      let(:existing_columns) { [{ 'name' => 'id', 'datatype' => 'integer' }] }
 
       before do
-        RedshiftSchemaUpdater.create_table(users_table, existing_columns)
+        redshift_schema_updater.create_table(users_table, existing_columns)
       end
 
       it 'adds new columns' do
-        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(true)
-        expect(ActiveRecord::Base.connection.columns(users_table).map(&:name)).to eq(['id'])
+        expect(redshift_schema_updater.table_exists?(users_table)).to eq(true)
+        existing_columns = DataWarehouseApplicationRecord.connection.columns(users_table)
+        expect(existing_columns.map(&:name)).to eq(['id'])
 
-        RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
+        redshift_schema_updater.update_schema_from_yaml(file_path)
 
-        new_columns = ActiveRecord::Base.connection.columns(users_table).map(&:name)
+        new_columns = DataWarehouseApplicationRecord.connection.columns(users_table).map(&:name)
         expect(new_columns).to eq(expected_columns)
       end
     end
 
     context 'when table already exists with extra columns' do
       let(:existing_columns) do
-        { 'id' => { 'datatype' => 'integer' }, 'phone' => { 'datatype' => 'string' } }
+        [{ 'name' => 'id', 'datatype' => 'integer' }, { 'name' => 'phone', 'datatype' => 'string' }]
       end
 
       before do
-        RedshiftSchemaUpdater.create_table(users_table, existing_columns)
+        redshift_schema_updater.create_table(users_table, existing_columns)
       end
 
       it 'updates columns and removes columns not exist in YAML file' do
-        expect(RedshiftSchemaUpdater.table_exists?(users_table)).to eq(true)
-        existing_columns = ActiveRecord::Base.connection.columns(users_table).map(&:name)
-        expect(existing_columns).to eq(['id', 'phone'])
+        expect(redshift_schema_updater.table_exists?(users_table)).to eq(true)
+        existing_columns = DataWarehouseApplicationRecord.connection.columns(users_table)
+        expect(existing_columns.map(&:name)).to eq(['id', 'phone'])
 
-        RedshiftSchemaUpdater.update_schema_from_yaml(file_path)
+        redshift_schema_updater.update_schema_from_yaml(file_path)
 
-        new_columns = ActiveRecord::Base.connection.columns(users_table).map(&:name)
+        new_columns = DataWarehouseApplicationRecord.connection.columns(users_table).map(&:name)
         expect(new_columns).to eq(expected_columns)
       end
     end
-  end
 
-  describe '.establish_data_warehouse_connection' do
-    it 'establishes connection to the data warehouse' do
-      expect(ActiveRecord::Base).to receive(:establish_connection).
-        with(:data_warehouse).and_call_original
+    context 'when an existing column changes data type,' do
+      let(:existing_columns) do
+        [{ 'name' => 'id', 'datatype' => 'integer' },
+         { 'name' => 'some_numeric_column', 'datatype' => 'decimal' }]
+      end
 
-      RedshiftSchemaUpdater.send(:establish_data_warehouse_connection)
+      before do
+        DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
+        redshift_schema_updater.create_table(users_table, existing_columns)
+        DataWarehouseApplicationRecord.connection.execute(
+          DataWarehouseApplicationRecord.sanitize_sql(
+            "INSERT INTO #{users_table} (id, some_numeric_column) VALUES (1, 999.0)",
+          ), allow_retry: true
+        )
+      end
+
+      it 'updates columns, drops columns with old data type, replaces with new data type' do
+        expect(redshift_schema_updater.table_exists?(users_table)).to eq(true)
+        column_obs = DataWarehouseApplicationRecord.connection.columns(users_table)
+        type = column_obs.find { |col| col.name == 'some_numeric_column' }.type
+        expect(type).to eq(:decimal)
+
+        redshift_schema_updater.update_schema_from_yaml(file_path2)
+
+        column_obs = DataWarehouseApplicationRecord.connection.columns(users_table)
+        type = column_obs.find { |col| col.name == 'some_numeric_column' }.type
+        expect(type).to eq(:integer)
+
+        results = DataWarehouseApplicationRecord.connection.execute(
+          DataWarehouseApplicationRecord.sanitize_sql(
+            "SELECT id, some_numeric_column FROM #{users_table};",
+          ),
+        )
+        expect(results.values).to eq([[1, 999]])
+      end
     end
   end
 
   describe '.load_yaml' do
     context 'when YAML file exists' do
       it 'loads YAML file' do
-        expect(RedshiftSchemaUpdater.send(:load_yaml, file_path)).to eq(yaml_data)
+        expect(redshift_schema_updater.send(:load_yaml, file_path)).to eq(yaml_data)
       end
     end
 
@@ -110,11 +141,11 @@ RSpec.describe RedshiftSchemaUpdater do
 
       it 'logs an error' do
         expect(Rails.logger).to receive(:error).with(/Error loading include columns YML file:/)
-        RedshiftSchemaUpdater.send(:load_yaml, file_path)
+        redshift_schema_updater.send(:load_yaml, file_path)
       end
 
       it 'returns nil' do
-        expect(RedshiftSchemaUpdater.send(:load_yaml, file_path)).to be_nil
+        expect(redshift_schema_updater.send(:load_yaml, file_path)).to be_nil
       end
     end
   end
@@ -122,15 +153,15 @@ RSpec.describe RedshiftSchemaUpdater do
   describe 'redshift_data_type' do
     context 'when datatype is :json or :jsonb' do
       it 'returns :super' do
-        expect(RedshiftSchemaUpdater.redshift_data_type('json')).to eq(:super)
-        expect(RedshiftSchemaUpdater.redshift_data_type('jsonb')).to eq(:super)
+        expect(redshift_schema_updater.redshift_data_type('json')).to eq('super')
+        expect(redshift_schema_updater.redshift_data_type('jsonb')).to eq('super')
       end
     end
 
     context 'when datatype is not :json or :jsonb' do
       it 'returns the input datatype symbol' do
-        expect(RedshiftSchemaUpdater.redshift_data_type('integer')).to eq(:integer)
-        expect(RedshiftSchemaUpdater.redshift_data_type('string')).to eq(:string)
+        expect(redshift_schema_updater.redshift_data_type('integer')).to eq('integer')
+        expect(redshift_schema_updater.redshift_data_type('string')).to eq('string')
       end
     end
   end

@@ -2,7 +2,7 @@
   schema: public
   include_columns:
     - name: id
-      datatype: integer
+      datatype: bigint
     - name: name
       datatype: string
     - name: email
@@ -11,6 +11,8 @@
       datatype: datetime
     - name: updated_at
       datatype: datetime
+    - name: some_numeric_column
+      datatype: integer
 
 - table: events
   schema: public
