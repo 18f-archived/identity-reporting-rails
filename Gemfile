@@ -34,6 +34,7 @@ group :development, :test do
   gem 'pry-doc', '>= 1.5.0'
   gem 'pry-rails'
   gem 'psych'
+  gem 'rexml', '>= 3.3.2'
   gem 'rspec', '~> 3.12.0'
   gem 'rspec-rails', '~> 6.0'
   gem 'rubocop', '~> 1.55.1', require: false

@@ -16,6 +16,11 @@ else
         class: 'LogsColumnExtractorJob',
         cron: cron_1d,
       },
+      # Queue duplicate row checker job to GoodJob
+      duplicate_row_checker_job: {
+        class: 'DuplicateRowCheckerJob',
+        cron: cron_1d,
+      },
     }
   end
   Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
