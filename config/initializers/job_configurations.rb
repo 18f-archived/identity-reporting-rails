@@ -13,18 +13,17 @@ else
         class: 'HeartbeatJob',
         cron: cron_5m,
       },
-      # Queue logs column extractor job to GoodJob
-      log_tables_column_extractor_job: {
-        class: 'LogsColumnExtractorJob',
-        cron: cron_2m,
-      },
-      # Queue duplicate row checker job to GoodJob
-      duplicate_row_checker_job: {
-        class: 'DuplicateRowCheckerJob',
-        cron: cron_1d,
-      },
     }
-    # dynamic job scheduling
+    # TODO: Add two args for schema and uniq_by for each table_name ;
+    # Queue duplicate row checker job to GoodJob
+    # table_names.each do |table_name|
+    #   config.good_job.cron[:"duplicate_row_checker_job_#{table_name}"] = {
+    #     class: 'DuplicateRowCheckerJob',
+    #     cron: cron_1d,
+    #     args: -> { [table_name] },
+    #   }
+    # end
+    # Queue logs column extractor job to GoodJob
     table_names.each do |table_name|
       config.good_job.cron[:"logs_column_extractor_job_#{table_name}"] = {
         class: 'LogsColumnExtractorJob',
