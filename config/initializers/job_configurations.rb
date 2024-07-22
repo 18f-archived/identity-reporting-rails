@@ -1,5 +1,7 @@
 cron_5m = '0/5 * * * *'
 cron_1d = '0 0 * * *'
+cron_2m = '0/2 * * * *'
+table_names = ['events', 'production']
 
 if defined?(Rails::Console)
   Rails.logger.info 'job_configurations: console detected, skipping schedule'
@@ -14,7 +16,7 @@ else
       # Queue logs column extractor job to GoodJob
       log_tables_column_extractor_job: {
         class: 'LogsColumnExtractorJob',
-        cron: cron_1d,
+        cron: cron_2m,
       },
       # Queue duplicate row checker job to GoodJob
       duplicate_row_checker_job: {
@@ -22,6 +24,14 @@ else
         cron: cron_1d,
       },
     }
+    # dynamic job scheduling
+    table_names.each do |table_name|
+      config.good_job.cron[:"logs_column_extractor_job_#{table_name}"] = {
+        class: 'LogsColumnExtractorJob',
+        cron: cron_2m,
+        args: -> { [table_name] },
+      }
+    end
   end
   Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
 end
