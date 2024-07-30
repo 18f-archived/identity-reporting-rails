@@ -62,7 +62,7 @@ class LogsColumnExtractorJob < ApplicationJob
   SOURCE_TABLE_NAMES = ['unextracted_events', 'unextracted_production']
   TYPES_TO_EXTRACT_AS_TEXT = ['TIMESTAMP']
 
-  def perform(target_table_name:)
+  def perform(target_table_name)
     @schema_name = 'logs'
     @target_table_name = target_table_name
     @source_table_name = "unextracted_#{target_table_name}"

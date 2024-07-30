@@ -9,7 +9,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
     context 'when target table name is not recognized' do
       it 'confirm the perform function fails with exception' do
         msg = 'Invalid source table name: unextracted_random_name'
-        expect { logs_job.perform(target_table_name: 'random_name') }.to raise_error(msg)
+        expect { logs_job.perform('random_name') }.to raise_error(msg)
       end
     end
 
@@ -60,7 +60,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
         allow(Rails.logger).to receive(:info).and_call_original
         msg = 'LogsColumnExtractorJob: Query executed successfully'
         expect(Rails.logger).to receive(:info).with(msg)
-        logs_job.perform(target_table_name: 'events')
+        logs_job.perform('events')
         query = 'Select * from logs.events;'
         query_results = DataWarehouseApplicationRecord.connection.execute(query).to_a
         expect(query_results.length).to eq(2)
@@ -103,7 +103,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
         allow(Rails.logger).to receive(:info).and_call_original
         msg = 'LogsColumnExtractorJob: Query executed successfully'
         expect(Rails.logger).to receive(:info).with(msg)
-        logs_job.perform(target_table_name: 'production')
+        logs_job.perform('production')
         query = 'Select * from logs.production;'
         query_results = DataWarehouseApplicationRecord.connection.execute(query).to_a
         expect(query_results.length).to eq(2)
