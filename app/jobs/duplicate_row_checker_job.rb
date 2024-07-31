@@ -1,7 +1,7 @@
 class DuplicateRowCheckerJob < ApplicationJob
   queue_as :default
 
-  def perform(table_name:, schema_name:, uniq_by:)
+  def perform(table_name, schema_name, uniq_by)
     @table_name = DataWarehouseApplicationRecord.connection.quote_table_name(table_name)
     @schema_name = DataWarehouseApplicationRecord.connection.quote_table_name(schema_name)
 
@@ -10,39 +10,19 @@ class DuplicateRowCheckerJob < ApplicationJob
 
     query = build_query(uniq_by)
 
-    duplicates = DataWarehouseApplicationRecord.connection.exec_query(query)
+    duplicates = DataWarehouseApplicationRecord.connection.exec_query(query.to_s)
     log_result(duplicates)
   end
 
   private
 
-  def build_query(uniq_by)
-    if uniq_by == 'message'
-      id_key = extract_json_key(column: 'message', key: 'id')
-      <<-SQL
-        SELECT #{id_key} AS message_id, COUNT(*)
-        FROM #{@schema_name}.#{@table_name}
-        GROUP BY message_id
-        HAVING COUNT(*) > 1
-      SQL
-    else
-      <<-SQL
-        SELECT id, COUNT(*)
-        FROM #{@schema_name}.#{@table_name}
-        GROUP BY id
-        HAVING COUNT(*) > 1
-      SQL
-    end
-  end
-
-  def extract_json_key(column:, key:)
-    if Rails.env.production?
-      # Redshift environment using SUPER Column type
-      "#{column}.#{key}"
-    else
-      # Local/Test environment using JSONB Column type
-      "json_extract_path_text(#{column}, '#{key}')"
-    end
+  def build_query(uniq_by = 'id')
+    <<-SQL
+      SELECT #{uniq_by}, COUNT(*)
+      FROM #{@schema_name}.#{@table_name}
+      GROUP BY #{uniq_by}
+      HAVING COUNT(*) > 1
+    SQL
   end
 
   def log_result(duplicates)

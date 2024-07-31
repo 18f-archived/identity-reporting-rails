@@ -17,26 +17,21 @@ else
         class: 'HeartbeatJob',
         cron: cron_5m,
       },
-      # Queue logs column extractor job to GoodJob
-      # log_tables_column_extractor_job: {
-      #   class: 'LogsColumnExtractorJob',
-      #   cron: cron_1d,
-      # },
-      # Queue duplicate row checker job to GoodJob
-      duplicate_row_checker_job: {
-        class: 'DuplicateRowCheckerJob',
-        cron: cron_1d,
-      },
     }
+
     schema_table_hash.each do |schema_name, tables|
       tables.each do |table_name, uniq_id|
-        config.good_job.cron[:"logs_column_extractor_job_#{table_name}"] = {
-          class: 'LogsColumnExtractorJob',
+        job_class = schema_name == 'logs' ? 'LogsColumnExtractorJob' : 'DuplicateRowCheckerJob'
+        job_name = schema_name == 'logs' ? :"logs_column_extractor_job_#{table_name}" : :"duplicate_row_checker_job_#{table_name}_#{schema_name}_#{uniq_id}"
+
+        config.good_job.cron[job_name] = {
+          class: job_class,
           cron: cron_2m,
-          args: -> { [table_name] },
+          args: -> { schema_name == 'logs' ? [table_name] : [table_name, schema_name, uniq_id] },
         }
       end
     end
+
+    Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
   end
-  Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
 end

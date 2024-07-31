@@ -99,7 +99,7 @@ class LogsColumnExtractorJob < ApplicationJob
   def create_temp_table_query
     DataWarehouseApplicationRecord.sanitize_sql(
       <<~SQL,
-        CREATE TEMP TABLE #{@source_table_name}_temp AS
+        CREATE TEMP TABLE if not exists #{@source_table_name}_temp AS
         #{select_message_fields}
         FROM #{@schema_name}.#{@source_table_name};
       SQL

@@ -1,6 +1,5 @@
 FactoryBot.define do
   factory :event do
-    cloudwatch_timestamp { Time.zone.now }
-    message { { text: Faker::Lorem.sentence }.to_json }
+    name { Faker::Book.title }
   end
 end
