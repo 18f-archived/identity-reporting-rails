@@ -20,7 +20,7 @@ else
     }
 
     schema_table_hash.each do |schema_name, tables|
-      tables.each do |table_name, uniq_id|
+      tables.each do |table_name|
         job_class = schema_name == 'logs' ? 'LogsColumnExtractorJob' : 'DuplicateRowCheckerJob'
         job_name = schema_name == 'logs' ? :"logs_column_extractor_job_#{table_name}" : :"duplicate_row_checker_job_#{table_name}_#{schema_name}"
 

@@ -16,7 +16,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       it 'logs a warning' do
         expected_message = 'DuplicateRowCheckerJob: Found 1 duplicate(s) in "idp"."articles"'
         expect(Rails.logger).to receive(:warn).with(expected_message)
-        idp_job.perform('articles', 'idp', 'id')
+        idp_job.perform('articles', 'idp')
       end
     end
 
@@ -30,7 +30,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       it 'logs a warning' do
         expected_message = 'DuplicateRowCheckerJob: Found 1 duplicate(s) in "logs"."events"'
         expect(Rails.logger).to receive(:warn).with(expected_message)
-        logs_job.perform('events', 'logs', 'id')
+        logs_job.perform('events', 'logs')
       end
     end
 
@@ -41,7 +41,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
 
       it 'does not log a warning' do
         expect(Rails.logger).not_to receive(:warn)
-        idp_job.perform('articles', 'idp', 'id')
+        idp_job.perform('articles', 'idp')
       end
     end
 
@@ -52,7 +52,7 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
 
       it 'does not log a warning' do
         expect(Rails.logger).not_to receive(:warn)
-        logs_job.perform('events', 'logs', 'id')
+        logs_job.perform('events', 'logs')
       end
     end
   end

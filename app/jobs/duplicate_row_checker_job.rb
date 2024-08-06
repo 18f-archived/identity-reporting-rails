@@ -1,9 +1,10 @@
 class DuplicateRowCheckerJob < ApplicationJob
   queue_as :default
 
-  def perform(table_name, schema_name, uniq_by)
+  def perform(table_name, schema_name)
     @table_name = DataWarehouseApplicationRecord.connection.quote_table_name(table_name)
     @schema_name = DataWarehouseApplicationRecord.connection.quote_table_name(schema_name)
+    uniq_by = determine_unique_identifier(schema_name, table_name)
 
     Rails.logger.info "DuplicateRowCheckerJob: Checking for duplicates in " \
     "#{@schema_name}.#{@table_name}"
@@ -16,7 +17,12 @@ class DuplicateRowCheckerJob < ApplicationJob
 
   private
 
-  def build_query(uniq_by = 'id')
+  def determine_unique_identifier(schema_name, table_name)
+    columns = DataWarehouseApplicationRecord.connection.columns("#{schema_name}.#{table_name}")
+    columns.any? { |c| c.name == 'id' } ? 'id' : 'uuid'
+  end
+
+  def build_query(uniq_by)
     <<-SQL
       SELECT #{uniq_by}, COUNT(*)
       FROM #{@schema_name}.#{@table_name}
