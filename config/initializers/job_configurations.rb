@@ -22,12 +22,12 @@ else
     schema_table_hash.each do |schema_name, tables|
       tables.each do |table_name, uniq_id|
         job_class = schema_name == 'logs' ? 'LogsColumnExtractorJob' : 'DuplicateRowCheckerJob'
-        job_name = schema_name == 'logs' ? :"logs_column_extractor_job_#{table_name}" : :"duplicate_row_checker_job_#{table_name}_#{schema_name}_#{uniq_id}"
+        job_name = schema_name == 'logs' ? :"logs_column_extractor_job_#{table_name}" : :"duplicate_row_checker_job_#{table_name}_#{schema_name}"
 
         config.good_job.cron[job_name] = {
           class: job_class,
-          cron: cron_2m,
-          args: -> { schema_name == 'logs' ? [table_name] : [table_name, schema_name, uniq_id] },
+          cron: cron_5m,
+          args: -> { schema_name == 'logs' ? [table_name] : [table_name, schema_name] },
         }
       end
     end

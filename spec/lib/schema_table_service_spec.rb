@@ -20,19 +20,28 @@ RSpec.describe SchemaTableService do
         end
       end
     end
-    context 'when schema exists but not tables' do
+    context 'when schema exists but no tables' do
       let!(:schema_name) { { 'logs' => [], 'idp' => [] } }
 
-      it 'Validate for empty set of tables' do
+      it 'Validate empty set of tables' do
         schema_table_hash = schema_table_service.fetch_tables_for_schema(schema_name)
         schema_table_hash.each do |schema_name, tables|
           expect(tables).to be_a(Array)
-          if schema_name == 'logs'
+          if schema_name == 'logs' || schema_name == 'idp'
             expect(tables).to be nil
           end
         end
-        # expect(Rails.logger).to receive(:error).with(/Error loading DataWarehouseApplicationRecord dependency:/)
-        # expect(schema_table_hash).to be_empty
+      end
+    end
+    context 'when invalid schema ignore tables' do
+      let!(:schema_name) { { 'invalid' => ['events', 'production'], 'incorrect' => ['articles'] } }
+
+      it 'Validate empty set of schema' do
+        schema_table_hash = schema_table_service.fetch_tables_for_schema(schema_name)
+        schema_table_hash.each do |schema_name, tables|
+          expect(schema_name).to be nil
+          expect(tables).to be nil
+        end
       end
     end
   end
@@ -42,6 +51,7 @@ RSpec.describe SchemaTableService do
       let!(:dependency) { 'data_warehouse_application_record' }
       before do
         allow(Rails.logger).to receive(:error)
+        allow(schema_table_service).to receive(:require_dependency).and_raise(StandardError.new('Load error'))
       end
 
       it 'logs an error' do
