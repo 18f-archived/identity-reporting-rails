@@ -19,7 +19,6 @@ class SchemaTableService
     tables = fetch_tables(schema_name)
     tables.each do |table_name|
       next if table_name.start_with?('unextracted_')
-      # ignore tables that start with unextracted_
       table_set.add(table_name)
     end
     table_set.to_a

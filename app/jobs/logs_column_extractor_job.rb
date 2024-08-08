@@ -66,6 +66,7 @@ class LogsColumnExtractorJob < ApplicationJob
     @schema_name = 'logs'
     @target_table_name = target_table_name
     @source_table_name = "unextracted_#{target_table_name}"
+    puts("SOURCE TABLE NAME: #{@source_table_name}")
     unless SOURCE_TABLE_NAMES.include? @source_table_name
       raise "Invalid source table name: #{@source_table_name}"
     end
@@ -97,9 +98,17 @@ class LogsColumnExtractorJob < ApplicationJob
   end
 
   def create_temp_table_query
+    # look for temp table in the source schema and drop if exists
+    # add try ctach block tocapture the error if the table does not exist and processed with next steps
+    # add a check to see if the table exists before dropping
+    if DataWarehouseApplicationRecord.connection.table_exists?("#{@schema_name}.#{@source_table_name}_temp")
+      DataWarehouseApplicationRecord.connection.execute(
+        "DROP TABLE #{@schema_name}.#{@source_table_name}_temp;",
+      )
+    end
     DataWarehouseApplicationRecord.sanitize_sql(
       <<~SQL,
-        CREATE TEMP TABLE if not exists #{@source_table_name}_temp AS
+        CREATE TEMP TABLE #{@source_table_name}_temp AS
         #{select_message_fields}
         FROM #{@schema_name}.#{@source_table_name};
       SQL
@@ -134,6 +143,7 @@ class LogsColumnExtractorJob < ApplicationJob
     else
       # Local Postgres DB does not support REMOVE DUPLICATES clause
       # MERGE is not supported in Postges@14; use INSERT ON CONFLICT instead
+      puts("CONFLICT UPDATE SET: #{conflict_update_set}")
       DataWarehouseApplicationRecord.sanitize_sql(
         <<~SQL,
           INSERT INTO #{@schema_name}.#{@target_table_name} (
@@ -176,10 +186,13 @@ class LogsColumnExtractorJob < ApplicationJob
 
       "#{col_name}::#{col[:type]} as #{col[:column]}"
     end
+    puts("EXTRACT AND CAST STATEMENTS: #{extract_and_cast_statements}")
     select_query = <<~SQL.chomp
       SELECT
           message, cloudwatch_timestamp, #{extract_and_cast_statements.join(" ,")}
     SQL
+    puts("SELECT QUERY: #{select_query}")
+    puts("SELECT QUERY SANITIZED: #{DataWarehouseApplicationRecord.sanitize_sql(select_query)}")
     DataWarehouseApplicationRecord.sanitize_sql(select_query)
   end
 

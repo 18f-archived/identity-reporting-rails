@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_06_233452) do
+ActiveRecord::Schema[7.1].define(version: 2024_08_08_011001) do
   create_schema "logs"
 
   # These are extensions that must be enabled in order to support this database
@@ -45,6 +45,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_06_233452) do
     t.boolean "browser_mobile"
     t.boolean "browser_bot"
     t.boolean "success"
+    t.index ["id"], name: "index_events_on_id"
   end
 
   create_table "production", id: false, force: :cascade do |t|
@@ -66,6 +67,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_06_233452) do
     t.string "ip"
     t.string "host"
     t.string "trace_id"
+    t.index ["uuid"], name: "index_production_on_uuid"
   end
 
   create_table "unextracted_events", id: false, force: :cascade do |t|
