@@ -131,3 +131,27 @@ coverage:
 
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+
+audit_packages_scheduled:
+  stage:
+    test
+  needs:
+    - job: install
+  cache:
+    - <<: *ruby_cache
+  script:
+    - *bundle_install
+    - make audit
+  after_script:
+    - |-
+      if [ "$CI_JOB_STATUS" != "success" ]; then
+        ./scripts/notify-slack \
+          --icon ":gitlab:"  \
+          --username "gitlab-notify" \
+          --channel "#login-team-agnes" \
+          --webhook "${SLACK_WEBHOOK}" \
+          --raise \
+          --text "$(printf "Dependencies audit in GitLab failed.\nBuild Results: ${CI_JOB_URL}\nCheck results locally with 'make audit'")"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"

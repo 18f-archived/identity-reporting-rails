@@ -55,8 +55,6 @@ else
 endif
 	@echo "--- brakeman ---"
 	make brakeman
-	@echo "--- bundler-audit ---"
-	bundle exec bundler-audit check --update
 	# Other
 	# @echo "--- lint yaml ---"
 	# make lint_yaml
@@ -66,6 +64,10 @@ endif
 	make lint_readme
 	@echo "--- lint migrations ---"
 	make lint_migrations
+
+audit: ## Checks packages for vulnerabilities
+	@echo "--- bundler-audit ---"
+	bundle exec bundler-audit check --update
 
 lint_yaml: normalize_yaml ## Lints YAML files
 	(! git diff --name-only | grep "^config/.*\.yml$$") || (echo "Error: Run 'make normalize_yaml' to normalize YAML"; exit 1)
