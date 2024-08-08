@@ -133,6 +133,8 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
 
 audit_packages_scheduled:
+  stage:
+    test
   needs:
     - job: install
   cache:
