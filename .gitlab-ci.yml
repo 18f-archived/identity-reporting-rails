@@ -146,7 +146,7 @@ audit_packages_scheduled:
         ./scripts/notify-slack \
           --icon ":gitlab:"  \
           --username "gitlab-notify" \
-          --channel "#login-appdev" \
+          --channel "#login-team-agnes" \
           --webhook "${SLACK_WEBHOOK}" \
           --raise \
           --text "$(printf "Dependencies audit in GitLab failed.\nBuild Results: ${CI_JOB_URL}\nCheck results locally with 'make audit'")"
