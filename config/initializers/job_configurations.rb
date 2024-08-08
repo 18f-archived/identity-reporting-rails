@@ -1,7 +1,7 @@
 require 'schema_table_service'
 
 cron_5m = '0/5 * * * *'
-cron_2m = '0/2 * * * *'
+cron_2m = '0/10 * * * *'
 cron_1d = '0 0 * * *'
 
 schema_table_service = SchemaTableService.new
@@ -26,7 +26,7 @@ else
 
         config.good_job.cron[job_name] = {
           class: job_class,
-          cron: cron_5m,
+          cron: cron_10m,
           args: -> { schema_name == 'logs' ? [table_name] : [table_name, schema_name] },
         }
       end

@@ -98,14 +98,10 @@ class LogsColumnExtractorJob < ApplicationJob
   end
 
   def create_temp_table_query
-    # look for temp table in the source schema and drop if exists
-    # add try ctach block tocapture the error if the table does not exist and processed with next steps
     # add a check to see if the table exists before dropping
-    if DataWarehouseApplicationRecord.connection.table_exists?("#{@schema_name}.#{@source_table_name}_temp")
-      DataWarehouseApplicationRecord.connection.execute(
-        "DROP TABLE #{@schema_name}.#{@source_table_name}_temp;",
-      )
-    end
+    DataWarehouseApplicationRecord.connection.drop_table(
+      "#{@schema_name}.#{@source_table_name}_temp", if_exists: true
+    )
     DataWarehouseApplicationRecord.sanitize_sql(
       <<~SQL,
         CREATE TEMP TABLE #{@source_table_name}_temp AS
@@ -169,8 +165,11 @@ class LogsColumnExtractorJob < ApplicationJob
     match_column_mappings = @column_map.map do |c|
       "#{c[:column]} = EXCLUDED.#{c[:column]}"
     end.join(' ,')
+
+    composite_keys = @merge_keys.join(', ')
+
     <<~SQL.chomp
-      ON CONFLICT (#{@merge_key})
+      ON CONFLICT (#{composite_keys})
       DO UPDATE SET
           message = EXCLUDED.message ,cloudwatch_timestamp = EXCLUDED.cloudwatch_timestamp ,#{match_column_mappings}
     SQL
