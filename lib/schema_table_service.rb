@@ -28,8 +28,14 @@ class SchemaTableService
 
   # Fetch table names for a given schema.
   def fetch_tables(schema_name)
-    query = "SELECT table_name FROM information_schema.tables WHERE table_schema = '#{schema_name}'"
-    result = DataWarehouseApplicationRecord.connection.execute(query)
+    query = <<~SQL.chomp
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = '#{schema_name}'
+    SQL
+    result = DataWarehouseApplicationRecord.connection.execute(
+      DataWarehouseApplicationRecord.sanitize_sql(query),
+    )
     result.values.flatten
   end
 
