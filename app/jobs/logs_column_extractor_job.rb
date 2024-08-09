@@ -62,7 +62,7 @@ class LogsColumnExtractorJob < ApplicationJob
   SOURCE_TABLE_NAMES = ['unextracted_events', 'unextracted_production']
   TYPES_TO_EXTRACT_AS_TEXT = ['TIMESTAMP']
 
-  def perform(target_table_name:)
+  def perform(target_table_name)
     @schema_name = 'logs'
     @target_table_name = target_table_name
     @source_table_name = "unextracted_#{target_table_name}"
@@ -97,6 +97,11 @@ class LogsColumnExtractorJob < ApplicationJob
   end
 
   def create_temp_table_query
+    # add a check to drop temp table if in case temp table exists
+    DataWarehouseApplicationRecord.connection.drop_table(
+      "#{@schema_name}.#{@source_table_name}_temp", if_exists: true
+    )
+
     DataWarehouseApplicationRecord.sanitize_sql(
       <<~SQL,
         CREATE TEMP TABLE #{@source_table_name}_temp AS
@@ -141,7 +146,7 @@ class LogsColumnExtractorJob < ApplicationJob
           )
           SELECT *
           FROM #{@source_table_name}_temp
-          #{conflict_update_set};
+          ;
         SQL
       )
     end
