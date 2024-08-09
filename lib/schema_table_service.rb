@@ -6,7 +6,9 @@ class SchemaTableService
   # Generate a hash of schema names and their tables with unique identifier columns.
   def generate_schema_table_hash
     schema_table_hash = {}
-    target_schemas = DataWarehouseApplicationRecord.connection.execute("SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'pg_catalog', 'public', 'pg_toast')").values.flatten # rubocop:disable Layout/LineLength
+    target_schemas = DataWarehouseApplicationRecord.connection.
+      execute("SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN
+      ('information_schema', 'pg_catalog', 'public', 'pg_toast')").values.flatten
     target_schemas.each do |schema_name|
       schema_table_hash[schema_name] = fetch_tables_for_schema(schema_name)
     end
@@ -40,10 +42,4 @@ class SchemaTableService
       nil
     end
   end
-
-  # Determine the unique identifier column ('id' or 'uuid') for a given table.
-  # def determine_unique_identifier(schema_name, table_name)
-  #   columns = DataWarehouseApplicationRecord.connection.columns("#{schema_name}.#{table_name}")
-  #   columns.any? { |c| c.name == 'id' } ? 'id' : 'uuid'
-  # end
 end

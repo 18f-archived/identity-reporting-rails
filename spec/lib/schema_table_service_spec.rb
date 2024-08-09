@@ -53,7 +53,8 @@ RSpec.describe SchemaTableService do
       let!(:dependency) { 'data_warehouse_application_record' }
       before do
         allow(Rails.logger).to receive(:error)
-        allow(schema_table_service).to receive(:require_dependency).and_raise(StandardError.new('Load error')) # rubocop:disable Layout/LineLength
+        allow(schema_table_service).to receive(:require_dependency).
+          and_raise(StandardError.new('Load error'))
       end
 
       it 'logs an error' do
