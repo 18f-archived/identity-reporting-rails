@@ -16,25 +16,21 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
       it 'logs a warning' do
         expected_message = 'DuplicateRowCheckerJob: Found 1 duplicate(s) in "idp"."articles"'
         expect(Rails.logger).to receive(:warn).with(expected_message)
-        idp_job.perform(table_name: 'articles', schema_name: 'idp', uniq_by: 'id')
+        idp_job.perform('articles', 'idp')
       end
     end
 
     context 'when there are duplicate events' do
       before do
-        2.times do |i|
-          FactoryBot.create(
-            :event,
-            message: { id: 1, text: 'Duplicate Message' }.to_json,
-            id: i.to_s,
-          )
+        2.times do
+          FactoryBot.create(:event, id: 1, name: 'Duplicate Title')
         end
       end
 
       it 'logs a warning' do
         expected_message = 'DuplicateRowCheckerJob: Found 1 duplicate(s) in "logs"."events"'
         expect(Rails.logger).to receive(:warn).with(expected_message)
-        logs_job.perform(table_name: 'events', schema_name: 'logs', uniq_by: 'message')
+        logs_job.perform('events', 'logs')
       end
     end
 
@@ -45,18 +41,18 @@ RSpec.describe DuplicateRowCheckerJob, type: :job do
 
       it 'does not log a warning' do
         expect(Rails.logger).not_to receive(:warn)
-        idp_job.perform(table_name: 'articles', schema_name: 'idp', uniq_by: 'id')
+        idp_job.perform('articles', 'idp')
       end
     end
 
     context 'when there are no duplicate events' do
       before do
-        FactoryBot.create(:event, message: { id: 1, text: 'Unique Message' }.to_json, id: '1')
+        FactoryBot.create(:event, id: '1', name: 'Sign in page2 visited')
       end
 
       it 'does not log a warning' do
         expect(Rails.logger).not_to receive(:warn)
-        logs_job.perform(table_name: 'events', schema_name: 'logs', uniq_by: 'message')
+        logs_job.perform('events', 'logs')
       end
     end
   end

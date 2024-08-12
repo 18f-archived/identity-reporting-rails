@@ -11,17 +11,12 @@ else
         class: 'HeartbeatJob',
         cron: cron_5m,
       },
-      # Queue logs column extractor job to GoodJob
-      log_tables_column_extractor_job: {
-        class: 'LogsColumnExtractorJob',
-        cron: cron_1d,
-      },
-      # Queue duplicate row checker job to GoodJob
-      duplicate_row_checker_job: {
-        class: 'DuplicateRowCheckerJob',
+      # Queue schema service job to GoodJob
+      extractor_row_checker_enqueue_job: {
+        class: 'ExtractorRowCheckerEnqueueJob',
         cron: cron_1d,
       },
     }
+    Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
   end
-  Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
 end
