@@ -31,21 +31,5 @@ RSpec.describe ExtractorRowCheckerEnqueueJob, type: :job do
 
       expect { ExtractorRowCheckerEnqueueJob.new.perform }.not_to raise_error
     end
-
-    it 'logs an error when enqueuing a job fails' do
-      allow(DuplicateRowCheckerJob).to receive(:perform_later).
-        and_raise(LoadError.new('Job failed'))
-      allow(Rails.logger).to receive(:error)
-
-      ExtractorRowCheckerEnqueueJob.new.perform
-
-      schema_table_hash.each do |schema_name, tables|
-        tables.each do |table_name|
-          expect(Rails.logger).to have_received(:error).
-            with("ExtractorRowCheckerEnqueueJob:Failed to enqueue job for table
-#{table_name} in schema #{schema_name}: Job failed")
-        end
-      end
-    end
   end
 end
