@@ -14,7 +14,7 @@ else
       # Queue schema service job to GoodJob
       extractor_row_checker_enqueue_job: {
         class: 'ExtractorRowCheckerEnqueueJob',
-        cron: '0/10 * * * *',
+        cron: cron_1d,
       },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
