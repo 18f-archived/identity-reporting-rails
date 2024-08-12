@@ -34,7 +34,7 @@ RSpec.describe ExtractorRowCheckerEnqueueJob, type: :job do
 
     it 'logs an error when enqueuing a job fails' do
       allow(DuplicateRowCheckerJob).to receive(:perform_later).
-        and_raise(StandardError.new('Job failed'))
+        and_raise(LoadError.new('Job failed'))
       allow(Rails.logger).to receive(:error)
 
       ExtractorRowCheckerEnqueueJob.new.perform
