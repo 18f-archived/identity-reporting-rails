@@ -1,3 +1,4 @@
+cron_1h = '0 * * * *'
 cron_5m = '0/5 * * * *'
 cron_1d = '0 0 * * *'
 
@@ -10,6 +11,11 @@ else
       heartbeat_job: {
         class: 'HeartbeatJob',
         cron: cron_5m,
+      },
+      # Queue data freshness check job for production table to GoodJob
+      data_freshness_job: {
+        class: 'DataFreshnessJob',
+        cron: cron_1h,
       },
       # Queue schema service job to GoodJob
       extractor_row_checker_enqueue_job: {
