@@ -20,7 +20,9 @@ class DataFreshnessJob < ApplicationJob
   private
 
   def latest_production_record
-    @latest_production_record ||= Production.order(timestamp: :desc).first
+    return @latest_production_record if defined?(@latest_production_record)
+
+    @latest_production_record = Production.order(timestamp: :desc).first
   end
 
   def log_data_freshness
