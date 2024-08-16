@@ -41,6 +41,7 @@ class IdentityConfig
     config.add(:rack_mini_profiler, type: :boolean)
     config.add(:redshift_database_name, type: :string)
     config.add(:redshift_host, type: :string)
+    config.add(:data_freshness_threshold_hours, type: :integer)
 
     "redshift!#{Identity::Hostdata.env || 'local'}-analytics-superuser".
       then do |redshift_secrets_manager_key|
