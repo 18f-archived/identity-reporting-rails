@@ -91,43 +91,43 @@ production:
   primary:
     <<: *defaults
     adapter: postgresql
-    database: <%= Identity::Hostdata.config.database_name %>
-    username: <%= Identity::Hostdata.config.database_username %>
-    host: <%= Identity::Hostdata.config.database_socket.present? ?  Identity::Hostdata.config.database_socket : Identity::Hostdata.config.database_host %>
-    password: <%= Identity::Hostdata.config.database_password %>
+    database: "<%= Identity::Hostdata.config.database_name %>"
+    username: "<%= Identity::Hostdata.config.database_username %>"
+    host: "<%= Identity::Hostdata.config.database_socket.present? ?  Identity::Hostdata.config.database_socket : Identity::Hostdata.config.database_host %>"
+    password: "<%= Identity::Hostdata.config.database_password %>"
     pool: <%= primary_pool %>
-    advisory_locks: <%= !Identity::Hostdata.config.database_socket.present? %>
-    prepared_statements: <%= !Identity::Hostdata.config.database_socket.present? %>
+    advisory_locks: "<%= !Identity::Hostdata.config.database_socket.present? %>"
+    prepared_statements: "<%= !Identity::Hostdata.config.database_socket.present? %>"
     sslmode: <%= Identity::Hostdata.config.database_sslmode %>
     sslrootcert: '/usr/local/share/aws/rds-combined-ca-bundle.pem'
     migrations_paths: db/primary_migrate
   read_replica:
     <<: *defaults
     adapter: postgresql
-    database: <%= Identity::Hostdata.config.database_name %>
-    username: <%= Identity::Hostdata.config.database_readonly_username %>
-    host: <%= Identity::Hostdata.config.database_read_replica_host %>
-    password: <%= Identity::Hostdata.config.database_readonly_password %>
+    database: "<%= Identity::Hostdata.config.database_name %>"
+    username: "<%= Identity::Hostdata.config.database_readonly_username %>"
+    host: "<%= Identity::Hostdata.config.database_read_replica_host %>"
+    password: "<%= Identity::Hostdata.config.database_readonly_password %>"
     pool: <%= primary_pool %>
-    sslmode: <%= Identity::Hostdata.config.database_sslmode %>
+    sslmode: "<%= Identity::Hostdata.config.database_sslmode %>"
     sslrootcert: '/usr/local/share/aws/rds-combined-ca-bundle.pem'
     replica: true
   worker_jobs:
     <<: *defaults
-    database: <%= Identity::Hostdata.config.database_worker_jobs_name %>
-    username: <%= Identity::Hostdata.config.database_worker_jobs_username %>
-    host: <%= Identity::Hostdata.config.database_worker_jobs_host %>
-    password: <%= Identity::Hostdata.config.database_worker_jobs_password %>
-    pool: <%= worker_pool %>
-    sslmode: <%= Identity::Hostdata.config.database_worker_jobs_sslmode %>
+    database: "<%= Identity::Hostdata.config.database_worker_jobs_name %>"
+    username: "<%= Identity::Hostdata.config.database_worker_jobs_username %>"
+    host: "<%= Identity::Hostdata.config.database_worker_jobs_host %>"
+    password: "<%= Identity::Hostdata.config.database_worker_jobs_password %>"
+    pool: "<%= worker_pool %>"
+    sslmode: "<%= Identity::Hostdata.config.database_worker_jobs_sslmode %>"
     sslrootcert: '/usr/local/share/aws/rds-combined-ca-bundle.pem'
     migrations_paths: db/worker_jobs_migrate
   data_warehouse:
     adapter: redshift
     host: <%= URI.parse("redshift://#{Identity::Hostdata.config.redshift_host}").host %>
     port: 5439
-    database: <%= Identity::Hostdata.config.redshift_database_name %>
-    username: <%= Identity::Hostdata.config.redshift_username %>
-    password: <%= Identity::Hostdata.config.redshift_password %>
+    database: "<%= Identity::Hostdata.config.redshift_database_name %>"
+    username: "<%= Identity::Hostdata.config.redshift_username %>"
+    password: "<%= Identity::Hostdata.config.redshift_password %>"
     encoding: utf8
     migrations_paths: db/data_warehouse_migrate
