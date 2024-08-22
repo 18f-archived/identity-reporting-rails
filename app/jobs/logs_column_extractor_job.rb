@@ -97,11 +97,6 @@ class LogsColumnExtractorJob < ApplicationJob
   end
 
   def create_temp_table_query
-    # add a check to drop temp table if in case temp table exists
-    DataWarehouseApplicationRecord.connection.drop_table(
-      "#{@schema_name}.#{@source_table_name}_temp", if_exists: true
-    )
-
     DataWarehouseApplicationRecord.sanitize_sql(
       <<~SQL,
         CREATE TEMP TABLE #{@source_table_name}_temp AS
