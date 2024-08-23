@@ -1,6 +1,6 @@
 cron_30m = '*/30 * * * *'
 cron_5m = '0/5 * * * *'
-cron_1d = '0 0 * * *'
+# cron_1d = '0 0 * * *'
 
 if defined?(Rails::Console)
   Rails.logger.info 'job_configurations: console detected, skipping schedule'
