@@ -12,7 +12,7 @@ RSpec.describe DataFreshnessJob, type: :job do
   context 'when the latest log exists' do
     context 'and is within the range of 0-24 hours' do
       it 'logs within_range status' do
-        FactoryBot.create(:production, timestamp: 1.hour.ago)
+        FactoryBot.create(:production, cloudwatch_timestamp: 1.hour.ago)
 
         expect(log_entry).to receive(:info).with(
           {
@@ -28,7 +28,7 @@ RSpec.describe DataFreshnessJob, type: :job do
 
     context 'and is outside the range of 0-24 hours' do
       it 'logs out_of_range status' do
-        FactoryBot.create(:production, timestamp: 25.hours.ago)
+        FactoryBot.create(:production, cloudwatch_timestamp: 25.hours.ago)
 
         expect(log_entry).to receive(:info).with(
           {
