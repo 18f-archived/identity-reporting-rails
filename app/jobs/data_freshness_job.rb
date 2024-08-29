@@ -26,9 +26,10 @@ class DataFreshnessJob < ApplicationJob
   end
 
   def log_data_freshness
-    freshness_hours = ((Time.zone.now - latest_production_record.cloudwatch_timestamp) / 1.hour).round(2)
+    cloudwatch_timestamp = latest_production_record.cloudwatch_timestamp
+    freshness_hours = ((Time.zone.now - cloudwatch_timestamp) / 1.hour).round(2)
     limit = Identity::Hostdata.config.data_freshness_threshold_hours.hours.ago
-    status = latest_production_record.cloudwatch_timestamp > limit ? 'within_range' : 'out_of_range'
+    status = cloudwatch_timestamp > limit ? 'within_range' : 'out_of_range'
 
     logger.info(
       {
