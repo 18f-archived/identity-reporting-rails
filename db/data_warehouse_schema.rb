@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_30_185518) do
+ActiveRecord::Schema[7.1].define(version: 2024_08_30_164439) do
+  create_schema 'idp'
   create_schema 'logs'
 
   # These are extensions that must be enabled in order to support this database
@@ -19,7 +20,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_30_185518) do
   create_table 'events', id: false, force: :cascade do |t|
     t.jsonb 'message'
     t.datetime 'cloudwatch_timestamp', precision: nil
-    t.string 'id'
+    t.string 'id', null: false
     t.string 'name'
     t.datetime 'time', precision: nil
     t.string 'visitor_id'
@@ -50,7 +51,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_30_185518) do
   create_table 'production', id: false, force: :cascade do |t|
     t.jsonb 'message'
     t.datetime 'cloudwatch_timestamp', precision: nil
-    t.string 'uuid'
+    t.string 'uuid', null: false
     t.string 'method'
     t.string 'path', limit: 12000
     t.string 'format'
