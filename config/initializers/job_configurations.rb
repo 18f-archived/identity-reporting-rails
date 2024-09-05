@@ -1,6 +1,6 @@
 cron_30m = '*/30 * * * *'
 cron_5m = '0/5 * * * *'
-cron_1d = '0 0 * * *'
+cron_6h = '0 */6 * * *'
 
 if defined?(Rails::Console)
   Rails.logger.info 'job_configurations: console detected, skipping schedule'
@@ -20,7 +20,7 @@ else
       # Queue schema service job to GoodJob
       extractor_row_checker_enqueue_job: {
         class: 'ExtractorRowCheckerEnqueueJob',
-        cron: cron_1d,
+        cron: cron_6h,
       },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
