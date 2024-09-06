@@ -45,7 +45,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
       end
       context 'when full name ' do
         it 'logs warning when pii pattern with upper case' do
-          expected_message = 'PiiRowCheckerJob: Found fullname_with_upper_Case PII in logs.unextracted_events'
+          expected_message =
+            'PiiRowCheckerJob: Found fullname_with_upper_Case PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
           logs_job.perform('unextracted_events')
         end
@@ -69,7 +70,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
       context 'when address' do
         let(:test_pattern) {  '789 some rd, town, 88888' }
         it 'logs warning when pii pattern address with out zipcode' do
-          expected_message = 'PiiRowCheckerJob: Found address_without_zipcode PII in logs.unextracted_events'
+          expected_message =
+            'PiiRowCheckerJob: Found address_without_zipcode PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
           logs_job.perform('unextracted_events')
         end
@@ -106,7 +108,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
       end
       context 'when phonenumber' do
         it 'log warning with pii phonenumber pattern' do
-          expected_message = 'PiiRowCheckerJob: Found phone_number PII in logs.unextracted_production'
+          expected_message =
+            'PiiRowCheckerJob: Found phone_number PII in logs.unextracted_production'
           expect(Rails.logger).to receive(:warn).with(expected_message)
           logs_job.perform('unextracted_production')
         end
