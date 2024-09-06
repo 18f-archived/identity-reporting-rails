@@ -13,6 +13,15 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
       end
     end
 
+    context 'when no data in tables' do
+      it 'confirm the job does not execute any query' do
+        allow(Rails.logger).to receive(:info).and_call_original
+        msg = 'No data in table logs.unextracted_events'
+        expect(Rails.logger).to receive(:info).with(msg)
+        logs_job.perform('events')
+      end
+    end
+
     context 'when target table is events' do
       before do
         uuids.each do |uuid|

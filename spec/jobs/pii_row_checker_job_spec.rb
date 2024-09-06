@@ -67,7 +67,7 @@ RSpec.describe PiiRowCheckerJob, type: :job do
         end
       end
       context 'when address' do
-        let(:test_pattern) {  '789 some rd, town,' }
+        let(:test_pattern) {  '789 some rd, town, 88888' }
         it 'logs warning when pii pattern address with out zipcode' do
           expected_message = 'PiiRowCheckerJob: Found address_without_zipcode PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
@@ -117,6 +117,15 @@ RSpec.describe PiiRowCheckerJob, type: :job do
           expect(Rails.logger).not_to receive(:warn)
           logs_job.perform('unextracted_production')
         end
+      end
+    end
+
+    context 'when no data in the table' do
+      it 'confirm the job does not execute any query' do
+        allow(Rails.logger).to receive(:info).and_call_original
+        expected_message = 'PiiRowCheckerJob: no data in table logs.unextracted_events'
+        expect(Rails.logger).to receive(:info).with(expected_message)
+        logs_job.perform('unextracted_events')
       end
     end
   end

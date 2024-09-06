@@ -78,12 +78,17 @@ class LogsColumnExtractorJob < ApplicationJob
     STR
 
     Rails.logger.info 'LogsColumnExtractorJob: Executing queries...'
-    DataWarehouseApplicationRecord.transaction do
-      DataWarehouseApplicationRecord.connection.execute(lock_table_query)
-      DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
-      DataWarehouseApplicationRecord.connection.execute(drop_duplicate_rows_from_temp_query)
-      DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
-      DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
+    if source_table_count > 0
+      DataWarehouseApplicationRecord.transaction do
+        DataWarehouseApplicationRecord.connection.execute(lock_table_query)
+        DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
+        DataWarehouseApplicationRecord.connection.execute(drop_duplicate_rows_from_temp_query)
+        DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
+        DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
+      end
+    else
+      Rails.logger.info "No data in table #{@schema_name}.#{@source_table_name}"
+      return
     end
     Rails.logger.info 'LogsColumnExtractorJob: Query executed successfully'
   end
@@ -164,6 +169,12 @@ class LogsColumnExtractorJob < ApplicationJob
       DO UPDATE SET
           message = EXCLUDED.message ,cloudwatch_timestamp = EXCLUDED.cloudwatch_timestamp ,#{match_column_mappings}
     SQL
+  end
+
+  def source_table_count
+    query = "SELECT COUNT(*) FROM #{@schema_name}.#{@source_table_name}"
+    result = DataWarehouseApplicationRecord.connection.exec_query(query)
+    result.rows[0][0].to_i
   end
 
   def select_message_fields
