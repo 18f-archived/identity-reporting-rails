@@ -78,6 +78,9 @@ class LogsColumnExtractorJob < ApplicationJob
     STR
 
     Rails.logger.info 'LogsColumnExtractorJob: Executing queries...'
+    source_table_count =
+      DataWarehouseApplicationRecord.connection.exec_query(source_table_count_query).first['count']
+
     if source_table_count > 0
       DataWarehouseApplicationRecord.transaction do
         DataWarehouseApplicationRecord.connection.execute(lock_table_query)
@@ -171,10 +174,13 @@ class LogsColumnExtractorJob < ApplicationJob
     SQL
   end
 
-  def source_table_count
-    query = "SELECT COUNT(*) FROM #{@schema_name}.#{@source_table_name}"
-    result = DataWarehouseApplicationRecord.connection.exec_query(query)
-    result.rows[0][0].to_i
+  def source_table_count_query
+    DataWarehouseApplicationRecord.sanitize_sql(
+      <<~SQL,
+        SELECT COUNT(*)
+        FROM #{@schema_name}.#{@source_table_name}
+      SQL
+    )
   end
 
   def select_message_fields

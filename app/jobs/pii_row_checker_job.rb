@@ -18,7 +18,10 @@ class PiiRowCheckerJob < ApplicationJob
       'fullname_with_upper_Case' => '([A-Z]+ [A-Z]+)',
     }
 
-    if check_table_data > 0
+    source_table_count =
+      DataWarehouseApplicationRecord.connection.exec_query(source_table_count_query).first['count']
+
+    if source_table_count > 0
       list_pattern_array.each do |name, pattern|
         pattern_query = build_pattern_query(pattern)
         Rails.logger.info "PiiRowCheckerJob: Executing queries#{@table_name} for pattern #{name}..."
@@ -45,10 +48,11 @@ class PiiRowCheckerJob < ApplicationJob
     SQL
   end
 
-  def check_table_data
-    query = "SELECT COUNT(*) FROM #{@schema_name}.#{@table_name}"
-    result = DataWarehouseApplicationRecord.connection.exec_query(query)
-    result.rows[0][0].to_i
+  def source_table_count_query
+    <<-SQL
+        SELECT COUNT(*)
+        FROM #{@schema_name}.#{@table_name}
+    SQL
   end
 
   def log_pattern_results(pattern_name, results)
