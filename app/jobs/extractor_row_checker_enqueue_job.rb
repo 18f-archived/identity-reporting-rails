@@ -8,6 +8,7 @@ class ExtractorRowCheckerEnqueueJob < ApplicationJob
       tables.each do |table_name|
         LogsColumnExtractorJob.perform_later(table_name) if schema_name == 'logs'
         DuplicateRowCheckerJob.perform_later(table_name, schema_name)
+        PiiRowCheckerJob.perform_later(table_name) if schema_name == 'logs'
       end
     end
   end
