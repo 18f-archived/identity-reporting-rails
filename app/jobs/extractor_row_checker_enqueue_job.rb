@@ -6,9 +6,11 @@ class ExtractorRowCheckerEnqueueJob < ApplicationJob
     schema_table_service = SchemaTableService.generate_schema_table_hash
     schema_table_service.each do |schema_name, tables|
       tables.each do |table_name|
-        LogsColumnExtractorJob.perform_later(table_name) if schema_name == 'logs'
+        if schema_name == 'logs'
+          LogsColumnExtractorJob.perform_later(table_name)
+          PiiRowCheckerJob.perform_later(table_name)
+        end
         DuplicateRowCheckerJob.perform_later(table_name, schema_name)
-        PiiRowCheckerJob.perform_later(table_name) if schema_name == 'logs'
       end
     end
   end

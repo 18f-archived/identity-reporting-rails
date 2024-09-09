@@ -177,7 +177,7 @@ class LogsColumnExtractorJob < ApplicationJob
   def source_table_count_query
     DataWarehouseApplicationRecord.sanitize_sql(
       <<~SQL,
-        SELECT COUNT(*)
+        SELECT COUNT(*) as count
         FROM #{@schema_name}.#{@source_table_name}
       SQL
     )

@@ -9,29 +9,30 @@ class PiiRowCheckerJob < ApplicationJob
       raise "Invalid target table name: #{@table_name}"
     end
 
-    list_pattern_array = {
-      'phone_number' => '(\d{3}-\d{3}-\d{4})',
-      'dob_with_slash' => '(\d{2}/\d{2}/\d{4})',
-      'dob_with_dash' => '(\d{2}-\d{2}-\d{4})',
-      'address_without_zipcode' =>
-      '\d+\s+[a-zA-Z0-9\s,.]+,\s*[a-zA-Z\s]+(?!.*\b\d{5}(?:-\d{4})?\b)',
-      'fullname_with_upper_Case' => '([A-Z]+ [A-Z]+)',
+    list_pattern_hash = {
+      phone_number: '314-555-1212',
+      dob_with_slash: '10/0/1938',
+      dob_with_dash: '1938-10-06',
+      address_without_zipcode1: '1 Microsoft Way',
+      address_without_zipcode2: 'BaySide',
+      name1: 'Fakey',
+      name2: 'McFakerson',
     }
 
+    combined_pattern = list_pattern_hash.values.join('|')
     source_table_count =
       DataWarehouseApplicationRecord.connection.exec_query(source_table_count_query).first['count']
 
     if source_table_count > 0
-      list_pattern_array.each do |name, pattern|
-        pattern_query = build_pattern_query(pattern)
-        Rails.logger.info "PiiRowCheckerJob: Executing queries#{@table_name} for pattern #{name}..."
-        results = DataWarehouseApplicationRecord.connection.exec_query(pattern_query)
-        log_pattern_results(name, results)
-      end
+      pattern_query = build_pattern_query(combined_pattern)
+      Rails.logger.info 'PiiRowCheckerJob: Executing query for combined patterns...'
+      pattern_result = DataWarehouseApplicationRecord.connection.exec_query(pattern_query)
+      log_pattern_results(list_pattern_hash, pattern_result)
     else
       Rails.logger.info "PiiRowCheckerJob: no data in table #{@schema_name}.#{@table_name}"
       return
     end
+    Rails.logger.info 'PiiRowCheckerJob: Query executed successfully'
   end
 
   private
@@ -43,25 +44,33 @@ class PiiRowCheckerJob < ApplicationJob
       WHERE EXISTS (
         SELECT 1
         FROM jsonb_each_text(message) As t
-        WHERE t.value ~ '#{pattern}'
+        WHERE t.value ~* '#{pattern}'
       )
     SQL
   end
 
   def source_table_count_query
     <<-SQL
-        SELECT COUNT(*)
+        SELECT COUNT(*) as count
         FROM #{@schema_name}.#{@table_name}
     SQL
   end
 
-  def log_pattern_results(pattern_name, results)
+  def log_pattern_results(list_hash, results)
     if results.any?
-      Rails.logger.warn "PiiRowCheckerJob: Found #{pattern_name} PII in " \
-                        "#{@schema_name}.#{@table_name}"
+      results.each do |row|
+        list_hash.each do |name, pattern|
+          if row['message'].match?(/#{Regexp.escape(pattern)}/i)
+            Rails.logger.warn(
+              "PiiRowCheckerJob: Found #{name} PII in #{@schema_name}.#{@table_name}",
+            )
+          end
+        end
+      end
     else
-      Rails.logger.info "PiiRowCheckerJob: No PII found in " \
-                        "#{@schema_name}.#{@table_name}"
+      Rails.logger.info(
+        "PiiRowCheckerJob: No PII found in #{@schema_name}.#{@table_name}",
+      )
     end
   end
 end
