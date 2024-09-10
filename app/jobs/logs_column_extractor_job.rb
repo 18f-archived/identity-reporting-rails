@@ -71,26 +71,25 @@ class LogsColumnExtractorJob < ApplicationJob
     end
     @column_map = COLUMN_MAPPING[@source_table_name.to_sym]
     @merge_key = get_unique_id
-    params = build_params
 
     Rails.logger.info(<<~STR.squish)
       LogsColumnExtractorJob: Processing records from source
-      #{params[:source_table_name]} to target #{params[:schema_name]}.#{params[:target_table_name]}
+      #{@source_table_name} to target #{@schema_name}.#{@target_table_name}
     STR
 
     Rails.logger.info 'LogsColumnExtractorJob: Executing queries...'
     source_table_count =
       DataWarehouseApplicationRecord.
-        connection.exec_query(source_table_count_query(params)).first['c']
+        connection.exec_query(source_table_count_query).first['c']
 
     if source_table_count > 0
       DataWarehouseApplicationRecord.transaction do
-        DataWarehouseApplicationRecord.connection.execute(lock_table_query(params))
-        DataWarehouseApplicationRecord.connection.execute(create_temp_table_query(params))
+        DataWarehouseApplicationRecord.connection.execute(lock_table_query)
+        DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
         DataWarehouseApplicationRecord.
-          connection.execute(drop_duplicate_rows_from_temp_query(params))
-        DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query(params))
-        DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query(params))
+          connection.execute(drop_duplicate_rows_from_temp_query)
+        DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
+        DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
       end
     else
       Rails.logger.info "No data in table #{@schema_name}.#{@source_table_name}"
@@ -111,22 +110,22 @@ class LogsColumnExtractorJob < ApplicationJob
     }
   end
 
-  def lock_table_query(prs)
-    format(<<~SQL, prs)
+  def lock_table_query
+    format(<<~SQL, build_params)
       LOCK %{schema_name}.%{source_table_name};
     SQL
   end
 
-  def create_temp_table_query(prs)
-    format(<<~SQL, prs)
+  def create_temp_table_query
+    format(<<~SQL, build_params)
       CREATE TEMP TABLE %{source_table_name_temp} AS
       #{select_message_fields}
       FROM %{schema_name}.%{source_table_name};
     SQL
   end
 
-  def drop_duplicate_rows_from_temp_query(prs)
-    format(<<~SQL, prs)
+  def drop_duplicate_rows_from_temp_query
+    format(<<~SQL, build_params)
       WITH duplicate_rows as (
           SELECT #{@merge_key}
           , ROW_NUMBER() OVER (PARTITION BY #{@merge_key} ORDER BY cloudwatch_timestamp desc) as row_num
@@ -138,9 +137,9 @@ class LogsColumnExtractorJob < ApplicationJob
     SQL
   end
 
-  def merge_temp_with_target_query(prs)
+  def merge_temp_with_target_query
     if DataWarehouseApplicationRecord.connection.adapter_name.downcase.include?('redshift')
-      format(<<~SQL, prs)
+      format(<<~SQL, build_params)
         MERGE INTO %{schema_name}.%{target_table_name}
         USING %{source_table_name_temp}
         ON %{schema_name}.%{target_table_name}.#{@merge_key} = %{source_table_name_temp}.#{@merge_key}
@@ -149,7 +148,7 @@ class LogsColumnExtractorJob < ApplicationJob
     else
       # Local Postgres DB does not support REMOVE DUPLICATES clause
       # MERGE is not supported in Postges@14; use INSERT ON CONFLICT instead
-      format(<<~SQL, prs)
+      format(<<~SQL, build_params)
         INSERT INTO %{schema_name}.%{target_table_name} (
             message ,cloudwatch_timestamp ,#{@column_map.map { |c| c[:column] }.join(' ,')}
         )
@@ -160,8 +159,8 @@ class LogsColumnExtractorJob < ApplicationJob
     end
   end
 
-  def truncate_source_table_query(prs)
-    format(<<~SQL, prs)
+  def truncate_source_table_query
+    format(<<~SQL, build_params)
       TRUNCATE %{schema_name}.%{source_table_name};
     SQL
   end
@@ -177,8 +176,8 @@ class LogsColumnExtractorJob < ApplicationJob
     SQL
   end
 
-  def source_table_count_query(prs)
-    format(<<~SQL, prs)
+  def source_table_count_query
+    format(<<~SQL, build_params)
       SELECT COUNT(*) AS c
       FROM %{schema_name}.%{source_table_name}
     SQL
