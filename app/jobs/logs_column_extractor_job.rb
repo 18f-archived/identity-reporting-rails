@@ -71,23 +71,26 @@ class LogsColumnExtractorJob < ApplicationJob
     end
     @column_map = COLUMN_MAPPING[@source_table_name.to_sym]
     @merge_key = get_unique_id
+    params = build_params
 
     Rails.logger.info(<<~STR.squish)
       LogsColumnExtractorJob: Processing records from source
-      #{@source_table_name} to target #{@schema_name}.#{@target_table_name}
+      #{params[:source_table_name]} to target #{params[:schema_name]}.#{params[:target_table_name]}
     STR
 
     Rails.logger.info 'LogsColumnExtractorJob: Executing queries...'
     source_table_count =
-      DataWarehouseApplicationRecord.connection.exec_query(source_table_count_query).first['count']
+      DataWarehouseApplicationRecord.
+        connection.exec_query(source_table_count_query(params)).first['c']
 
     if source_table_count > 0
       DataWarehouseApplicationRecord.transaction do
-        DataWarehouseApplicationRecord.connection.execute(lock_table_query)
-        DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
-        DataWarehouseApplicationRecord.connection.execute(drop_duplicate_rows_from_temp_query)
-        DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
-        DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
+        DataWarehouseApplicationRecord.connection.execute(lock_table_query(params))
+        DataWarehouseApplicationRecord.connection.execute(create_temp_table_query(params))
+        DataWarehouseApplicationRecord.
+          connection.execute(drop_duplicate_rows_from_temp_query(params))
+        DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query(params))
+        DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query(params))
       end
     else
       Rails.logger.info "No data in table #{@schema_name}.#{@source_table_name}"
@@ -96,71 +99,71 @@ class LogsColumnExtractorJob < ApplicationJob
     Rails.logger.info 'LogsColumnExtractorJob: Query executed successfully'
   end
 
-  def lock_table_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        LOCK #{@schema_name}.#{@source_table_name};
-      SQL
-    )
+  def build_params
+    {
+      schema_name: DataWarehouseApplicationRecord.connection.quote_table_name(@schema_name),
+      source_table_name: DataWarehouseApplicationRecord.
+        connection.quote_table_name(@source_table_name),
+      source_table_name_temp: DataWarehouseApplicationRecord.
+        connection.quote_table_name("#{@source_table_name}_temp"),
+      target_table_name: DataWarehouseApplicationRecord.
+        connection.quote_table_name(@target_table_name),
+    }
   end
 
-  def create_temp_table_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        CREATE TEMP TABLE #{@source_table_name}_temp AS
-        #{select_message_fields}
-        FROM #{@schema_name}.#{@source_table_name};
-      SQL
-    )
+  def lock_table_query(prs)
+    format(<<~SQL, prs)
+      LOCK %{schema_name}.%{source_table_name};
+    SQL
   end
 
-  def drop_duplicate_rows_from_temp_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        WITH duplicate_rows as (
-            SELECT #{@merge_key}
-            , ROW_NUMBER() OVER (PARTITION BY #{@merge_key} ORDER BY cloudwatch_timestamp desc) as row_num
-            FROM #{@source_table_name}_temp
-        )
-        DELETE FROM #{@source_table_name}_temp
-        USING duplicate_rows
-        WHERE duplicate_rows.#{@merge_key} = #{@source_table_name}_temp.#{@merge_key} and duplicate_rows.row_num > 1;
-      SQL
-    )
+  def create_temp_table_query(prs)
+    format(<<~SQL, prs)
+      CREATE TEMP TABLE %{source_table_name_temp} AS
+      #{select_message_fields}
+      FROM %{schema_name}.%{source_table_name};
+    SQL
   end
 
-  def merge_temp_with_target_query
-    if DataWarehouseApplicationRecord.connection.adapter_name.downcase.include?('redshift')
-      DataWarehouseApplicationRecord.sanitize_sql(
-        <<~SQL,
-          MERGE INTO #{@schema_name}.#{@target_table_name}
-          USING #{@source_table_name}_temp
-          ON #{@schema_name}.#{@target_table_name}.#{@merge_key} = #{@source_table_name}_temp.#{@merge_key}
-          REMOVE DUPLICATES;
-        SQL
+  def drop_duplicate_rows_from_temp_query(prs)
+    format(<<~SQL, prs)
+      WITH duplicate_rows as (
+          SELECT #{@merge_key}
+          , ROW_NUMBER() OVER (PARTITION BY #{@merge_key} ORDER BY cloudwatch_timestamp desc) as row_num
+          FROM %{source_table_name_temp}
       )
+      DELETE FROM %{source_table_name_temp}
+      USING duplicate_rows
+      WHERE duplicate_rows.#{@merge_key} = %{source_table_name_temp}.#{@merge_key} and duplicate_rows.row_num > 1;
+    SQL
+  end
+
+  def merge_temp_with_target_query(prs)
+    if DataWarehouseApplicationRecord.connection.adapter_name.downcase.include?('redshift')
+      format(<<~SQL, prs)
+        MERGE INTO %{schema_name}.%{target_table_name}
+        USING %{source_table_name_temp}
+        ON %{schema_name}.%{target_table_name}.#{@merge_key} = %{source_table_name_temp}.#{@merge_key}
+        REMOVE DUPLICATES;
+      SQL
     else
       # Local Postgres DB does not support REMOVE DUPLICATES clause
       # MERGE is not supported in Postges@14; use INSERT ON CONFLICT instead
-      DataWarehouseApplicationRecord.sanitize_sql(
-        <<~SQL,
-          INSERT INTO #{@schema_name}.#{@target_table_name} (
-              message ,cloudwatch_timestamp ,#{@column_map.map { |c| c[:column] }.join(' ,')}
-          )
-          SELECT *
-          FROM #{@source_table_name}_temp
-          ;
-        SQL
-      )
+      format(<<~SQL, prs)
+        INSERT INTO %{schema_name}.%{target_table_name} (
+            message ,cloudwatch_timestamp ,#{@column_map.map { |c| c[:column] }.join(' ,')}
+        )
+        SELECT *
+        FROM %{source_table_name_temp}
+        ;
+      SQL
     end
   end
 
-  def truncate_source_table_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        TRUNCATE #{@schema_name}.#{@source_table_name};
-      SQL
-    )
+  def truncate_source_table_query(prs)
+    format(<<~SQL, prs)
+      TRUNCATE %{schema_name}.%{source_table_name};
+    SQL
   end
 
   def conflict_update_set
@@ -174,13 +177,11 @@ class LogsColumnExtractorJob < ApplicationJob
     SQL
   end
 
-  def source_table_count_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        SELECT COUNT(*) as count
-        FROM #{@schema_name}.#{@source_table_name}
-      SQL
-    )
+  def source_table_count_query(prs)
+    format(<<~SQL, prs)
+      SELECT COUNT(*) AS c
+      FROM %{schema_name}.%{source_table_name}
+    SQL
   end
 
   def select_message_fields
@@ -197,7 +198,9 @@ class LogsColumnExtractorJob < ApplicationJob
       SELECT
           message, cloudwatch_timestamp, #{extract_and_cast_statements.join(" ,")}
     SQL
-    DataWarehouseApplicationRecord.sanitize_sql(select_query)
+    format(<<~SQL)
+      #{select_query}
+    SQL
   end
 
   def get_unique_id
