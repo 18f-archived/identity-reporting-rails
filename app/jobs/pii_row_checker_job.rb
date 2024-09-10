@@ -41,11 +41,7 @@ class PiiRowCheckerJob < ApplicationJob
     <<-SQL
       SELECT *
       FROM #{@schema_name}.#{@table_name}
-      WHERE EXISTS (
-        SELECT 1
-        FROM jsonb_each_text(message) As t
-        WHERE t.value ~* '#{pattern}'
-      )
+      WHERE CAST(message AS VARCHAR) ~* '#{pattern}'
     SQL
   end
 
