@@ -78,81 +78,91 @@ class LogsColumnExtractorJob < ApplicationJob
     STR
 
     Rails.logger.info 'LogsColumnExtractorJob: Executing queries...'
-    DataWarehouseApplicationRecord.transaction do
-      DataWarehouseApplicationRecord.connection.execute(lock_table_query)
-      DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
-      DataWarehouseApplicationRecord.connection.execute(drop_duplicate_rows_from_temp_query)
-      DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
-      DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
+    source_table_count =
+      DataWarehouseApplicationRecord.
+        connection.exec_query(source_table_count_query).first['c']
+
+    if source_table_count > 0
+      DataWarehouseApplicationRecord.transaction do
+        DataWarehouseApplicationRecord.connection.execute(lock_table_query)
+        DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
+        DataWarehouseApplicationRecord.
+          connection.execute(drop_duplicate_rows_from_temp_query)
+        DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
+        DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
+      end
+    else
+      Rails.logger.info "No data in table #{@schema_name}.#{@source_table_name}"
+      return
     end
     Rails.logger.info 'LogsColumnExtractorJob: Query executed successfully'
   end
 
+  def build_params
+    {
+      schema_name: DataWarehouseApplicationRecord.connection.quote_table_name(@schema_name),
+      source_table_name: DataWarehouseApplicationRecord.
+        connection.quote_table_name(@source_table_name),
+      source_table_name_temp: DataWarehouseApplicationRecord.
+        connection.quote_table_name("#{@source_table_name}_temp"),
+      target_table_name: DataWarehouseApplicationRecord.
+        connection.quote_table_name(@target_table_name),
+    }
+  end
+
   def lock_table_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        LOCK #{@schema_name}.#{@source_table_name};
-      SQL
-    )
+    format(<<~SQL, build_params)
+      LOCK %{schema_name}.%{source_table_name};
+    SQL
   end
 
   def create_temp_table_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        CREATE TEMP TABLE #{@source_table_name}_temp AS
-        #{select_message_fields}
-        FROM #{@schema_name}.#{@source_table_name};
-      SQL
-    )
+    format(<<~SQL, build_params)
+      CREATE TEMP TABLE %{source_table_name_temp} AS
+      #{select_message_fields}
+      FROM %{schema_name}.%{source_table_name};
+    SQL
   end
 
   def drop_duplicate_rows_from_temp_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        WITH duplicate_rows as (
-            SELECT #{@merge_key}
-            , ROW_NUMBER() OVER (PARTITION BY #{@merge_key} ORDER BY cloudwatch_timestamp desc) as row_num
-            FROM #{@source_table_name}_temp
-        )
-        DELETE FROM #{@source_table_name}_temp
-        USING duplicate_rows
-        WHERE duplicate_rows.#{@merge_key} = #{@source_table_name}_temp.#{@merge_key} and duplicate_rows.row_num > 1;
-      SQL
-    )
+    format(<<~SQL, build_params)
+      WITH duplicate_rows as (
+          SELECT #{@merge_key}
+          , ROW_NUMBER() OVER (PARTITION BY #{@merge_key} ORDER BY cloudwatch_timestamp desc) as row_num
+          FROM %{source_table_name_temp}
+      )
+      DELETE FROM %{source_table_name_temp}
+      USING duplicate_rows
+      WHERE duplicate_rows.#{@merge_key} = %{source_table_name_temp}.#{@merge_key} and duplicate_rows.row_num > 1;
+    SQL
   end
 
   def merge_temp_with_target_query
     if DataWarehouseApplicationRecord.connection.adapter_name.downcase.include?('redshift')
-      DataWarehouseApplicationRecord.sanitize_sql(
-        <<~SQL,
-          MERGE INTO #{@schema_name}.#{@target_table_name}
-          USING #{@source_table_name}_temp
-          ON #{@schema_name}.#{@target_table_name}.#{@merge_key} = #{@source_table_name}_temp.#{@merge_key}
-          REMOVE DUPLICATES;
-        SQL
-      )
+      format(<<~SQL, build_params)
+        MERGE INTO %{schema_name}.%{target_table_name}
+        USING %{source_table_name_temp}
+        ON %{schema_name}.%{target_table_name}.#{@merge_key} = %{source_table_name_temp}.#{@merge_key}
+        REMOVE DUPLICATES;
+      SQL
     else
       # Local Postgres DB does not support REMOVE DUPLICATES clause
       # MERGE is not supported in Postges@14; use INSERT ON CONFLICT instead
-      DataWarehouseApplicationRecord.sanitize_sql(
-        <<~SQL,
-          INSERT INTO #{@schema_name}.#{@target_table_name} (
-              message ,cloudwatch_timestamp ,#{@column_map.map { |c| c[:column] }.join(' ,')}
-          )
-          SELECT *
-          FROM #{@source_table_name}_temp
-          ;
-        SQL
-      )
+      format(<<~SQL, build_params)
+        INSERT INTO %{schema_name}.%{target_table_name} (
+            message ,cloudwatch_timestamp ,#{@column_map.map { |c| c[:column] }.join(' ,')}
+        )
+        SELECT *
+        FROM %{source_table_name_temp}
+        ;
+      SQL
     end
   end
 
   def truncate_source_table_query
-    DataWarehouseApplicationRecord.sanitize_sql(
-      <<~SQL,
-        TRUNCATE #{@schema_name}.#{@source_table_name};
-      SQL
-    )
+    format(<<~SQL, build_params)
+      TRUNCATE %{schema_name}.%{source_table_name};
+    SQL
   end
 
   def conflict_update_set
@@ -163,6 +173,13 @@ class LogsColumnExtractorJob < ApplicationJob
       ON CONFLICT (#{@merge_key})
       DO UPDATE SET
           message = EXCLUDED.message ,cloudwatch_timestamp = EXCLUDED.cloudwatch_timestamp ,#{match_column_mappings}
+    SQL
+  end
+
+  def source_table_count_query
+    format(<<~SQL, build_params)
+      SELECT COUNT(*) AS c
+      FROM %{schema_name}.%{source_table_name}
     SQL
   end
 
@@ -180,7 +197,9 @@ class LogsColumnExtractorJob < ApplicationJob
       SELECT
           message, cloudwatch_timestamp, #{extract_and_cast_statements.join(" ,")}
     SQL
-    DataWarehouseApplicationRecord.sanitize_sql(select_query)
+    format(<<~SQL)
+      #{select_query}
+    SQL
   end
 
   def get_unique_id
