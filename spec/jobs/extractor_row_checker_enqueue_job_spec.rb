@@ -16,7 +16,7 @@ RSpec.describe ExtractorRowCheckerEnqueueJob, type: :job do
 
     it 'enqueues LogsColumnExtractorJob for tables in logs schema' do
       schema_table_hash['logs'].each do |table_name|
-        expect(LogsColumnExtractorJob).to receive(:perform_later).with(table_name)
+        expect(PiiRowCheckerJob).to receive(:perform_later).with(table_name)
       end
 
       expect { ExtractorRowCheckerEnqueueJob.new.perform }.not_to raise_error

@@ -5,34 +5,42 @@ class PiiRowCheckerJob < ApplicationJob
     @schema_name = 'logs'
     @table_name = table_name
     # Ensure that the target table name is valid and it starts with unextracted_
-    unless @table_name.start_with?('unextracted_')
-      raise "Invalid target table name: #{@table_name}"
-    end
 
-    list_pattern_hash = {
-      phone_number: '314-555-1212',
-      dob_with_slash: '10/0/1938',
-      dob_with_dash: '1938-10-06',
-      address_without_zipcode1: '1 Microsoft Way',
-      address_without_zipcode2: 'BaySide',
-      name1: 'Fakey',
-      name2: 'McFakerson',
-    }
+    if @table_name.start_with?('unextracted_')
+      list_pattern_hash = {
+        phone_number: '314-555-1212',
+        dob_with_slash: '10/0/1938',
+        dob_with_dash: '1938-10-06',
+        address_without_zipcode1: '1 Microsoft Way',
+        address_without_zipcode2: 'BaySide',
+        name1: 'Fakey',
+        name2: 'McFakerson',
+      }
 
-    combined_pattern = list_pattern_hash.values.join('|')
-    source_table_count =
-      DataWarehouseApplicationRecord.connection.exec_query(source_table_count_query).first['count']
+      combined_pattern = list_pattern_hash.values.join('|')
+      source_table_count =
+        DataWarehouseApplicationRecord.connection.exec_query(source_table_count_query).
+          first['count']
 
-    if source_table_count > 0
-      pattern_query = build_pattern_query(combined_pattern)
-      Rails.logger.info 'PiiRowCheckerJob: Executing query for combined patterns...'
-      pattern_result = DataWarehouseApplicationRecord.connection.exec_query(pattern_query)
-      log_pattern_results(list_pattern_hash, pattern_result)
+      # check if table name start with unextracted_ and count greterthanzero
+      if source_table_count > 0
+        pattern_query = build_pattern_query(combined_pattern)
+        Rails.logger.info('PiiRowCheckerJob: Executing query for combined patterns...')
+        pattern_result = DataWarehouseApplicationRecord.connection.exec_query(pattern_query)
+        log_pattern_results(list_pattern_hash, pattern_result)
+      else
+        Rails.logger.info(
+          "PiiRowCheckerJob: no date in #{@schema_name}.#{@table_name}",
+        )
+      end
     else
-      Rails.logger.info "PiiRowCheckerJob: no data in table #{@schema_name}.#{@table_name}"
-      return
+      Rails.logger.info(
+        "PiiRowCheckerJob: unscoped table name #{@schema_name}.#{@table_name}",
+      )
     end
-    Rails.logger.info 'PiiRowCheckerJob: Query executed successfully'
+
+    Rails.logger.info('PiiRowCheckerJob: Executing LogsColumnExtractorJob')
+    LogsColumnExtractorJob.perform_later(@table_name)
   end
 
   private

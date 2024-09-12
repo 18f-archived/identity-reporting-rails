@@ -2,16 +2,9 @@ require 'rails_helper'
 require 'factory_bot'
 
 RSpec.describe PiiRowCheckerJob, type: :job do
-  let(:logs_job) { PiiRowCheckerJob.new }
+  let(:pii_job) { PiiRowCheckerJob.new }
 
   describe '#perform' do
-    context 'when target table name is not recognized' do
-      it 'confirm the perform function fails with exception' do
-        msg = 'Invalid target table name: random_name'
-        expect { logs_job.perform('random_name') }.to raise_error(msg)
-      end
-    end
-
     context 'when target table is unextracted_events' do
       let(:test_pattern) { 'fakey' }
       before do
@@ -45,7 +38,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
           expected_message =
             'PiiRowCheckerJob: Found name1 PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
-          logs_job.perform('unextracted_events')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_events')
+          pii_job.perform('unextracted_events')
         end
       end
       context 'when name2 ' do
@@ -53,7 +47,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
           expected_message =
             'PiiRowCheckerJob: Found name1 PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
-          logs_job.perform('unextracted_events')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_events')
+          pii_job.perform('unextracted_events')
         end
       end
       context 'when dob dash' do
@@ -61,7 +56,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
         it 'logs warning when pii pattern with dob dash' do
           expected_message = 'PiiRowCheckerJob: Found dob_with_dash PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
-          logs_job.perform('unextracted_events')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_events')
+          pii_job.perform('unextracted_events')
         end
       end
       context 'when dob slash' do
@@ -69,7 +65,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
         it 'logs warning when pii pattern with dob slash' do
           expected_message = 'PiiRowCheckerJob: Found dob_with_slash PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
-          logs_job.perform('unextracted_events')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_events')
+          pii_job.perform('unextracted_events')
         end
       end
       context 'when address1' do
@@ -78,7 +75,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
           expected_message =
             'PiiRowCheckerJob: Found address_without_zipcode1 PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
-          logs_job.perform('unextracted_events')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_events')
+          pii_job.perform('unextracted_events')
         end
       end
       context 'when address2' do
@@ -87,7 +85,8 @@ RSpec.describe PiiRowCheckerJob, type: :job do
           expected_message =
             'PiiRowCheckerJob: Found address_without_zipcode2 PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
-          logs_job.perform('unextracted_events')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_events')
+          pii_job.perform('unextracted_events')
         end
       end
     end
@@ -123,24 +122,41 @@ RSpec.describe PiiRowCheckerJob, type: :job do
           expected_message =
             'PiiRowCheckerJob: Found phone_number PII in logs.unextracted_production'
           expect(Rails.logger).to receive(:warn).with(expected_message)
-          logs_job.perform('unextracted_production')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_production')
+          pii_job.perform('unextracted_production')
         end
       end
       context 'when there is no pii' do
         let(:test_pattern) { 'ELB-HealthChecker/2.0' }
         it 'log info when no pii found' do
           expect(Rails.logger).not_to receive(:warn)
-          logs_job.perform('unextracted_production')
+          expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_production')
+          pii_job.perform('unextracted_production')
         end
       end
     end
 
     context 'when no data in the table' do
-      it 'confirm the job does not execute any query' do
+      it 'confirm the job does not execute any queries and enqueue the logs extractor job' do
         allow(Rails.logger).to receive(:info).and_call_original
-        expected_message = 'PiiRowCheckerJob: no data in table logs.unextracted_events'
+        expected_message = 'PiiRowCheckerJob: no date in logs.unextracted_events'
+        expected_message1 = 'PiiRowCheckerJob: Executing LogsColumnExtractorJob'
         expect(Rails.logger).to receive(:info).with(expected_message)
-        logs_job.perform('unextracted_events')
+        expect(Rails.logger).to receive(:info).with(expected_message1)
+        expect(LogsColumnExtractorJob).to receive(:perform_later).with('unextracted_events')
+        pii_job.perform('unextracted_events')
+      end
+    end
+
+    context 'when table name is not with unextracted_ ' do
+      it 'confirm the job does not execute any queries and enqueue the logs extractor job' do
+        allow(Rails.logger).to receive(:info).and_call_original
+        expected_message = 'PiiRowCheckerJob: unscoped table name logs.random_name'
+        expected_message1 = 'PiiRowCheckerJob: Executing LogsColumnExtractorJob'
+        expect(Rails.logger).to receive(:info).with(expected_message)
+        expect(Rails.logger).to receive(:info).with(expected_message1)
+        expect(LogsColumnExtractorJob).to receive(:perform_later).with('random_name')
+        pii_job.perform('random_name')
       end
     end
   end

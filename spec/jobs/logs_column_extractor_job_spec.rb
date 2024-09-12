@@ -7,9 +7,11 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
 
   describe '#perform' do
     context 'when target table name is not recognized' do
-      it 'confirm the perform function fails with exception' do
-        msg = 'Invalid source table name: unextracted_random_name'
-        expect { logs_job.perform('random_name') }.to raise_error(msg)
+      it 'confirm the job will not run' do
+        allow(Rails.logger).to receive(:info).and_call_original
+        msg = 'LogsColumnExtractorJob: Invalid table name : unextracted_random_name'
+        expect(Rails.logger).to receive(:info).with(msg)
+        logs_job.perform('random_name')
       end
     end
 
