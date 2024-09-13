@@ -16,6 +16,8 @@ RSpec.describe SchemaTableService do
           if schema_name == 'logs'
             expect(tables).to include('events')
             expect(tables).to include('production')
+            expect(tables).to include('unextracted_events')
+            expect(tables).to include('unextracted_production')
           elsif schema_name == 'idp'
             expect(tables).to include('articles')
           end
