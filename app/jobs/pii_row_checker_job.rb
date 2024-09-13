@@ -9,7 +9,7 @@ class PiiRowCheckerJob < ApplicationJob
     if @table_name.start_with?('unextracted_')
       list_pattern_hash = {
         phone_number: '314-555-1212',
-        dob_with_slash: '10/0/1938',
+        dob_with_slash: '10/06/1938',
         dob_with_dash: '1938-10-06',
         address_without_zipcode1: '1 Microsoft Way',
         address_without_zipcode2: 'BaySide',

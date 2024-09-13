@@ -61,7 +61,7 @@ RSpec.describe PiiRowCheckerJob, type: :job do
         end
       end
       context 'when dob slash' do
-        let(:test_pattern) { '10/0/1938' }
+        let(:test_pattern) { '10/06/1938' }
         it 'logs warning when pii pattern with dob slash' do
           expected_message = 'PiiRowCheckerJob: Found dob_with_slash PII in logs.unextracted_events'
           expect(Rails.logger).to receive(:warn).with(expected_message)
