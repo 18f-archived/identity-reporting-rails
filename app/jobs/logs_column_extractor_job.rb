@@ -66,9 +66,11 @@ class LogsColumnExtractorJob < ApplicationJob
     @schema_name = 'logs'
     @target_table_name = target_table_name
     @source_table_name = "unextracted_#{target_table_name}"
-    unless SOURCE_TABLE_NAMES.include? @source_table_name
-      raise "Invalid source table name: #{@source_table_name}"
+    unless SOURCE_TABLE_NAMES.include?(@source_table_name)
+      Rails.logger.info "LogsColumnExtractorJob: Invalid table name : #{@source_table_name}"
+      return
     end
+
     @column_map = COLUMN_MAPPING[@source_table_name.to_sym]
     @merge_key = get_unique_id
 
