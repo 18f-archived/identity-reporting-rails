@@ -22,7 +22,7 @@ class PiiRowCheckerJob < ApplicationJob
         DataWarehouseApplicationRecord.connection.exec_query(source_table_count_query).
           first['count']
 
-      # check if table name start with unextracted_ and count greterthanzero
+      # check if table name start with unextracted_ and count greater than zero
       if source_table_count > 0
         pattern_query = build_pattern_query(combined_pattern)
         Rails.logger.info('PiiRowCheckerJob: Executing query for combined patterns...')
