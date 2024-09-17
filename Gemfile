@@ -19,7 +19,7 @@ gem 'tzinfo-data', platforms: %i[ windows jruby ]
 
 group :development do
   gem 'better_errors', '>= 2.5.1'
-  gem 'irb'
+  gem 'irb', '~> 1.11.0'
   gem 'rack-mini-profiler', '>= 1.1.3', require: false
 end
 
@@ -35,7 +35,8 @@ group :development, :test do
   gem 'pry-rails'
   gem 'psych'
   gem 'rexml', '>= 3.3.3'
-  gem 'rspec', '~> 3.12.0'
+  gem 'rspec', '~> 3.13.0'
+  gem 'rspec-support', '~> 3.13.1'
   gem 'rspec-rails', '~> 6.0'
   gem 'rubocop', '~> 1.55.1', require: false
   gem 'rubocop-performance', '~> 1.19.0', require: false

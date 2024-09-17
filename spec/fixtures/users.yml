@@ -1,0 +1,16 @@
+---
+users:
+  michael.jordan:
+    aws_groups:
+    - halloffame
+    ec2_username:
+    - michael.jordan
+    gitlab_groups:
+    - ballers
+  lebron.james:
+    aws_groups:
+    - halloffame
+    ec2_username:
+    - lebron.james
+    gitlab_groups:
+    - ballers

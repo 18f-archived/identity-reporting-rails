@@ -14,11 +14,9 @@ namespace :db do
     end
 
     schema_updater = RedshiftSchemaUpdater.new('idp')
+    local_devops_path = IdentityConfig::REPO_PATHS[:identity_devops]
     schema_updater.update_schema_from_yaml(
-      File.join(
-        '/etc/login.gov/repos/identity-devops/terraform/app',
-        'dms-filter-columns-transformation-rules.yml',
-      ),
+      "#{local_devops_path}/terraform/app/dms-filter-columns-transformation-rules.yml",
     )
   end
 end

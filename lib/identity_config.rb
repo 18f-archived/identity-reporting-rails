@@ -2,6 +2,10 @@ class IdentityConfig
   GIT_SHA = `git rev-parse --short=8 HEAD`.chomp
   GIT_TAG = `git tag --points-at HEAD`.chomp.split("\n").first
   GIT_BRANCH = `git rev-parse --abbrev-ref HEAD`.chomp
+  REPO_PATHS = {
+    identity_devops: '/etc/login.gov/repos/identity-devops',
+    user_sync_identity_devops: '/usersync/identity-devops',
+  }
 
   # rubocop:disable Metrics/BlockLength
   CONFIG_BUILDER = proc do |config|
@@ -59,4 +63,9 @@ class IdentityConfig
       end
   end.freeze
   # rubocop:enable Metrics/BlockLength
+
+  def self.local_devops_path(devops_dir, relative_path)
+    root_dir = REPO_PATHS[devops_dir]
+    File.join(root_dir, relative_path)
+  end
 end

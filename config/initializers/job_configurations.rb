@@ -17,6 +17,13 @@ else
         class: 'DataFreshnessJob',
         cron: cron_30m,
       },
+      # Queue redshift new user detection job to GoodJob
+      redshift_new_user_detection_job: {
+        class: 'RedshiftUnexpectedUserDetectionJob',
+        cron: '2-59/5 * * * *',
+        # runs every 5 minutes starting at 2 minutes past the hour to allow the user sync script
+        # to complete at the top of the hour
+      },
       # Queue schema service job to GoodJob
       extractor_row_checker_enqueue_job: {
         class: 'ExtractorRowCheckerEnqueueJob',
