@@ -20,7 +20,7 @@ else
       # Queue redshift new user detection job to GoodJob
       redshift_new_user_detection_job: {
         class: 'RedshiftUnexpectedUserDetectionJob',
-        cron: '2-59/5 * * * *',
+        cron: '2-59/2 * * * *',
         # runs every 5 minutes starting at 2 minutes past the hour to allow the user sync script
         # to complete at the top of the hour
       },
