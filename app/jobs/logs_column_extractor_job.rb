@@ -98,7 +98,7 @@ class LogsColumnExtractorJob < ApplicationJob
       return
     end
     Rails.logger.info(<<~STR.squish)
-      "LogsColumnExtractorJob: Query executed successfully #{@schema_name}.#{@source_table_name}"
+      LogsColumnExtractorJob: Query executed successfully #{@schema_name}.#{@source_table_name}
     STR
   end
 

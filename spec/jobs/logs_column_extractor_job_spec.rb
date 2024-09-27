@@ -69,7 +69,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
       end
       it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = 'LogsColumnExtractorJob: Query executed successfully'
+        msg = 'LogsColumnExtractorJob: Query executed successfully logs.unextracted_events'
         expect(Rails.logger).to receive(:info).with(msg)
         logs_job.perform('events')
         query = 'Select * from logs.events;'
@@ -112,7 +112,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
       end
       it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = 'LogsColumnExtractorJob: Query executed successfully'
+        msg = 'LogsColumnExtractorJob: Query executed successfully logs.unextracted_production'
         expect(Rails.logger).to receive(:info).with(msg)
         logs_job.perform('production')
         query = 'Select * from logs.production;'
