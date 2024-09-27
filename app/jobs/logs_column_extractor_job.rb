@@ -97,7 +97,9 @@ class LogsColumnExtractorJob < ApplicationJob
       Rails.logger.info "No data in table #{@schema_name}.#{@source_table_name}"
       return
     end
-    Rails.logger.info "LogsColumnExtractorJob: Query executed successfully #{@schema_name}.#{@source_table_name}"
+    Rails.logger.info(<<~STR.squish)
+      "LogsColumnExtractorJob: Query executed successfully #{@schema_name}.#{@source_table_name}"
+    STR
   end
 
   def build_params
