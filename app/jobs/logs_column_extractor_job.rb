@@ -67,19 +67,32 @@ class LogsColumnExtractorJob < ApplicationJob
     @target_table_name = target_table_name
     @source_table_name = "unextracted_#{target_table_name}"
     unless SOURCE_TABLE_NAMES.include?(@source_table_name)
-      Rails.logger.info "LogsColumnExtractorJob: Invalid table name : #{@source_table_name}"
+      Rails.logger.info(
+        {
+          job: 'LogColumnExtractorJob',
+          success: false,
+          message: 'Invalid table name',
+          schema_name: @schema_name,
+          source_table_name: @source_table_name,
+        }.to_json,
+      )
       return
     end
 
     @column_map = COLUMN_MAPPING[@source_table_name.to_sym]
     @merge_key = get_unique_id
 
-    Rails.logger.info(<<~STR.squish)
-      LogsColumnExtractorJob: Processing records from source
-      #{@source_table_name} to target #{@schema_name}.#{@target_table_name}
-    STR
+    Rails.logger.info(
+      {
+        job: 'LogColumnExtractorJob',
+        success: true,
+        message: 'Processing records from source to target.  Executing queries...',
+        schema_name: @schema_name,
+        source_table_name: @source_table_name,
+        target_table_name: @target_table_name,
+      }.to_json,
+    )
 
-    Rails.logger.info 'LogsColumnExtractorJob: Executing queries...'
     source_table_count =
       DataWarehouseApplicationRecord.
         connection.exec_query(source_table_count_query).first['c']
@@ -94,12 +107,27 @@ class LogsColumnExtractorJob < ApplicationJob
         DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
       end
     else
-      Rails.logger.info "No data in table #{@schema_name}.#{@source_table_name}"
+      Rails.logger.info(
+        {
+          job: 'LogColumnExtractorJob',
+          success: false,
+          message: 'No data in table',
+          schema_name: @schema_name,
+          source_table_name: @source_table_name,
+        }.to_json,
+      )
       return
     end
-    Rails.logger.info(<<~STR.squish)
-      LogsColumnExtractorJob: Query executed successfully #{@schema_name}.#{@source_table_name}
-    STR
+    Rails.logger.info(
+      {
+        job: 'LogColumnExtractorJob',
+        success: true,
+        message: 'Query executed successfully',
+        schema_name: @schema_name,
+        source_table_name: @source_table_name,
+        target_table_name: @target_table_name,
+      }.to_json,
+    )
   end
 
   def build_params
