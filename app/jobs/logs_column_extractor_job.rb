@@ -86,7 +86,7 @@ class LogsColumnExtractorJob < ApplicationJob
       {
         job: 'LogColumnExtractorJob',
         success: true,
-        message: 'Processing records from source to target.  Executing queries...',
+        message: 'Processing records from source to target. Executing queries...',
         schema_name: @schema_name,
         source_table_name: @source_table_name,
         target_table_name: @target_table_name,
