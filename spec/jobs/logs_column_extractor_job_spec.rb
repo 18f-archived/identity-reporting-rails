@@ -9,7 +9,11 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
     context 'when target table name is not recognized' do
       it 'confirm the job will not run' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = 'LogsColumnExtractorJob: Invalid table name : unextracted_random_name'
+        msg = '{"job":"LogColumnExtractorJob",' \
+              '"success":false,' \
+              '"message":"Invalid table name",' \
+              '"schema_name":"logs",' \
+              '"source_table_name":"unextracted_random_name"}'
         expect(Rails.logger).to receive(:info).with(msg)
         logs_job.perform('random_name')
       end
@@ -18,7 +22,11 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
     context 'when no data in tables' do
       it 'confirm the job does not execute any query' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = 'No data in table logs.unextracted_events'
+        msg = '{"job":"LogColumnExtractorJob",' \
+              '"success":false,' \
+              '"message":"No data in table",' \
+              '"schema_name":"logs",' \
+              '"source_table_name":"unextracted_events"}'
         expect(Rails.logger).to receive(:info).with(msg)
         logs_job.perform('events')
       end
@@ -69,7 +77,12 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
       end
       it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = 'LogsColumnExtractorJob: Query executed successfully'
+        msg = '{"job":"LogColumnExtractorJob",' \
+              '"success":true,' \
+              '"message":"Query executed successfully",' \
+              '"schema_name":"logs",' \
+              '"source_table_name":"unextracted_events",' \
+              '"target_table_name":"events"}'
         expect(Rails.logger).to receive(:info).with(msg)
         logs_job.perform('events')
         query = 'Select * from logs.events;'
@@ -112,7 +125,11 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
       end
       it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = 'LogsColumnExtractorJob: Query executed successfully'
+        msg = '{"job":"LogColumnExtractorJob",' \
+              '"success":true,"message":"Query executed successfully",' \
+              '"schema_name":"logs",' \
+              '"source_table_name":"unextracted_production",' \
+              '"target_table_name":"production"}'
         expect(Rails.logger).to receive(:info).with(msg)
         logs_job.perform('production')
         query = 'Select * from logs.production;'
