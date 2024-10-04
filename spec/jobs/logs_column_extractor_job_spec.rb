@@ -9,7 +9,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
     context 'when target table name is not recognized' do
       it 'confirm the job will not run' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = '{"job":"LogColumnExtractorJob",' \
+        msg = '{"job":"LogsColumnExtractorJob",' \
               '"success":false,' \
               '"message":"Invalid table name",' \
               '"schema_name":"logs",' \
@@ -22,7 +22,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
     context 'when no data in tables' do
       it 'confirm the job does not execute any query' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = '{"job":"LogColumnExtractorJob",' \
+        msg = '{"job":"LogsColumnExtractorJob",' \
               '"success":false,' \
               '"message":"No data in table",' \
               '"schema_name":"logs",' \
@@ -77,7 +77,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
       end
       it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = '{"job":"LogColumnExtractorJob",' \
+        msg = '{"job":"LogsColumnExtractorJob",' \
               '"success":true,' \
               '"message":"Query executed successfully",' \
               '"schema_name":"logs",' \
@@ -125,7 +125,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
       end
       it 'confirm the column extraction is successful' do
         allow(Rails.logger).to receive(:info).and_call_original
-        msg = '{"job":"LogColumnExtractorJob",' \
+        msg = '{"job":"LogsColumnExtractorJob",' \
               '"success":true,"message":"Query executed successfully",' \
               '"schema_name":"logs",' \
               '"source_table_name":"unextracted_production",' \

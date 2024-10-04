@@ -69,7 +69,7 @@ class LogsColumnExtractorJob < ApplicationJob
     unless SOURCE_TABLE_NAMES.include?(@source_table_name)
       Rails.logger.info(
         {
-          job: 'LogColumnExtractorJob',
+          job: self.class.name,
           success: false,
           message: 'Invalid table name',
           schema_name: @schema_name,
@@ -84,7 +84,7 @@ class LogsColumnExtractorJob < ApplicationJob
 
     Rails.logger.info(
       {
-        job: 'LogColumnExtractorJob',
+        job: self.class.name,
         success: true,
         message: 'Processing records from source to target. Executing queries...',
         schema_name: @schema_name,
@@ -109,7 +109,7 @@ class LogsColumnExtractorJob < ApplicationJob
     else
       Rails.logger.info(
         {
-          job: 'LogColumnExtractorJob',
+          job: self.class.name,
           success: false,
           message: 'No data in table',
           schema_name: @schema_name,
@@ -120,7 +120,7 @@ class LogsColumnExtractorJob < ApplicationJob
     end
     Rails.logger.info(
       {
-        job: 'LogColumnExtractorJob',
+        job: self.class.name,
         success: true,
         message: 'Query executed successfully',
         schema_name: @schema_name,
