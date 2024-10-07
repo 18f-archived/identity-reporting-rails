@@ -24,7 +24,7 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
         allow(Rails.logger).to receive(:info).and_call_original
         msg = '{"job":"LogsColumnExtractorJob",' \
               '"success":false,' \
-              '"message":"No data in table",' \
+              '"message":"Missing data in source table",' \
               '"schema_name":"logs",' \
               '"source_table_name":"unextracted_events"}'
         expect(Rails.logger).to receive(:info).with(msg)
@@ -140,6 +140,24 @@ RSpec.describe LogsColumnExtractorJob, type: :job do
         expect(query_results.first['duration']).to eq(2.31)
         expect(query_results.first['git_branch']).to eq('main')
         expect(query_results.first['trace_id']).to eq(nil)
+      end
+    end
+
+    context 'when error happens while executing the job' do
+      before do
+        uuids.each do |uuid|
+          FactoryBot.create(
+            :unextracted_event,
+            cloudwatch_timestamp: '2024-05-29T20:34:17.933Z',
+            message: {},
+          )
+        end
+      end
+      it 'confirm the column extraction is unsuccessful' do
+        allow(Rails.logger).to receive(:info).and_call_original
+        msg_regex = /"job":"LogsColumnExtractorJob","success":false,"message":"PG::NotNullViolation/
+        expect(Rails.logger).to receive(:info).with(match(msg_regex))
+        logs_job.perform('events')
       end
     end
   end

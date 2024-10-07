@@ -98,20 +98,33 @@ class LogsColumnExtractorJob < ApplicationJob
         connection.exec_query(source_table_count_query).first['c']
 
     if source_table_count > 0
-      DataWarehouseApplicationRecord.transaction do
-        DataWarehouseApplicationRecord.connection.execute(lock_table_query)
-        DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
-        DataWarehouseApplicationRecord.
-          connection.execute(drop_duplicate_rows_from_temp_query)
-        DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
-        DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
+      begin
+        DataWarehouseApplicationRecord.transaction do
+          DataWarehouseApplicationRecord.connection.execute(lock_table_query)
+          DataWarehouseApplicationRecord.connection.execute(create_temp_table_query)
+          DataWarehouseApplicationRecord.
+            connection.execute(drop_duplicate_rows_from_temp_query)
+          DataWarehouseApplicationRecord.connection.execute(merge_temp_with_target_query)
+          DataWarehouseApplicationRecord.connection.execute(truncate_source_table_query)
+        end
+      rescue => e
+        Rails.logger.info(
+          {
+            job: self.class.name,
+            success: false,
+            message: e.message,
+            schema_name: @schema_name,
+            source_table_name: @source_table_name,
+          }.to_json,
+        )
+        return
       end
     else
       Rails.logger.info(
         {
           job: self.class.name,
           success: false,
-          message: 'No data in table',
+          message: 'Missing data in source table',
           schema_name: @schema_name,
           source_table_name: @source_table_name,
         }.to_json,
