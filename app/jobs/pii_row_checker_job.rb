@@ -39,8 +39,11 @@ class PiiRowCheckerJob < ApplicationJob
       )
     end
 
-    Rails.logger.info('PiiRowCheckerJob: Executing LogsColumnExtractorJob')
-    LogsColumnExtractorJob.perform_later(@table_name)
+    # ignoring the unextracted_ tables
+    unless @table_name.start_with?('unextracted_')
+      Rails.logger.info('PiiRowCheckerJob: Executing LogsColumnExtractorJob')
+      LogsColumnExtractorJob.perform_later(@table_name)
+    end
   end
 
   private
