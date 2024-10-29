@@ -1,0 +1,10 @@
+tables:
+  - name: "stl_query"
+    primary_key: "userid"
+    timestamp_column: "endtime"
+    target_table: "stl_query"
+  - name: "stl_scan"
+    primary_key: "userid"
+    timestamp_column: "endtime"
+    target_table: "stl_scan"
+  # Add more tables as needed
