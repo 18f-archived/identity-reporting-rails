@@ -3,8 +3,10 @@ tables:
     primary_key: "userid"
     timestamp_column: "endtime"
     target_table: "stl_query"
+    target_schema: 'pg_catalog'
   - name: "stl_scan"
     primary_key: "userid"
     timestamp_column: "endtime"
     target_table: "stl_scan"
+    target_schema: 'pg_catalog'
   # Add more tables as needed
