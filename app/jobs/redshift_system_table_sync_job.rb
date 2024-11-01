@@ -10,7 +10,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
       timestamp_column = table['timestamp_column']
       primary_key = table['primary_key']
 
-      create_target_table(source_table, target_table_with_schema)
+      create_target_table(source_table, target_table_with_schema, target_schema)
 
       last_sync_time = fetch_last_sync_time(target_table_with_schema)
       new_data = fetch_recent_data(target_table_with_schema, timestamp_column, last_sync_time)
@@ -31,8 +31,11 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     DataWarehouseApplicationRecord.connection.table_exists?(table_name)
   end
 
-  def create_target_table(source_table, target_table_with_schema)
+  def create_target_table(source_table, target_table_with_schema, target_schema)
     return if target_table_exists?(target_table_with_schema)
+
+    schema_query = "CREATE SCHEMA IF NOT EXISTS #{target_schema}"
+    DataWarehouseApplicationRecord.connection.execute(schema_query)
 
     columns = fetch_source_columns(source_table)
 
