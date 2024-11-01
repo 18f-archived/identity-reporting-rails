@@ -40,6 +40,7 @@ development:
   database_worker_jobs_password: ''
   domain_name: localhost:3000
   secret_key_base: dev_secret_key_base
+  redshift_system_metadata_database_name: ''
   redshift_database_name: ''
   redshift_host: ''
   redshift/local-analytics-superuser: '{"username":"","password":""}'
@@ -58,6 +59,7 @@ production:
   database_worker_jobs_host: ''
   database_worker_jobs_password: ''
   secret_key_base: ''
+  redshift_system_metadata_database_name: ''
   redshift_database_name: ''
   redshift_host: ''
 
@@ -75,6 +77,7 @@ test:
   database_worker_jobs_password: ''
   domain_name: www.example.com
   secret_key_base: test_secret_key_base
+  redshift_system_metadata_database_name: ''
   redshift_database_name: ''
   redshift_host: ''
   redshift/local-analytics-superuser: '{"username":"","password":""}'

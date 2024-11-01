@@ -44,6 +44,7 @@ class IdentityConfig
     config.add(:good_job_queues, type: :string)
     config.add(:rack_mini_profiler, type: :boolean)
     config.add(:redshift_database_name, type: :string)
+    config.add(:redshift_system_metadata_database_name, type: :string)
     config.add(:redshift_host, type: :string)
     config.add(:data_freshness_threshold_hours, type: :integer)
 

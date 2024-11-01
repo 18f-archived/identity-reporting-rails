@@ -34,27 +34,41 @@ class RedshiftSystemTableSyncJob < ApplicationJob
   def create_target_table(source_table, target_table_with_schema, target_schema)
     return if target_table_exists?(target_table_with_schema)
 
-    schema_query = "CREATE SCHEMA IF NOT EXISTS #{target_schema}"
-    DataWarehouseApplicationRecord.connection.execute(schema_query)
+    begin
+      schema_query = "CREATE SCHEMA IF NOT EXISTS #{target_schema}"
+      SystemMetadataApplicationRecord.connection.execute(schema_query)
+    rescue ActiveRecord::StatementInvalid => e
+      if /unacceptable schema name/i.match?(e.message)
+        # Ignore the error if the schema name is invalid
+      else
+        raise e  # Re-raise if it's a different error
+      end
+    end
 
-    columns = fetch_source_columns(source_table)
+    columns = fetch_source_columns(source_table, target_schema)
 
-    DataWarehouseApplicationRecord.connection.create_table(target_table_with_schema, id: false) do |t|
+    SystemMetadataApplicationRecord.connection.create_table(
+      target_table_with_schema,
+      id: false,
+    ) do |t|
       columns.each do |column_info|
-        column_name, column_data_type = column_info.values_at('column_name', 'data_type')
+        column_name, column_data_type = column_info.values_at('column', 'type')
         config_column_options = get_config_column_options(column_info)
 
         t.column column_name, column_data_type, **config_column_options
       end
     end
-    log_info("Created target table #{target_table_with_schema}", true, target_table: target_table_with_schema)
+    log_info(
+      "Created target table #{target_table_with_schema}", true,
+      target_table: target_table_with_schema
+    )
   end
 
-  def fetch_source_columns(source_table)
+  def fetch_source_columns(source_table, sourse_schema)
     query = <<-SQL
-      SELECT column_name, data_type
-      FROM information_schema.columns
-      WHERE table_name = '#{source_table}';
+      SELECT column, type
+      FROM pg_table_def
+      WHERE schemaname= '#{sourse_schema}' AND tablename = '#{source_table}';
     SQL
 
     DataWarehouseApplicationRecord.connection.exec_query(query).to_a
@@ -87,7 +101,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
         ON CONFLICT (#{primary_key}) DO UPDATE SET
           #{row.keys.map { |key| "#{key} = EXCLUDED.#{key}" }.join(", ")};
       SQL
-      DataWarehouseApplicationRecord.connection.execute(insert_sql)
+      SystemMetadataApplicationRecord.connection.execute(insert_sql)
     end
   end
 
