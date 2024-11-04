@@ -12,7 +12,8 @@ class RedshiftSystemTableSyncJob < ApplicationJob
 
       create_target_table(source_table, target_table_with_schema, target_schema)
       last_sync_time = fetch_last_sync_time(target_table_with_schema)
-      upsert_data(target_table_with_schema, primary_key, timestamp_column, last_sync_time)
+      upsert_data(source_table, target_table_with_schema, target_schema, primary_key, timestamp_column)
+      update_sync_time(target_table_with_schema)
     end
   end
 
@@ -100,9 +101,31 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     {}
   end
 
-  def upsert_data(target_table_with_schema, primary_key, timestamp_column, last_sync_time)
-    # Update this merge statement
-    log_info("Upserted data into #{target_table_with_schema}", true)
+  def upsert_data(source_table, target_table_with_schema, target_schema, primary_key, timestamp_column)
+    columns = fetch_source_columns(source_table, target_schema).map { |col| col['column'] }
+    update_assignments = columns.map { |col| "target.#{col} = source.#{col}" }.join(', ')
+    insert_columns = columns.join(', ')
+    insert_values = columns.map { |col| "source.#{col}" }.join(', ')
+
+    merge_query = <<-SQL.squish
+      MERGE INTO #{target_table_with_schema} AS target
+      USING #{source_table} AS source
+      ON target.#{primary_key} = source.#{primary_key}
+      WHEN MATCHED AND source.#{timestamp_column} > target.#{timestamp_column} THEN
+        UPDATE SET #{update_assignments}
+      WHEN NOT MATCHED THEN
+        INSERT (#{primary_key}, #{insert_columns})
+        VALUES (source.#{primary_key}, #{insert_values});
+    SQL
+
+    log_info("Executing MERGE for #{target_table_with_schema}", true)
+    begin
+      SystemMetadataApplicationRecord.connection.execute(merge_query)
+      log_info("Merge successful for #{target_table_with_schema}", true)
+    rescue ActiveRecord::StatementInvalid => e
+      log_info("Merge failed for #{target_table_with_schema}: #{e.message}", false)
+      raise e
+    end
   end
 
   def fetch_last_sync_time(table_name)
