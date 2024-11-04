@@ -27,7 +27,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     @source_table = table['source_table']
     @target_table = table['target_table']
     @timestamp_column = table['timestamp_column']
-    @primary_key = table['primary_key']
+    @primary_keys = table['primary_keys']
     @target_table_with_schema = [@target_schema, @target_table].join('.')
     @source_table_with_schema = [@source_schema, @source_table].join('.')
   end
@@ -112,16 +112,17 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     update_assignments = columns.map { |col| "target.#{col} = source.#{col}" }.join(', ')
     insert_columns = columns.join(', ')
     insert_values = columns.map { |col| "source.#{col}" }.join(', ')
+    on_conditions = @primary_keys.map { |key| "target.#{key} = source.#{key}" }.join(' AND ')
 
     merge_query = <<-SQL.squish
       MERGE INTO #{@target_table_with_schema} AS target
       USING #{@source_table} AS source
-      ON target.#{@primary_key} = source.#{@primary_key}
+      ON #{on_conditions}
       WHEN MATCHED AND source.#{@timestamp_column} > target.#{@timestamp_column} THEN
         UPDATE SET #{update_assignments}
       WHEN NOT MATCHED THEN
-        INSERT (#{@primary_key}, #{insert_columns})
-        VALUES (source.#{@primary_key}, #{insert_values});
+        INSERT (#{insert_columns})
+        VALUES (#{insert_values});
     SQL
 
     DataWarehouseApplicationRecord.connection.execute(merge_query)

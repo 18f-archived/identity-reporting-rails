@@ -3,12 +3,16 @@ tables:
     target_table: "stl_query"
     source_schema: 'pg_catalog'
     target_schema: 'system_tables'
-    primary_key: "userid"
+    primary_keys:
+      - 'userid'
+      - 'query'
     timestamp_column: "endtime"
   - source_table: "stl_scan"
     target_table: "stl_scan"
     source_schema: 'pg_catalog'
     target_schema: 'system_tables'
-    primary_key: "userid"
+    primary_keys:
+      - 'userid'
+      - 'query'
     timestamp_column: "endtime"
   # Add more tables as needed
