@@ -38,11 +38,6 @@ development:
     database: identity_reporting_rails_data_warehouse_<%= Rails.env %>
     schema_search_path: 'logs,public'
     migrations_paths: db/data_warehouse_migrate
-  system_metadata:
-    <<: *defaults
-    database: identity_reporting_rails_system_metadata_<%= Rails.env %>
-    schema_search_path: 'public'
-    migrations_paths: db/system_metadata_migrate
 
 test:
   primary: &test
@@ -69,13 +64,6 @@ test:
     migrations_paths:
       - db/data_warehouse_migrate
       - db/data_warehouse_test_migrate
-  system_metadata:
-    <<: *test
-    database: <%= "identity_reporting_rails_system_metadata_test#{ENV['TEST_ENV_NUMBER']}" %>
-    schema_search_path: 'public,test_pg_catalog'
-    migrations_paths:
-      - db/system_metadata_migrate
-      - db/system_metadata_test_migrate
 
 <%
   worker_pool = if Identity::Hostdata.instance_role == 'worker'
@@ -144,12 +132,3 @@ production:
     password: "<%= Identity::Hostdata.config.redshift_password %>"
     encoding: utf8
     migrations_paths: db/data_warehouse_migrate
-  system_metadata:
-    adapter: redshift
-    host: <%= URI.parse("redshift://#{Identity::Hostdata.config.redshift_host}").host %>
-    port: 5439
-    database: "<%= Identity::Hostdata.config.redshift_system_metadata_database_name %>"
-    username: "<%= Identity::Hostdata.config.redshift_username %>"
-    password: "<%= Identity::Hostdata.config.redshift_password %>"
-    encoding: utf8
-    migrations_paths: db/system_metadata_migrate

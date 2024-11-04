@@ -2,20 +2,24 @@ require 'rails_helper'
 
 RSpec.describe RedshiftSystemTableSyncJob, type: :job do
   let(:job) { RedshiftSystemTableSyncJob.new }
+  let(:source_schema) { 'test_pg_catalog' }
+  let(:target_schema) { 'system_tables' }
   let(:source_table) { 'stl_query' }
-  let(:target_schema) { 'test_pg_catalog' }
-  let(:target_table_with_schema) { "#{target_schema}.#{source_table}" }
+  let(:target_table) { 'stl_query' }
+  let(:source_table_with_schema) { "#{source_schema}.#{source_table}" }
+  let(:target_table_with_schema) { "#{target_schema}.#{target_table}" }
   let(:timestamp_column) { 'endtime' }
   let(:primary_key) { 'userid' }
   let(:last_sync_time) { Time.zone.now - 6.days }
   let!(:file_path) { Rails.root.join('spec', 'fixtures', 'redshift_system_tables.yml') }
   let(:table) do
     {
-      'name' => source_table,
+      'source_table' => source_table,
+      'target_table' => source_table,
+      'source_schema' => source_schema,
+      'target_schema' => target_schema,
       'primary_key' => primary_key,
       'timestamp_column' => timestamp_column,
-      'target_table' => source_table,
-      'target_schema' => target_schema,
     }
   end
 
@@ -26,15 +30,6 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
 
   describe '#perform' do
     it 'upserts data into the target table' do
-      allow(Rails.logger).to receive(:info).and_call_original
-      msg = {
-        job: 'RedshiftSystemTableSyncJob',
-        success: true,
-        message: 'Upserted data into test_pg_catalog.stl_query',
-      }
-
-      # TODO: Update this merge statement code and test
-      # expect(Rails.logger).to receive(:info).with(msg.to_json)
       # job.perform
     end
   end
@@ -54,31 +49,46 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
 
   describe '#target_table_exists?' do
     it 'returns true if the target table exists' do
-      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be true
+      expect(DataWarehouseApplicationRecord.connection.table_exists?(source_table_with_schema)).to be true
     end
 
     it 'returns false if the target table exists' do
-      expect(SystemMetadataApplicationRecord.connection.table_exists?(target_table_with_schema)).to be false
+      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be false
     end
   end
 
   describe '#create_target_table' do
     it 'creates target tables, and log message' do
-      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be true
-      expect(SystemMetadataApplicationRecord.connection.table_exists?(target_table_with_schema)).to be false
+      expect(DataWarehouseApplicationRecord.connection.table_exists?(source_table_with_schema)).to be true
+      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be false
 
       allow(Rails.logger).to receive(:info).and_call_original
-      msg = {
-        job: 'RedshiftSystemTableSyncJob',
-        success: true,
-        message: 'Created target table test_pg_catalog.stl_query',
-        target_table: 'test_pg_catalog.stl_query',
-      }
-      expect(Rails.logger).to receive(:info).with(msg.to_json)
+      expected_msgs = [
+        {
+          job: 'RedshiftSystemTableSyncJob',
+          success: true,
+          message: 'Created target table stl_query',
+          target_table: 'stl_query',
+        }.to_json,
+        {
+          job: 'RedshiftSystemTableSyncJob',
+          success: true,
+          message: 'Schema system_tables created',
+        }.to_json,
+        {
+          job: 'RedshiftSystemTableSyncJob',
+          success: true,
+          message: 'Columns fetched for stl_query',
+        }.to_json,
+      ]
+
+      expected_msgs.each do |msg|
+        expect(Rails.logger).to receive(:info).with(msg)
+      end
 
       job.send(:create_target_table)
 
-      expect(SystemMetadataApplicationRecord.connection.table_exists?(target_table_with_schema)).to be true
+      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be true
     end
   end
 
@@ -88,7 +98,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
       msg = {
         job: 'RedshiftSystemTableSyncJob',
         success: true,
-        message: 'Schema test_pg_catalog created',
+        message: 'Schema system_tables created',
       }
       expect(Rails.logger).to receive(:info).with(msg.to_json)
 
@@ -136,13 +146,13 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
   end
 
   describe '#update_sync_time' do
-    it 'updates the sync time in SystemTableSyncMetadata' do
+    it 'updates the sync time in SystemTablesSyncMetadata' do
       job.send(:update_sync_time)
 
-      sync_metadata = SystemTableSyncMetadata.find_by(table_name: target_table_with_schema)
+      sync_metadata = SystemTablesSyncMetadata.find_by(table_name: target_table)
       expect(sync_metadata).not_to be_nil
       expect(sync_metadata.last_sync_time).to be_within(1.second).of(Time.zone.now)
-      expect(sync_metadata.table_name).to eq target_table_with_schema
+      expect(sync_metadata.table_name).to eq target_table
     end
   end
 end

@@ -22,16 +22,18 @@ class RedshiftSystemTableSyncJob < ApplicationJob
   end
 
   def setup_instance_variables(table)
+    @source_schema = table['source_schema']
     @target_schema = table['target_schema']
-    @source_table = table['name']
+    @source_table = table['source_table']
     @target_table = table['target_table']
     @timestamp_column = table['timestamp_column']
     @primary_key = table['primary_key']
     @target_table_with_schema = [@target_schema, @target_table].join('.')
+    @source_table_with_schema = [@source_schema, @source_table].join('.')
   end
 
   def target_table_exists?
-    SystemMetadataApplicationRecord.connection.table_exists?(@target_table_with_schema)
+    DataWarehouseApplicationRecord.connection.table_exists?(@target_table_with_schema)
   end
 
   def create_target_table
@@ -41,27 +43,26 @@ class RedshiftSystemTableSyncJob < ApplicationJob
 
     columns = fetch_source_columns
 
-    SystemMetadataApplicationRecord.connection.create_table(
+    DataWarehouseApplicationRecord.connection.create_table(
       @target_table_with_schema,
       id: false,
     ) do |t|
       columns.each do |column_info|
         column_name, column_data_type = column_info.values_at('column', 'type')
-        config_column_options = get_config_column_options(column_info)
 
-        t.column column_name, column_data_type, **config_column_options
+        t.column column_name, column_data_type
       end
     end
 
     log_info(
-      "Created target table #{@target_table_with_schema}", true,
-      target_table: @target_table_with_schema
+      "Created target table #{@target_table}", true,
+      target_table: @target_table
     )
   end
 
   def create_schema_if_not_exists
     schema_query = "CREATE SCHEMA IF NOT EXISTS #{@target_schema}"
-    SystemMetadataApplicationRecord.connection.execute(schema_query)
+    DataWarehouseApplicationRecord.connection.execute(schema_query)
     log_info("Schema #{@target_schema} created", true)
   rescue ActiveRecord::StatementInvalid => e
     if /unacceptable schema name/i.match?(e.message)
@@ -74,8 +75,8 @@ class RedshiftSystemTableSyncJob < ApplicationJob
 
   def fetch_source_columns
     build_params = {
+      source_schema: @source_schema,
       source_table: @source_table,
-      source_schema: @target_schema,
     }
 
     if DataWarehouseApplicationRecord.connection.adapter_name.downcase.include?('redshift')
@@ -96,10 +97,6 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     log_info("Columns fetched for #{@source_table}", true) if columns.present?
 
     columns
-  end
-
-  def get_config_column_options(_column_info)
-    {}
   end
 
   def upsert_data(last_sync_time)
@@ -127,7 +124,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
         VALUES (source.#{@primary_key}, #{insert_values});
     SQL
 
-    SystemMetadataApplicationRecord.connection.execute(merge_query)
+    DataWarehouseApplicationRecord.connection.execute(merge_query)
     log_info("MERGE executed for #{@target_table_with_schema}", true)
   end
 
@@ -145,17 +142,17 @@ class RedshiftSystemTableSyncJob < ApplicationJob
       SET #{update_assignments};
     SQL
 
-    SystemMetadataApplicationRecord.connection.execute(insert_query)
+    DataWarehouseApplicationRecord.connection.execute(insert_query)
     log_info("INSERT ON CONFLICT executed for #{@target_table_with_schema}", true)
   end
 
   def fetch_last_sync_time
-    sync_metadata = SystemTableSyncMetadata.find_by(table_name: @target_table_with_schema)
+    sync_metadata = SystemTablesSyncMetadata.find_by(table_name: @target_table)
     sync_metadata&.last_sync_time || (Time.zone.now - 6.days)
   end
 
   def update_sync_time
-    sync_metadata = SystemTableSyncMetadata.find_or_initialize_by(table_name: @target_table_with_schema)
+    sync_metadata = SystemTablesSyncMetadata.find_or_initialize_by(table_name: @target_table)
     sync_metadata.last_sync_time = Time.zone.now
     sync_metadata.save!
   end
