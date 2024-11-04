@@ -1,0 +1,6 @@
+tables:
+  - name: "stl_query"
+    primary_key: "userid"
+    timestamp_column: "endtime"
+    target_table: "stl_query"
+    target_schema: 'test_pg_catalog'

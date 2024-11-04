@@ -1,8 +1,8 @@
-class AddStlQueryTestTable < ActiveRecord::Migration[7.1]
+class AddStlQueryTestTableRedshift < ActiveRecord::Migration[7.1]
   def change
     reversible do |dir|
       dir.up { execute 'CREATE SCHEMA IF NOT EXISTS test_pg_catalog' }
-      dir.down { execute 'DROP SCHEMA IF EXISTS pg_catalog_test' }
+      dir.down { execute 'DROP SCHEMA IF EXISTS test_pg_catalog' }
     end
 
     create_table 'test_pg_catalog.stl_query', if_not_exists: true, id: false do |t|

@@ -65,12 +65,13 @@ test:
   data_warehouse:
     <<: *test
     database: <%= "identity_reporting_rails_test#{ENV['TEST_ENV_NUMBER']}" %>
+    schema_search_path: 'public,test_pg_catalog'
     migrations_paths:
       - db/data_warehouse_migrate
       - db/data_warehouse_test_migrate
   system_metadata:
     <<: *test
-    database: <%= "identity_reporting_rails_test#{ENV['TEST_ENV_NUMBER']}" %>
+    database: <%= "identity_reporting_rails_system_metadata_test#{ENV['TEST_ENV_NUMBER']}" %>
     schema_search_path: 'public,test_pg_catalog'
     migrations_paths:
       - db/system_metadata_migrate
