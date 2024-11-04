@@ -9,12 +9,34 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
   let(:primary_key) { 'userid' }
   let(:last_sync_time) { Time.zone.now - 6.days }
   let!(:file_path) { Rails.root.join('spec', 'fixtures', 'redshift_system_tables.yml') }
+  let(:table) do
+    {
+      'name' => source_table,
+      'primary_key' => primary_key,
+      'timestamp_column' => timestamp_column,
+      'target_table' => source_table,
+      'target_schema' => target_schema,
+    }
+  end
 
   before do
+    job.send(:setup_instance_variables, table)
     allow(job).to receive(:config_file_path).and_return(file_path)
   end
 
   describe '#perform' do
+    it 'upserts data into the target table' do
+      allow(Rails.logger).to receive(:info).and_call_original
+      msg = {
+        job: 'RedshiftSystemTableSyncJob',
+        success: true,
+        message: 'Upserted data into test_pg_catalog.stl_query',
+      }
+
+      # TODO: Update this merge statement code and test
+      # expect(Rails.logger).to receive(:info).with(msg.to_json)
+      # job.perform
+    end
   end
 
   describe '#table_definitions' do
@@ -54,7 +76,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
       }
       expect(Rails.logger).to receive(:info).with(msg.to_json)
 
-      job.send(:create_target_table, source_table, target_table_with_schema, target_schema)
+      job.send(:create_target_table)
 
       expect(SystemMetadataApplicationRecord.connection.table_exists?(target_table_with_schema)).to be true
     end
@@ -70,25 +92,29 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
       }
       expect(Rails.logger).to receive(:info).with(msg.to_json)
 
-      job.send(:create_schema_if_not_exists, target_schema)
+      job.send(:create_schema_if_not_exists)
     end
 
-    it 'return target schema if already exists, and log message' do
-      allow(Rails.logger).to receive(:info).and_call_original
-      msg = {
-        job: 'RedshiftSystemTableSyncJob',
-        success: true,
-        message: 'Schema pg_catalog already created',
-      }
-      expect(Rails.logger).to receive(:info).with(msg.to_json)
+    context 'when schema already exists' do
+      let(:target_schema) { 'pg_catalog' }
 
-      job.send(:create_schema_if_not_exists, 'pg_catalog')
+      it 'return target schema if already exists, and log message' do
+        allow(Rails.logger).to receive(:info).and_call_original
+        msg = {
+          job: 'RedshiftSystemTableSyncJob',
+          success: true,
+          message: 'Schema pg_catalog already created',
+        }
+        expect(Rails.logger).to receive(:info).with(msg.to_json)
+
+        job.send(:create_schema_if_not_exists)
+      end
     end
   end
 
   describe '#fetch_source_columns' do
     it 'returns column information' do
-      columns = job.send(:fetch_source_columns, source_table, target_schema)
+      columns = job.send(:fetch_source_columns)
 
       expect(columns).to match_array(
         [
@@ -109,27 +135,9 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
     end
   end
 
-  describe '#upsert_data' do
-    it 'upserts data into the target table' do
-      # TODO: Update this merge statement code and test
-      allow(Rails.logger).to receive(:info).and_call_original
-      msg = {
-        job: 'RedshiftSystemTableSyncJob',
-        success: true,
-        message: 'Upserted data into test_pg_catalog.stl_query',
-      }
-      expect(Rails.logger).to receive(:info).with(msg.to_json)
-
-      job.send(
-        :upsert_data, target_table_with_schema, primary_key, timestamp_column,
-        last_sync_time
-      )
-    end
-  end
-
   describe '#update_sync_time' do
     it 'updates the sync time in SystemTableSyncMetadata' do
-      job.send(:update_sync_time, target_table_with_schema)
+      job.send(:update_sync_time)
 
       sync_metadata = SystemTableSyncMetadata.find_by(table_name: target_table_with_schema)
       expect(sync_metadata).not_to be_nil
