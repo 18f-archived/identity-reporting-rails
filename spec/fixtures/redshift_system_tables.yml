@@ -1,6 +1,9 @@
 tables:
-  - name: "stl_query"
-    primary_key: "userid"
-    timestamp_column: "endtime"
+  - source_table: "stl_query"
     target_table: "stl_query"
-    target_schema: 'test_pg_catalog'
+    source_schema: 'test_pg_catalog'
+    target_schema: 'system_tables'
+    primary_keys:
+      - 'userid'
+      - 'query'
+    timestamp_column: "endtime"

@@ -5,8 +5,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     table_definitions.each do |table|
       setup_instance_variables(table)
       create_target_table
-      last_sync_time = fetch_last_sync_time
-      upsert_data(last_sync_time)
+      upsert_data
       update_sync_time
     end
   end
@@ -61,7 +60,14 @@ class RedshiftSystemTableSyncJob < ApplicationJob
   end
 
   def create_schema_if_not_exists
-    schema_query = "CREATE SCHEMA IF NOT EXISTS #{@target_schema}"
+    build_params = {
+      target_schema: @target_schema,
+    }
+
+    schema_query = format(<<~SQL.squish, build_params)
+      CREATE SCHEMA IF NOT EXISTS %{target_schema}
+    SQL
+
     DataWarehouseApplicationRecord.connection.execute(schema_query)
     log_info("Schema #{@target_schema} created", true)
   rescue ActiveRecord::StatementInvalid => e
@@ -99,11 +105,11 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     columns
   end
 
-  def upsert_data(last_sync_time)
+  def upsert_data
     if DataWarehouseApplicationRecord.connection.adapter_name.downcase.include?('redshift')
       perform_merge_upsert
     else
-      perform_insert_on_conflict(last_sync_time)
+      perform_insert_upsert
     end
   end
 
@@ -114,37 +120,51 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     insert_values = columns.map { |col| "source.#{col}" }.join(', ')
     on_conditions = @primary_keys.map { |key| "target.#{key} = source.#{key}" }.join(' AND ')
 
-    merge_query = <<-SQL.squish
-      MERGE INTO #{@target_table_with_schema} AS target
-      USING #{@source_table} AS source
-      ON #{on_conditions}
-      WHEN MATCHED AND source.#{@timestamp_column} > target.#{@timestamp_column} THEN
-        UPDATE SET #{update_assignments}
+    build_params = {
+      target_table_with_schema: @target_table_with_schema,
+      source_table: @source_table,
+      on_conditions: on_conditions,
+      timestamp_column: @timestamp_column,
+      update_assignments: update_assignments,
+      insert_columns: insert_columns,
+      insert_values: insert_values,
+    }
+
+    merge_query = format(<<~SQL.squish, build_params)
+      MERGE INTO %{target_table_with_schema} AS target
+      USING %{source_table} AS source
+      ON %{on_conditions}
+      WHEN MATCHED AND source.%{timestamp_column} > target.%{timestamp_column} THEN
+        UPDATE SET %{update_assignments}
       WHEN NOT MATCHED THEN
-        INSERT (#{insert_columns})
-        VALUES (#{insert_values});
+        INSERT (%{insert_columns})
+        VALUES (%{insert_values});
     SQL
 
     DataWarehouseApplicationRecord.connection.execute(merge_query)
     log_info("MERGE executed for #{@target_table_with_schema}", true)
   end
 
-  def perform_insert_on_conflict(last_sync_time)
+  def perform_insert_upsert
     columns = fetch_source_columns.map { |col| col['column'] }
     insert_columns = columns.join(', ')
     insert_values = columns.map { |col| "source.#{col}" }.join(', ')
-    update_assignments = columns.map { |col| "#{col} = EXCLUDED.#{col}" }.join(', ')
 
-    insert_query = <<-SQL.squish
-      INSERT INTO #{@target_table_with_schema} (#{insert_columns})
-      SELECT #{insert_values}
-      FROM #{@source_table} AS source
-      WHERE source.#{@timestamp_column} > '#{last_sync_time}'
-      SET #{update_assignments};
+    build_params = {
+      target_table_with_schema: @target_table_with_schema,
+      source_table: @source_table,
+      insert_columns: insert_columns,
+      insert_values: insert_values,
+    }
+
+    insert_query = format(<<~SQL.squish, build_params)
+      INSERT INTO %{target_table_with_schema} (%{insert_columns})
+      SELECT %{insert_values}
+      FROM %{source_table} AS source
     SQL
 
     DataWarehouseApplicationRecord.connection.execute(insert_query)
-    log_info("INSERT ON CONFLICT executed for #{@target_table_with_schema}", true)
+    log_info("INSERT executed for #{@target_table}", true)
   end
 
   def fetch_last_sync_time

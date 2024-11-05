@@ -9,7 +9,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
   let(:source_table_with_schema) { "#{source_schema}.#{source_table}" }
   let(:target_table_with_schema) { "#{target_schema}.#{target_table}" }
   let(:timestamp_column) { 'endtime' }
-  let(:primary_key) { 'userid' }
+  let(:primary_keys) { ['userid', 'query'] }
   let(:last_sync_time) { Time.zone.now - 6.days }
   let!(:file_path) { Rails.root.join('spec', 'fixtures', 'redshift_system_tables.yml') }
   let(:table) do
@@ -18,7 +18,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
       'target_table' => source_table,
       'source_schema' => source_schema,
       'target_schema' => target_schema,
-      'primary_key' => primary_key,
+      'primary_keys' => primary_keys,
       'timestamp_column' => timestamp_column,
     }
   end
@@ -28,9 +28,78 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
     allow(job).to receive(:config_file_path).and_return(file_path)
   end
 
-  describe '#perform' do
-    it 'upserts data into the target table' do
-      # job.perform
+  describe '#upsert_data' do
+    context 'when using Redshift as the adapter' do
+      before do
+        connection = DataWarehouseApplicationRecord.connection
+        allow(connection).to receive(:adapter_name).and_return('redshift')
+        allow(job).to receive(:perform_merge_upsert)
+      end
+
+      it 'calls #perform_merge_upsert' do
+        expect(job).to receive(:perform_merge_upsert)
+        job.send(:upsert_data)
+      end
+    end
+
+    context 'when not using Redshift as the adapter' do
+      before do
+        connection = DataWarehouseApplicationRecord.connection
+        allow(connection).to receive(:adapter_name).and_return('postgresql')
+        allow(job).to receive(:perform_insert_upsert)
+      end
+
+      it 'calls #perform_insert_upsert' do
+        expect(job).to receive(:perform_insert_upsert)
+        job.send(:upsert_data)
+      end
+    end
+  end
+
+  describe '#perform_merge_upsert' do
+    before do
+      allow(DataWarehouseApplicationRecord.connection).to receive(:execute)
+      allow(Rails.logger).to receive(:info)
+    end
+
+    it 'executes a MERGE statement with proper conditions' do
+      job.send(:create_target_table)
+
+      expected_query = <<-QUERY.squish
+        MERGE INTO system_tables.stl_query AS target
+        USING stl_query AS source ON target.userid = source.userid AND target.query = source.query
+        WHEN MATCHED AND source.endtime > target.endtime
+        THEN UPDATE SET target.userid = source.userid, target.query = source.query, target.label = source.label, target.xid = source.xid, target.pid = source.pid,
+        target.database = source.database, target.querytxt = source.querytxt, target.starttime = source.starttime, target.endtime = source.endtime,
+        target.aborted = source.aborted, target.insert_pristine = source.insert_pristine, target.concurency_scalling_status = source.concurency_scalling_status
+        WHEN NOT MATCHED THEN INSERT (userid, query, label, xid, pid, database, querytxt, starttime, endtime, aborted, insert_pristine, concurency_scalling_status)
+        VALUES (source.userid, source.query, source.label, source.xid, source.pid, source.database, source.querytxt, source.starttime, source.endtime, source.aborted,
+        source.insert_pristine, source.concurency_scalling_status);
+      QUERY
+
+      expect(DataWarehouseApplicationRecord.connection).to receive(:execute).with(expected_query)
+      job.send(:perform_merge_upsert)
+    end
+  end
+
+  describe '#perform_insert_upsert' do
+    before do
+      allow(DataWarehouseApplicationRecord.connection).to receive(:execute)
+      allow(Rails.logger).to receive(:info)
+    end
+
+    it 'executes a Insert statement' do
+      job.send(:create_target_table)
+
+      expected_query = <<-QUERY.squish
+        INSERT INTO system_tables.stl_query (userid, query, label, xid, pid, database, querytxt, starttime, endtime, aborted, insert_pristine, concurency_scalling_status)
+        SELECT source.userid, source.query, source.label, source.xid, source.pid, source.database, source.querytxt, source.starttime, source.endtime, source.aborted,
+        source.insert_pristine, source.concurency_scalling_status
+        FROM stl_query AS source
+      QUERY
+
+      expect(DataWarehouseApplicationRecord.connection).to receive(:execute).with(expected_query)
+      job.send(:perform_insert_upsert)
     end
   end
 
@@ -38,29 +107,34 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
     it 'return table definitions from the config file' do
       table_definitions = job.send(:table_definitions)
       expect(table_definitions).to match_array(
-        [{ 'name' => 'stl_query',
-           'primary_key' => 'userid',
-           'timestamp_column' => 'endtime',
+        [{ 'source_table' => 'stl_query',
            'target_table' => 'stl_query',
-           'target_schema' => 'test_pg_catalog' }],
+           'source_schema' => 'test_pg_catalog',
+           'target_schema' => 'system_tables',
+           'primary_keys' => ['userid', 'query'],
+           'timestamp_column' => 'endtime' }],
       )
     end
   end
 
   describe '#target_table_exists?' do
-    it 'returns true if the target table exists' do
-      expect(DataWarehouseApplicationRecord.connection.table_exists?(source_table_with_schema)).to be true
+    it 'returns true if the source table exists' do
+      source = DataWarehouseApplicationRecord.connection.table_exists?(source_table_with_schema)
+      expect(source).to be true
     end
 
-    it 'returns false if the target table exists' do
-      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be false
+    it 'returns false if the target table not exists' do
+      target = DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)
+      expect(target).to be false
     end
   end
 
   describe '#create_target_table' do
     it 'creates target tables, and log message' do
-      expect(DataWarehouseApplicationRecord.connection.table_exists?(source_table_with_schema)).to be true
-      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be false
+      source = DataWarehouseApplicationRecord.connection.table_exists?(source_table_with_schema)
+      target = DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)
+      expect(source).to be true
+      expect(target).to be false
 
       allow(Rails.logger).to receive(:info).and_call_original
       expected_msgs = [
@@ -88,7 +162,8 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
 
       job.send(:create_target_table)
 
-      expect(DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)).to be true
+      target = DataWarehouseApplicationRecord.connection.table_exists?(target_table_with_schema)
+      expect(target).to be true
     end
   end
 
