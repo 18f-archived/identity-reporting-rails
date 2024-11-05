@@ -142,6 +142,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
             SELECT *, ROW_NUMBER() OVER (PARTITION BY %{partition_by}) AS row_num
             FROM %{source_table}
         )
+        WHERE row_num = 1
       ) AS source
       ON %{on_conditions}
       WHEN MATCHED THEN
@@ -151,6 +152,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
         VALUES (%{insert_values});
     SQL
 
+    log_info("Merge query #{@source_table}", true, merge_query: merge_query)
     DataWarehouseApplicationRecord.connection.execute(merge_query)
     log_info("MERGE executed for #{@target_table_with_schema}", true)
   end

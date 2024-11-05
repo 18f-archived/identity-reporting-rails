@@ -72,6 +72,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
             SELECT *, ROW_NUMBER() OVER (PARTITION BY stl_query.userid, stl_query.query) AS row_num
             FROM stl_query
           )
+          WHERE row_num = 1
         ) AS source ON stl_query.userid = source.userid AND stl_query.query = source.query
         WHEN MATCHED
         THEN UPDATE SET userid = source.userid, query = source.query, label = source.label, xid = source.xid, pid = source.pid,
