@@ -118,7 +118,10 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     update_assignments = columns.map { |col| "#{col} = source.#{col}" }.join(', ')
     insert_columns = columns.join(', ')
     insert_values = columns.map { |col| "source.#{col}" }.join(', ')
-    on_conditions = @primary_keys.map { |key| "#{@source_table}.#{key} = source.#{key}" }.join(' AND ')
+    on_conditions = @primary_keys.map do |key|
+      "#{@source_table}.#{key} = source.#{key}"
+    end.join(' AND ')
+    partition_by = @primary_keys.map { |key| "#{@source_table}.#{key}" }.join(', ')
 
     build_params = {
       target_table_with_schema: @target_table_with_schema,
@@ -128,11 +131,18 @@ class RedshiftSystemTableSyncJob < ApplicationJob
       update_assignments: update_assignments,
       insert_columns: insert_columns,
       insert_values: insert_values,
+      partition_by: partition_by,
     }
 
     merge_query = format(<<~SQL.squish, build_params)
       MERGE INTO %{target_table_with_schema}
-      USING %{source_table} AS source
+      USING(
+        SELECT *
+        FROM (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY %{partition_by}) AS row_num
+            FROM %{source_table}
+        )
+      ) AS source
       ON %{on_conditions}
       WHEN MATCHED THEN
         UPDATE SET %{update_assignments}

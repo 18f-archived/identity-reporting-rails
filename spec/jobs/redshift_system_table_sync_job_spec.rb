@@ -67,7 +67,12 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
 
       expected_query = <<-QUERY.squish
         MERGE INTO system_tables.stl_query
-        USING stl_query AS source ON stl_query.userid = source.userid AND stl_query.query = source.query
+        USING(
+          SELECT * FROM (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY stl_query.userid, stl_query.query) AS row_num
+            FROM stl_query
+          )
+        ) AS source ON stl_query.userid = source.userid AND stl_query.query = source.query
         WHEN MATCHED
         THEN UPDATE SET userid = source.userid, query = source.query, label = source.label, xid = source.xid, pid = source.pid,
         database = source.database, querytxt = source.querytxt, starttime = source.starttime, endtime = source.endtime,
