@@ -17,4 +17,12 @@ tables:
       - 'step'
       - 'query'
     timestamp_column: "endtime"
+  - source_table: "stl_connection_log"
+    target_table: "stl_connection_log"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    primary_keys:
+      - 'pid'
+      - 'recordtime'
+    timestamp_column: "recordtime"
   # Add more tables as needed
