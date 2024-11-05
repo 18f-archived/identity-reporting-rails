@@ -66,12 +66,12 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
       job.send(:create_target_table)
 
       expected_query = <<-QUERY.squish
-        MERGE INTO system_tables.stl_query AS target
-        USING stl_query AS source ON target.userid = source.userid AND target.query = source.query
-        WHEN MATCHED AND source.endtime > target.endtime
-        THEN UPDATE SET target.userid = source.userid, target.query = source.query, target.label = source.label, target.xid = source.xid, target.pid = source.pid,
-        target.database = source.database, target.querytxt = source.querytxt, target.starttime = source.starttime, target.endtime = source.endtime,
-        target.aborted = source.aborted, target.insert_pristine = source.insert_pristine, target.concurency_scalling_status = source.concurency_scalling_status
+        MERGE INTO system_tables.stl_query
+        USING stl_query AS source ON stl_query.userid = source.userid AND stl_query.query = source.query
+        WHEN MATCHED
+        THEN UPDATE SET userid = source.userid, query = source.query, label = source.label, xid = source.xid, pid = source.pid,
+        database = source.database, querytxt = source.querytxt, starttime = source.starttime, endtime = source.endtime,
+        aborted = source.aborted, insert_pristine = source.insert_pristine, concurency_scalling_status = source.concurency_scalling_status
         WHEN NOT MATCHED THEN INSERT (userid, query, label, xid, pid, database, querytxt, starttime, endtime, aborted, insert_pristine, concurency_scalling_status)
         VALUES (source.userid, source.query, source.label, source.xid, source.pid, source.database, source.querytxt, source.starttime, source.endtime, source.aborted,
         source.insert_pristine, source.concurency_scalling_status);

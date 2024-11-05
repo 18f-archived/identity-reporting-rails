@@ -115,10 +115,10 @@ class RedshiftSystemTableSyncJob < ApplicationJob
 
   def perform_merge_upsert
     columns = fetch_source_columns.map { |col| col['column'] }
-    update_assignments = columns.map { |col| "target.#{col} = source.#{col}" }.join(', ')
+    update_assignments = columns.map { |col| "#{col} = source.#{col}" }.join(', ')
     insert_columns = columns.join(', ')
     insert_values = columns.map { |col| "source.#{col}" }.join(', ')
-    on_conditions = @primary_keys.map { |key| "target.#{key} = source.#{key}" }.join(' AND ')
+    on_conditions = @primary_keys.map { |key| "#{@source_table}.#{key} = source.#{key}" }.join(' AND ')
 
     build_params = {
       target_table_with_schema: @target_table_with_schema,
@@ -131,10 +131,10 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     }
 
     merge_query = format(<<~SQL.squish, build_params)
-      MERGE INTO %{target_table_with_schema} AS target
+      MERGE INTO %{target_table_with_schema}
       USING %{source_table} AS source
       ON %{on_conditions}
-      WHEN MATCHED AND source.%{timestamp_column} > target.%{timestamp_column} THEN
+      WHEN MATCHED THEN
         UPDATE SET %{update_assignments}
       WHEN NOT MATCHED THEN
         INSERT (%{insert_columns})
