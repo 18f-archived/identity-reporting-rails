@@ -1,10 +1,10 @@
+# target_schema should be 'system_tables' as of now
 tables:
   - source_table: "stl_query"
     target_table: "stl_query"
     source_schema: 'pg_catalog'
     target_schema: 'system_tables'
     primary_keys:
-      - 'userid'
       - 'query'
     timestamp_column: "endtime"
   - source_table: "stl_scan"
@@ -12,7 +12,9 @@ tables:
     source_schema: 'pg_catalog'
     target_schema: 'system_tables'
     primary_keys:
-      - 'userid'
+      - 'slice'
+      - 'segment'
+      - 'step'
       - 'query'
     timestamp_column: "endtime"
   # Add more tables as needed
