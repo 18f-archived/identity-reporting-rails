@@ -70,6 +70,13 @@ ActiveRecord::Schema[7.1].define(version: 2024_10_28_111230) do
     t.string 'trace_id'
   end
 
+  create_table 'sync_metadata', force: :cascade do |t|
+    t.string 'table_name'
+    t.datetime 'last_sync_time', precision: nil
+    t.datetime 'created_at', null: false
+    t.datetime 'updated_at', null: false
+  end
+
   create_table 'unextracted_events', id: false, force: :cascade do |t|
     t.jsonb 'message'
     t.datetime 'cloudwatch_timestamp', precision: nil
@@ -79,4 +86,5 @@ ActiveRecord::Schema[7.1].define(version: 2024_10_28_111230) do
     t.jsonb 'message'
     t.datetime 'cloudwatch_timestamp', precision: nil
   end
+
 end
