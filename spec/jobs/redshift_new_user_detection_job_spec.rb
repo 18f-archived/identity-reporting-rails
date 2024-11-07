@@ -49,10 +49,11 @@ RSpec.describe RedshiftUnexpectedUserDetectionJob, type: :job do
       end
     end
 
-    context 'when the db consumption lambda user, and known admin usernames exist' do
+    context 'when lambda and known admin usernames exist' do
       before do
         query = <<~SQL
           CREATE USER "IAMR:testenv_db_consumption";
+          CREATE USER "IAMR:testenv_stale_data_check";
           CREATE USER "superuser";
           CREATE USER "rdsadmin";
           CREATE USER "rdsdb";

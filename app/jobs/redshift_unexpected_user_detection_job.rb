@@ -38,9 +38,9 @@ class RedshiftUnexpectedUserDetectionJob < ApplicationJob
     DataWarehouseApplicationRecord.connection.adapter_name.downcase.include?('redshift')
   end
 
-  def lambda_user_name
+  def lambda_users
     env_name = Identity::Hostdata.env
-    "IAMR:#{env_name}_db_consumption"
+    ["IAMR:#{env_name}_db_consumption", "IAMR:#{env_name}_stale_data_check"]
   end
 
   def local_users_query
@@ -59,7 +59,7 @@ class RedshiftUnexpectedUserDetectionJob < ApplicationJob
       users.delete(ENV['USER'])
       users.delete('postgres_user')
     end
-    users.delete(lambda_user_name)
+    lambda_users.each { |lambda_user_name| users.delete(lambda_user_name) }
     users
   end
 
