@@ -1,0 +1,28 @@
+# target_schema should be 'system_tables' as of now
+tables:
+  - source_table: "stl_query"
+    target_table: "stl_query"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    primary_keys:
+      - 'query'
+    timestamp_column: "endtime"
+  - source_table: "stl_scan"
+    target_table: "stl_scan"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    primary_keys:
+      - 'slice'
+      - 'segment'
+      - 'step'
+      - 'query'
+    timestamp_column: "endtime"
+  - source_table: "stl_connection_log"
+    target_table: "stl_connection_log"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    primary_keys:
+      - 'pid'
+      - 'recordtime'
+    timestamp_column: "recordtime"
+  # Add more tables as needed

@@ -29,6 +29,11 @@ else
         class: 'ExtractorRowCheckerEnqueueJob',
         cron: cron_1d,
       },
+      # Queue redshift system tables sync
+      redshift_system_table_sync: {
+        class: 'RedshiftSystemTableSyncJob',
+        cron: cron_1d,
+      },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
   end
