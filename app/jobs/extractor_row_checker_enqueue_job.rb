@@ -9,7 +9,7 @@ class ExtractorRowCheckerEnqueueJob < ApplicationJob
         if schema_name == 'logs'
           PiiRowCheckerJob.perform_later(table_name)
         end
-        next if table_name.start_with?('unextracted_')
+        next if table_name.start_with?('unextracted_') || schema_name == 'system_tables'
         DuplicateRowCheckerJob.perform_later(table_name, schema_name)
       end
     end

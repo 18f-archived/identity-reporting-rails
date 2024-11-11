@@ -4,8 +4,9 @@ RSpec.describe ExtractorRowCheckerEnqueueJob, type: :job do
   describe '#perform' do
     let(:schema_table_hash) do
       {
-        'logs' => ['events', 'production'],
+        'logs' => ['events', 'production', 'unextracted_events'],
         'idp' => ['articles'],
+        'system_tables' => ['stl_sample'],
       }
     end
 
@@ -24,7 +25,9 @@ RSpec.describe ExtractorRowCheckerEnqueueJob, type: :job do
 
     it 'enqueues DuplicateRowCheckerJob for all tables in all schemas' do
       schema_table_hash.each do |schema_name, tables|
+        next if schema_name == 'system_tables' # skip system tables
         tables.each do |table_name|
+          next if table_name.start_with?('unextracted_')
           expect(DuplicateRowCheckerJob).to receive(:perform_later).with(table_name, schema_name)
         end
       end
