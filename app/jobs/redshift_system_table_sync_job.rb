@@ -26,7 +26,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     @source_table = table['source_table']
     @target_table = table['target_table']
     @timestamp_column = table['timestamp_column']
-    @primary_keys = table['primary_keys']
+    @column_keys = table['column_keys']
     @target_table_with_schema = [@target_schema, @target_table].join('.')
     @source_table_with_schema = [@source_schema, @source_table].join('.')
   end
@@ -118,10 +118,10 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     update_assignments = columns.map { |col| "#{col} = source.#{col}" }.join(', ')
     insert_columns = columns.join(', ')
     insert_values = columns.map { |col| "source.#{col}" }.join(', ')
-    on_conditions = @primary_keys.map do |key|
+    on_conditions = @column_keys.map do |key|
       "#{@source_table}.#{key} = source.#{key}"
     end.join(' AND ')
-    partition_by = @primary_keys.map { |key| "#{@source_table}.#{key}" }.join(', ')
+    partition_by = @column_keys.map { |key| "#{@source_table}.#{key}" }.join(', ')
 
     build_params = {
       target_table_with_schema: @target_table_with_schema,

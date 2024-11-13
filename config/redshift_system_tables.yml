@@ -1,28 +1,108 @@
 # target_schema should be 'system_tables' as of now
 tables:
-  - source_table: "stl_query"
-    target_table: "stl_query"
+  - source_table: "stl_alert_event_log"
+    target_table: "stl_alert_event_log"
     source_schema: 'pg_catalog'
     target_schema: 'system_tables'
-    primary_keys:
+    timestamp_column: "event_time"
+    column_keys:
+      - 'userid'
       - 'query'
-    timestamp_column: "endtime"
-  - source_table: "stl_scan"
-    target_table: "stl_scan"
-    source_schema: 'pg_catalog'
-    target_schema: 'system_tables'
-    primary_keys:
-      - 'slice'
-      - 'segment'
-      - 'step'
-      - 'query'
-    timestamp_column: "endtime"
+      - 'pid'
+
   - source_table: "stl_connection_log"
     target_table: "stl_connection_log"
     source_schema: 'pg_catalog'
     target_schema: 'system_tables'
-    primary_keys:
+    timestamp_column: "recordtime"
+    column_keys:
       - 'pid'
       - 'recordtime'
-    timestamp_column: "recordtime"
+
+  - source_table: "stl_query"
+    target_table: "stl_query"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "endtime"
+    column_keys:
+      - 'query'
+
+  - source_table: "stl_scan"
+    target_table: "stl_scan"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "endtime"
+    column_keys:
+      - 'slice'
+      - 'segment'
+      - 'step'
+      - 'query'
+
+
+  - source_table: "stl_utilitytext"
+    target_table: "stl_utilitytext"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "endtime"
+    column_keys:
+      - 'userid'
+      - 'text'
+      - 'endtime'
+
+  - source_table: "stl_wlm_query"
+    target_table: "stl_wlm_query"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "exec_start_time"
+    column_keys:
+      - 'userid'
+      - 'query'
+
+  - source_table: "stv_recents"
+    target_table: "stv_recents"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "starttime"
+    column_keys:
+      - 'userid'
+      - 'query'
+      - 'starttime'
+
+  - source_table: "stv_sessions"
+    target_table: "stv_sessions"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "starttime"
+    column_keys:
+      - 'user_id'
+      - 'process'
+
+  - source_table: "svl_s3query_summary"
+    target_table: "svl_s3query_summary"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "endtime"
+    column_keys:
+      - 'userid'
+      - 'query'
+
+  - source_table: "svl_qlog"
+    target_table: "svl_qlog"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "starttime"
+    column_keys:
+      - 'userid'
+      - 'query'
+
+  - source_table: "svl_query_metrics_summary"
+    target_table: "svl_query_metrics_summary"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    column_keys:
+      - 'userid'
+      - 'query'
+      
+
+
   # Add more tables as needed

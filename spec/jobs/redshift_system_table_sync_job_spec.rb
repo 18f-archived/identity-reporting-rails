@@ -9,7 +9,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
   let(:source_table_with_schema) { "#{source_schema}.#{source_table}" }
   let(:target_table_with_schema) { "#{target_schema}.#{target_table}" }
   let(:timestamp_column) { 'endtime' }
-  let(:primary_keys) { ['userid', 'query'] }
+  let(:column_keys) { ['userid', 'query'] }
   let(:last_sync_time) { Time.zone.now - 6.days }
   let!(:file_path) { Rails.root.join('spec', 'fixtures', 'redshift_system_tables.yml') }
   let(:table) do
@@ -18,7 +18,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
       'target_table' => source_table,
       'source_schema' => source_schema,
       'target_schema' => target_schema,
-      'primary_keys' => primary_keys,
+      'column_keys' => column_keys,
       'timestamp_column' => timestamp_column,
     }
   end
@@ -117,7 +117,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
            'target_table' => 'stl_query',
            'source_schema' => 'test_pg_catalog',
            'target_schema' => 'system_tables',
-           'primary_keys' => ['userid', 'query'],
+           'column_keys' => ['userid', 'query'],
            'timestamp_column' => 'endtime' }],
       )
     end
