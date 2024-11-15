@@ -9,7 +9,6 @@ tables:
       - 'userid'
       - 'query'
       - 'pid'
-
   - source_table: "stl_connection_log"
     target_table: "stl_connection_log"
     source_schema: 'pg_catalog'
@@ -18,7 +17,6 @@ tables:
     column_keys:
       - 'pid'
       - 'recordtime'
-
   - source_table: "stl_query"
     target_table: "stl_query"
     source_schema: 'pg_catalog'
@@ -26,7 +24,6 @@ tables:
     timestamp_column: "endtime"
     column_keys:
       - 'query'
-
   - source_table: "stl_scan"
     target_table: "stl_scan"
     source_schema: 'pg_catalog'
@@ -37,8 +34,6 @@ tables:
       - 'segment'
       - 'step'
       - 'query'
-
-
   - source_table: "stl_utilitytext"
     target_table: "stl_utilitytext"
     source_schema: 'pg_catalog'
@@ -48,7 +43,6 @@ tables:
       - 'userid'
       - 'text'
       - 'endtime'
-
   - source_table: "stl_wlm_query"
     target_table: "stl_wlm_query"
     source_schema: 'pg_catalog'
@@ -57,7 +51,6 @@ tables:
     column_keys:
       - 'userid'
       - 'query'
-
   - source_table: "stv_recents"
     target_table: "stv_recents"
     source_schema: 'pg_catalog'
@@ -67,7 +60,6 @@ tables:
       - 'userid'
       - 'query'
       - 'starttime'
-
   - source_table: "stv_sessions"
     target_table: "stv_sessions"
     source_schema: 'pg_catalog'
@@ -76,7 +68,6 @@ tables:
     column_keys:
       - 'user_id'
       - 'process'
-
   - source_table: "svl_s3query_summary"
     target_table: "svl_s3query_summary"
     source_schema: 'pg_catalog'
@@ -85,7 +76,6 @@ tables:
     column_keys:
       - 'userid'
       - 'query'
-
   - source_table: "svl_qlog"
     target_table: "svl_qlog"
     source_schema: 'pg_catalog'
@@ -94,7 +84,6 @@ tables:
     column_keys:
       - 'userid'
       - 'query'
-
   - source_table: "svl_query_metrics_summary"
     target_table: "svl_query_metrics_summary"
     source_schema: 'pg_catalog'
@@ -102,7 +91,4 @@ tables:
     column_keys:
       - 'userid'
       - 'query'
-      
-
-
   # Add more tables as needed
