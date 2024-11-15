@@ -3,7 +3,7 @@ tables:
     target_table: "stl_query"
     source_schema: 'test_pg_catalog'
     target_schema: 'system_tables'
-    primary_keys:
+    column_keys:
       - 'userid'
       - 'query'
     timestamp_column: "endtime"
