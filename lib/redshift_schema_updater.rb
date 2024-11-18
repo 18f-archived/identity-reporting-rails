@@ -24,6 +24,8 @@ class RedshiftSchemaUpdater
         create_table(table_name, columns)
       end
     end
+  rescue StandardError => e
+    log_error(e.message)
   end
 
   def table_exists?(table_name)
@@ -174,10 +176,23 @@ class RedshiftSchemaUpdater
 
   private
 
+  def log_error(message)
+    logger.error(
+      {
+        name: self.class.name,
+        error: message,
+      }.to_json,
+    )
+  end
+
+  def logger
+    @logger ||= IdentityJobLogSubscriber.new.logger
+  end
+
   def load_yaml(file_path)
     YAML.load_file(file_path)
   rescue StandardError => e
-    Rails.logger.error "Error loading include columns YML file: #{e.message}"
+    log_error("Error loading include columns YML file: #{e.message}")
     nil
   end
 end
