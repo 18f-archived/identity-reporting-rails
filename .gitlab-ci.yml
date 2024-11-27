@@ -130,7 +130,9 @@ coverage:
       - coverage/coverage.xml
 
 include:
-  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/SAST.latest.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
 
 audit_packages_scheduled:
   stage:
