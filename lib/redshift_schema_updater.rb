@@ -101,11 +101,10 @@ class RedshiftSchemaUpdater
   end
 
   def create_table(table_name, columns)
-    DataWarehouseApplicationRecord.connection.create_table(table_name) do |t|
+    DataWarehouseApplicationRecord.connection.create_table(table_name, id: false) do |t|
       columns.each do |column_info|
         column_name, column_data_type = column_info.values_at('name', 'datatype')
         config_column_options = get_config_column_options(column_info)
-        next if column_name == 'id'
 
         t.column column_name, redshift_data_type(column_data_type), **config_column_options
       end
