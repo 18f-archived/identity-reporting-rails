@@ -29,6 +29,7 @@ stages:
   - build
   - test
   - after_test
+  - release
 
 workflow:
   rules:
@@ -128,6 +129,62 @@ coverage:
       - coverage/index.html
       - coverage/assets/
       - coverage/coverage.xml
+
+require_git_trailer:
+  stage: test
+  needs: []
+  script:
+    - |
+      git fetch origin $CI_COMMIT_REF_NAME
+      git fetch origin $CI_DEFAULT_BRANCH
+      git checkout $CI_COMMIT_REF_NAME
+      FIRST_COMMIT=$(git rev-list --first-parent "origin/main..HEAD" | tail -n 1)
+      if ! git show --format='%B' "$FIRST_COMMIT" | grep -E "^Changelog:"; then
+        echo "ERROR: The first commit ($FIRST_COMMIT) does not contain a changelog entry"
+        exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+pre_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - |
+      echo "Fetching the latest full release"
+      LATEST_RELEASE=$(glab release list --limit 1 --exclude-pre-releases --json tag_name | jq -r '.[0].tag_name')
+      echo "Latest Release: $LATEST_RELEASE"
+      if [ -z "$LATEST_RELEASE" ]; then
+        echo "No previous release found. Assuming changelogs are not available. Starting from v1";
+        NEW_RELEASE="pre-v1";
+        glab mr list --target-branch=main --per-page 100 -M | cut -d$'\t' -f 1-3 | tail -n +3 > changelog.md
+      else
+        NEW_RELEASE=$(echo "$LATEST_RELEASE" | awk -F. '{printf "pre-v%d", $1+1}')
+        glab release changelog --since="$LATEST_RELEASE" --output changelog.md
+      fi
+      glab release create "$NEW_RELEASE" --target "$CI_COMMIT_SHA" --notes-file changelog.md
+      cat "$NEW_RELEASE" > pre-release-tag.txt
+  artifacts:
+    paths:
+      - pre-release-tag.txt
+      - changelog.md
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+promote_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  dependencies:
+    - pre_release
+  script:
+    - |
+      echo "Promoting release..."
+      PRE_RELEASE=$(cat pre-release-tag.txt)
+      NEW_RELEASE=$(echo "$PRE_RELEASE" | sed s/pre-//)
+      glab release create "$NEW_RELEASE" --target "$CI_COMMIT_SHA" --notes-file changelog.md
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 include:
   - template: Jobs/SAST.latest.gitlab-ci.yml
