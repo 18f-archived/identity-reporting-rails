@@ -154,8 +154,10 @@ pre_release:
   script:
     - |
       glab auth login --hostname gitlab.login.gov --job-token $CI_JOB_TOKEN
-      echo "Fetching the latest full release"
-      LATEST_RELEASE=$(glab release list --per-page 3 | tail -n +3 | awk '{print $1}' | grep -v "pre-" | head -1)
+      echo "Fetching list of releases..."
+      RELEASES=$(glab release list --per-page 3)
+      echo "Filtering to latest..."
+      LATEST_RELEASE=$(echo "$RELEASES" | tail -n +3 | awk '{print $1}' | grep -v "pre-" | head -1)
       echo "Latest Release: $LATEST_RELEASE"
       if [ -z "$LATEST_RELEASE" ]; then
         echo "No previous release found. Assuming changelogs are not available. Starting from v1";
