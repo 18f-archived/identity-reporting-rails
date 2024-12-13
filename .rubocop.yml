@@ -10,17 +10,17 @@ require:
 
 AllCops:
   Exclude:
-    - 'bin/**/*'
-    - 'db/primary_migrate/*'
-    - 'db/schema.rb'
-    - 'db/worker_jobs_migrate/*'
-    - 'db/worker_jobs_schema.rb'
-    - 'db/data_warehouse_migrate/*'
-    - 'db/data_warehouse_schema.rb'
-    - 'tmp/**/*'
-    - 'vendor/**/*'
-    - 'public/**/*'
-  TargetRubyVersion: 3.3.1
+    - "bin/**/*"
+    - "db/primary_migrate/*"
+    - "db/schema.rb"
+    - "db/worker_jobs_migrate/*"
+    - "db/worker_jobs_schema.rb"
+    - "db/data_warehouse_migrate/*"
+    - "db/data_warehouse_schema.rb"
+    - "tmp/**/*"
+    - "vendor/**/*"
+    - "public/**/*"
+  TargetRubyVersion: 3.3.4
   TargetRailsVersion: 7.1
   UseCache: true
   DisabledByDefault: true
@@ -607,7 +607,7 @@ Metrics/BlockLength:
     - RedactedStruct.new
   Exclude:
     - Rakefile
-    - '**/*.rake'
+    - "**/*.rake"
     - config/environments/*.rb
     - config/routes.rb
     - spec/**/*.rb
@@ -1205,12 +1205,12 @@ Style/OrAssignment:
 
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:
-    default: '()'
-    '%i': '[]'
-    '%I': '[]'
-    '%r': '{}'
-    '%w': '[]'
-    '%W': '[]'
+    default: "()"
+    "%i": "[]"
+    "%I": "[]"
+    "%r": "{}"
+    "%w": "[]"
+    "%W": "[]"
 
 Style/Proc:
   Enabled: true
