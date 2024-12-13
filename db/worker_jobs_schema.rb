@@ -10,12 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_04_093856) do
-  create_schema "idp"
-  create_schema "logs"
-  create_schema "system_tables"
-  create_schema "test_pg_catalog"
-
+ActiveRecord::Schema[7.1].define(version: 2023_12_13_185739) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
