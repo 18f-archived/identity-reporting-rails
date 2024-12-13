@@ -151,6 +151,7 @@ pre_release:
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
     - |
+      glab auth login --job-token $CI_JOB_TOKEN
       echo "Fetching the latest full release"
       LATEST_RELEASE=$(glab release list --per-page 3 | tail -n +3 | awk '{print $1}' | grep -v "pre-" | head -1)
       echo "Latest Release: $LATEST_RELEASE"
@@ -178,6 +179,7 @@ promote_release:
     - pre_release
   script:
     - |
+      glab auth login --job-token $CI_JOB_TOKEN
       echo "Promoting release..."
       PRE_RELEASE=$(cat pre-release-tag.txt)
       NEW_RELEASE=$(echo "$PRE_RELEASE" | sed s/pre-//)
