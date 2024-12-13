@@ -133,6 +133,8 @@ coverage:
 require_git_trailer:
   stage: test
   needs: []
+  variables:
+    GIT_STRATEGY: clone
   script:
     - |
       git fetch origin $CI_COMMIT_REF_NAME
