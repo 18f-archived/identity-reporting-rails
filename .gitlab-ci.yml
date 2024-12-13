@@ -167,7 +167,7 @@ pre_release:
       if [ -z "$LATEST_RELEASE" ]; then
         echo "No previous release found. Assuming changelogs are not available. Starting from v1";
         NEW_RELEASE="pre-v1";
-        glab mr list --target-branch=main --per-page 100 -M | cut -d$'\t' -f 1-3 | tail -n +3 > changelog.md
+        echo "Manual changelog generation required." > changelog.md
       else
         NEW_RELEASE=$(echo "$LATEST_RELEASE" | awk -F. '{printf "pre-v%d", $1+1}')
         glab release changelog --since="$LATEST_RELEASE" --output changelog.md
