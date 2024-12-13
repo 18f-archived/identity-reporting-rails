@@ -172,7 +172,7 @@ pre_release:
         NEW_RELEASE=$(echo "$LATEST_RELEASE" | awk -F. '{printf "pre-v%d", $1+1}')
         glab release changelog --since="$LATEST_RELEASE" --output changelog.md
       fi
-      glab release create "$NEW_RELEASE" --target "$CI_COMMIT_SHA" --notes-file changelog.md
+      glab release create "$NEW_RELEASE" --ref "$CI_COMMIT_SHA" --notes-file changelog.md
       cat "$NEW_RELEASE" > pre-release-tag.txt
   artifacts:
     paths:
