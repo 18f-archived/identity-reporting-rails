@@ -148,6 +148,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
+    csv (3.3.1)
     date (3.4.1)
     diff-lcs (1.5.1)
     docile (1.4.1)
@@ -410,6 +411,7 @@ DEPENDENCIES
   brakeman
   bullet (~> 7.0)
   bundler-audit
+  csv
   factory_bot_rails (>= 6.2.0)
   faker
   good_job (~> 3.0)

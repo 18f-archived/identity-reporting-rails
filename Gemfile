@@ -6,6 +6,7 @@ gem 'activerecord7-redshift-adapter-pennylane', '~> 1.0', '>= 1.0.4',
     require: 'active_record/connection_adapters/redshift_adapter'
 gem 'rails', '~> 7.2.1'
 gem 'bootsnap', '~> 1.0', require: false
+gem 'csv'
 gem 'faker'
 gem 'good_job', '~> 3.0'
 gem 'identity-hostdata', github: '18F/identity-hostdata', tag: 'v4.1.0'
