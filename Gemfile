@@ -4,7 +4,7 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}.git" }
 ruby "~> #{File.read(File.join(__dir__, '.ruby-version')).strip}"
 gem 'activerecord7-redshift-adapter-pennylane', '~> 1.0', '>= 1.0.4',
     require: 'active_record/connection_adapters/redshift_adapter'
-gem 'rails', '~> 7.1.3.3'
+gem 'rails', '~> 7.2.1'
 gem 'bootsnap', '~> 1.0', require: false
 gem 'faker'
 gem 'good_job', '~> 3.0'
@@ -19,7 +19,7 @@ gem 'tzinfo-data', platforms: %i[ windows jruby ]
 
 group :development do
   gem 'better_errors', '>= 2.5.1'
-  gem 'irb', '~> 1.11.0'
+  gem 'irb', '~> 1.13.0'
   gem 'rack-mini-profiler', '>= 1.1.3', require: false
 end
 
@@ -34,7 +34,7 @@ group :development, :test do
   gem 'pry-doc', '>= 1.5.0'
   gem 'pry-rails'
   gem 'psych'
-  gem 'rexml', '>= 3.3.3'
+  gem 'rexml', '>= 3.3.9'
   gem 'rspec', '~> 3.13.0'
   gem 'rspec-support', '~> 3.13.1'
   gem 'rspec-rails', '~> 6.0'
