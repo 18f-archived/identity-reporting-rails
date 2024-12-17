@@ -13,11 +13,22 @@ RSpec.describe RedshiftUnloadLogCheckerJob, type: :job do
           job: 'RedshiftUnloadLogCheckerJob',
           success: false,
           message: 'RedshiftUnloadLogCheckerJob: Found unload logs above threshold',
+          data: [{ 'userid' => 1,
+                   'starttime' => Time.zone.now,
+                   'endtime' => Time.zone.now,
+                   's3_path' => 's3://bucket/folder/file.csv',
+                   'query_id' => 1 },
+                 { 'userid' => 1,
+                   'starttime' => Time.zone.now,
+                   'endtime' => Time.zone.now,
+                   's3_path' => 's3://bucket/folder/file.csv',
+                   'query_id' => 2 }],
         }.to_json
       end
 
       before do
-        FactoryBot.create(:stl_unload_log, transfer_size: 150, line_count: 50)
+        FactoryBot.create(:stl_unload_log, transfer_size: 150, line_count: 50, query: 1)
+        # FactoryBot.create(:stl_unload_log, transfer_size: 150, line_count: 50, query: 2)
       end
 
       it 'logs a message indicating logs are found' do
