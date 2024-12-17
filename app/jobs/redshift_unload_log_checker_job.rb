@@ -9,7 +9,7 @@ class RedshiftUnloadLogCheckerJob < ApplicationJob
 
   def fetch_data_from_redshift
     build_params = {
-      transfer_size_threshold: Identity::Hostdata.config.transfer_size_threshold,
+      transfer_size_threshold: Identity::Hostdata.config.transfer_size_threshold_in_bytes,
     }
 
     query = format(<<~SQL, build_params)

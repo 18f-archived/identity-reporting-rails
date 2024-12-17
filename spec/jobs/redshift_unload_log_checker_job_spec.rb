@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe RedshiftUnloadLogCheckerJob, type: :job do
   before do
     allow(Rails.logger).to receive(:info)
-    allow(Identity::Hostdata.config).to receive(:transfer_size_threshold).and_return(100)
+    allow(Identity::Hostdata.config).to receive(:transfer_size_threshold_in_bytes).and_return(100)
   end
 
   describe '#perform' do
