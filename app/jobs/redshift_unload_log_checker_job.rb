@@ -10,7 +10,7 @@ class RedshiftUnloadLogCheckerJob < ApplicationJob
   def fetch_data_from_redshift
     build_params = {
       transfer_size_threshold: Identity::Hostdata.config.transfer_size_threshold_in_bytes,
-      five_minutes_ago: 5.minutes.ago.utc.strftime('%Y-%m-%d %H:%M')
+      five_minutes_ago: 5.minutes.ago.utc.strftime('%Y-%m-%d %H:%M'),
     }
     query = format(<<~SQL, build_params)
       SELECT userid, start_time, end_time, path as s3_path, query as query_id
