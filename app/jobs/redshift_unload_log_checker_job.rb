@@ -10,12 +10,13 @@ class RedshiftUnloadLogCheckerJob < ApplicationJob
   def fetch_data_from_redshift
     build_params = {
       transfer_size_threshold: Identity::Hostdata.config.transfer_size_threshold_in_bytes,
-      expected_time: 5.minutes.ago.strftime('%Y-%m-%d %H:%M:%S'),
+      five_minutes_ago: 5.minutes.ago.utc.strftime('%Y-%m-%d %H:%M')
     }
     query = format(<<~SQL, build_params)
       SELECT userid, start_time, end_time, path as s3_path, query as query_id
       FROM stl_unload_log
-      WHERE transfer_size > %{transfer_size_threshold} AND start_time > '%{expected_time}'
+      WHERE transfer_size > %{transfer_size_threshold}
+        AND start_time > '%{five_minutes_ago}'
     SQL
 
     result = DataWarehouseApplicationRecord.connection.exec_query(query).to_a
@@ -23,8 +24,8 @@ class RedshiftUnloadLogCheckerJob < ApplicationJob
       merge_result = result.map do |row|
         {
           userid: row['userid'],
-          starttime: row['start_time'].strftime('%Y-%m-%d %H:%M:%S'),
-          endtime: row['end_time'].strftime('%Y-%m-%d %H:%M:%S'),
+          starttime: row['start_time'].strftime('%Y-%m-%d %H:%M'),
+          endtime: row['end_time'].strftime('%Y-%m-%d %H:%M'),
           s3_path: row['s3_path'],
           query_id: row['query_id'],
         }
