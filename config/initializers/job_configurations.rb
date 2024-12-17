@@ -34,6 +34,11 @@ else
         class: 'RedshiftSystemTableSyncJob',
         cron: cron_1d,
       },
+      # Queue RedshiftUnloadLogCheckerJob job to GoodJob
+      redshift_unload_log_checker_job: {
+        class: 'RedshiftUnloadLogCheckerJob',
+        cron: cron_5m,
+      },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
   end
