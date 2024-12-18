@@ -9,13 +9,13 @@ class RedshiftUnloadLogCheckerJob < ApplicationJob
 
   def fetch_data_from_redshift
     build_params = {
-      transfer_size_threshold: Identity::Hostdata.config.transfer_size_threshold_in_bytes,
+      line_count_threshold: Identity::Hostdata.config.unload_line_count_threshold,
       five_minutes_ago: 5.minutes.ago.utc.strftime('%Y-%m-%d %H:%M'),
     }
     query = format(<<~SQL, build_params)
-      SELECT userid, start_time, end_time, path as s3_path, query as query_id
+      SELECT userid, start_time, end_time, line_count, path as s3_path, query as query_id
       FROM stl_unload_log
-      WHERE transfer_size > %{transfer_size_threshold}
+      WHERE line_count > %{line_count_threshold}
         AND start_time > '%{five_minutes_ago}'
     SQL
 
@@ -28,10 +28,11 @@ class RedshiftUnloadLogCheckerJob < ApplicationJob
           endtime: row['end_time'].strftime('%Y-%m-%d %H:%M'),
           s3_path: row['s3_path'],
           query_id: row['query_id'],
+          line_count: row['line_count'],
         }
       end
       log_info(
-        'RedshiftUnloadLogCheckerJob: Found unload logs above threshold', false,
+        "RedshiftUnloadLogCheckerJob: Found #{result.count} unload logs above threshold", false,
         data: merge_result
       )
     else

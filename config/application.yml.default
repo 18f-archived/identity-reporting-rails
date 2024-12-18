@@ -25,7 +25,7 @@ good_job_queues: 'default:5;low:1;*'
 good_job_queue_select_limit: 5_000
 rack_mini_profiler: false
 rack_timeout_service_timeout_seconds: 15
-transfer_size_threshold_in_bytes: 5000000
+unload_line_count_threshold: 10000
 
 development:
   database_host: ''

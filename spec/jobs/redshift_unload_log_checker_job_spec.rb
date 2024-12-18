@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe RedshiftUnloadLogCheckerJob, type: :job do
   before do
     allow(Rails.logger).to receive(:info)
-    allow(Identity::Hostdata.config).to receive(:transfer_size_threshold_in_bytes).and_return(100)
+    allow(Identity::Hostdata.config).to receive(:unload_line_count_threshold).and_return(100)
   end
 
   describe '#perform' do
@@ -12,23 +12,27 @@ RSpec.describe RedshiftUnloadLogCheckerJob, type: :job do
         {
           job: 'RedshiftUnloadLogCheckerJob',
           success: false,
-          message: 'RedshiftUnloadLogCheckerJob: Found unload logs above threshold',
+          message: 'RedshiftUnloadLogCheckerJob: Found 2 unload logs above threshold',
           data: [{ 'userid' => 1,
                    'starttime' => Time.zone.now.utc.strftime('%Y-%m-%d %H:%M'),
                    'endtime' => Time.zone.now.utc.strftime('%Y-%m-%d %H:%M'),
                    's3_path' => 's3://bucket/folder/file.csv',
-                   'query_id' => 1 },
+                   'query_id' => 1,
+                   'line_count' => 150,
+                 },
                  { 'userid' => 1,
                    'starttime' => Time.zone.now.utc.strftime('%Y-%m-%d %H:%M'),
                    'endtime' => Time.zone.now.utc.strftime('%Y-%m-%d %H:%M'),
                    's3_path' => 's3://bucket/folder/file.csv',
-                   'query_id' => 2 }],
+                   'query_id' => 2,
+                   'line_count' => 250,
+                  }],
         }.to_json
       end
 
       before do
-        FactoryBot.create(:stl_unload_log, transfer_size: 150, line_count: 50, query: 1)
-        FactoryBot.create(:stl_unload_log, transfer_size: 120, line_count: 50, query: 2)
+        FactoryBot.create(:stl_unload_log, line_count: 150, query: 1)
+        FactoryBot.create(:stl_unload_log, line_count: 250, query: 2)
       end
 
       it 'logs a message indicating logs are found' do
