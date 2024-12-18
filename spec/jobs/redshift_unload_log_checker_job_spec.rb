@@ -18,15 +18,13 @@ RSpec.describe RedshiftUnloadLogCheckerJob, type: :job do
                    'endtime' => Time.zone.now.utc.strftime('%Y-%m-%d %H:%M'),
                    's3_path' => 's3://bucket/folder/file.csv',
                    'query_id' => 1,
-                   'line_count' => 150,
-                 },
+                   'line_count' => 150 },
                  { 'userid' => 1,
                    'starttime' => Time.zone.now.utc.strftime('%Y-%m-%d %H:%M'),
                    'endtime' => Time.zone.now.utc.strftime('%Y-%m-%d %H:%M'),
                    's3_path' => 's3://bucket/folder/file.csv',
                    'query_id' => 2,
-                   'line_count' => 250,
-                  }],
+                   'line_count' => 250 }],
         }.to_json
       end
 
