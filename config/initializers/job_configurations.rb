@@ -5,7 +5,7 @@ cron_1d = '0 6 * * *' # 6:00am UTC or 2:00am EST
 if defined?(Rails::Console)
   Rails.logger.info 'job_configurations: console detected, skipping schedule'
 else
-  Rails.application.configure do
+  Rails.application.configure do # rubocop:disable Metrics/BlockLength
     config.good_job.cron = {
       # Queue heartbeat job to GoodJob
       heartbeat_job: {
@@ -33,6 +33,11 @@ else
       redshift_system_table_sync: {
         class: 'RedshiftSystemTableSyncJob',
         cron: cron_1d,
+      },
+      # Queue RedshiftUnloadLogCheckerJob job to GoodJob
+      redshift_unload_log_checker_job: {
+        class: 'RedshiftUnloadLogCheckerJob',
+        cron: cron_5m,
       },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
