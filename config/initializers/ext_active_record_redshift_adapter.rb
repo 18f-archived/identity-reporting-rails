@@ -1,4 +1,4 @@
-if ActiveRecord.version >= Gem::Version.new('7.2.0')
+if ActiveRecord.version >= Gem::Version.new('7.2.2')
   warn 'Unexpected ActiveRecord version, double check that the constructor ' \
        'monkeypatch is still needed'
 end
