@@ -45,9 +45,9 @@ class RedshiftUnexpectedUserDetectionJob < ApplicationJob
 
   def local_users_query
     <<~SQL
-      SELECT usename 
-      FROM pg_user 
-      WHERE usename NOT IN ('rdsdb', 'rdsadmin', 'superuser')
+      SELECT usename
+      FROM pg_user
+      WHERE usename NOT IN ('rdsdb', 'rdsadmin', 'superuser', 'postgres')
     SQL
   end
 
@@ -79,7 +79,7 @@ class RedshiftUnexpectedUserDetectionJob < ApplicationJob
         }.to_json,
       )
     end
-  rescue StandardError => e
+  rescue Errno::ENOENT => e
     log_error(e.message)
   end
 
