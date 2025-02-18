@@ -23,6 +23,7 @@ group :development do
   gem 'better_errors', '>= 2.5.1'
   gem 'irb'
   gem 'rack-mini-profiler', '>= 1.1.3', require: false
+  gem 'letter_opener', '~> 1.8.0'
 end
 
 group :development, :test do
