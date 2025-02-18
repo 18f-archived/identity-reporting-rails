@@ -28,25 +28,45 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
 
   let(:events) do
     [
-      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
-      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin + 1.day },
-      { 'user_id' => 'user1', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin + 2.days },
+      { 'user_id' => 'user1',
+        'name' => 'IdV: Verify please call visited',
+        'time' => time_range.begin },
+      { 'user_id' => 'user1',
+        'name' => 'IdV: Verify please call visited',
+        'time' => time_range.begin + 1.day },
+      { 'user_id' => 'user1',
+        'name' => 'IdV: Verify setup errors visited',
+        'time' => time_range.begin + 2.days },
 
-      { 'user_id' => 'user2', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
+      { 'user_id' => 'user2',
+        'name' => 'IdV: Verify setup errors visited',
+        'time' => time_range.begin },
 
-      { 'user_id' => 'user3', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
-      { 'user_id' => 'user3', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
+      { 'user_id' => 'user3',
+        'name' => 'IdV: Verify please call visited',
+        'time' => time_range.begin },
+      { 'user_id' => 'user3',
+        'name' => 'IdV: Verify setup errors visited',
+        'time' => time_range.begin },
 
-      { 'user_id' => 'user4', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
-      { 'user_id' => 'user4', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
+      { 'user_id' => 'user4',
+        'name' => 'IdV: Verify please call visited',
+        'time' => time_range.begin },
+      { 'user_id' => 'user4',
+        'name' => 'IdV: Verify setup errors visited',
+        'time' => time_range.begin },
 
-      { 'user_id' => 'user5', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
-      { 'user_id' => 'user5', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
+      { 'user_id' => 'user5',
+        'name' => 'IdV: Verify please call visited',
+        'time' => time_range.begin },
+      { 'user_id' => 'user5',
+        'name' => 'IdV: Verify setup errors visited',
+        'time' => time_range.begin },
 
       { 'user_id' => 'user6', 'name' => 'User Suspension: Suspended', 'time' => time_range.begin },
       { 'user_id' => 'user6', 'name' => 'User Suspension: Reinstated', 'time' => time_range.end },
 
-      { 'user_id' => 'user7', 'name' => 'User Suspension: Suspended', 'time' => time_range.end }
+      { 'user_id' => 'user7', 'name' => 'User Suspension: Suspended', 'time' => time_range.end },
     ]
   end
 
@@ -63,7 +83,7 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
         name: event['name'],
         user_id: event['user_id'],
         new_event: true,
-        success: true
+        success: true,
       )
     end
 
@@ -95,8 +115,8 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
   describe '#suspended_metrics_table' do
     it 'renders a suspended metrics table' do
       aggregate_failures do
-        report.suspended_metrics_table.zip(expected_suspended_metrics_table)
-          .each do |actual, expected|
+        report.suspended_metrics_table.zip(expected_suspended_metrics_table).
+          each do |actual, expected|
             expect(actual).to eq(expected)
           end
       end
@@ -106,8 +126,8 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
   describe '#reinstated_metrics_table' do
     it 'renders a reinstated metrics table' do
       aggregate_failures do
-        report.reinstated_metrics_table.zip(expected_reinstated_metrics_table)
-          .each do |actual, expected|
+        report.reinstated_metrics_table.zip(expected_reinstated_metrics_table).
+          each do |actual, expected|
             expect(actual).to eq(expected)
           end
       end

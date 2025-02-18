@@ -2,7 +2,7 @@ class CreateProfileTable < ActiveRecord::Migration[7.2]
   def change
     create_table 'idp.profiles', if_not_exists: true do |t|
       t.integer :user_id, null: false, index: true
-      t.boolean :active, default: false
+      t.boolean :active, default: false, null: false
       t.datetime :verified_at
       t.datetime :activated_at
       t.datetime :created_at, null: false

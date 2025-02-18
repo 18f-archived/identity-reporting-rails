@@ -131,7 +131,9 @@ module Reporting
     end
 
     def fetch_results
-      Event.where(name: Events.all_events).where(cloudwatch_timestamp: time_range.begin..time_range.end).pluck(:name, :user_id)
+      Event.where(name: Events.all_events).
+        where(cloudwatch_timestamp: time_range.begin..time_range.end).
+        pluck(:name, :user_id)
     end
 
     def lg99_unique_users_count
@@ -152,9 +154,9 @@ module Reporting
     end
 
     def user_days_proofed_to_suspension_avg
-      user_data = User.where(uuid: data[Events::SUSPENDED_USERS]).includes(:profiles)
-                      .merge(Profile.active)
-                      .pluck(:activated_at, :suspended_at)
+      user_data = User.where(uuid: data[Events::SUSPENDED_USERS]).includes(:profiles).
+        merge(Profile.active).
+        pluck(:activated_at, :suspended_at)
 
       return 'n/a' if user_data.empty?
 
@@ -167,7 +169,10 @@ module Reporting
     end
 
     def user_days_to_reinstatement_avg
-      user_data = User.where(uuid: data[Events::REINSTATED_USERS]).pluck(:suspended_at, :reinstated_at)
+      user_data = User.where(uuid: data[Events::REINSTATED_USERS]).pluck(
+        :suspended_at,
+        :reinstated_at,
+      )
       return 'n/a' if user_data.empty?
 
       difference = user_data.map { |suspended_at, reinstated_at| reinstated_at - suspended_at }
