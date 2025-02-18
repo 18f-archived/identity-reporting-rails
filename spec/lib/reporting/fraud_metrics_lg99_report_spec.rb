@@ -28,25 +28,25 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
 
   let(:events) do
     [
-      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited' },
-      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited' },
-      { 'user_id' => 'user1', 'name' => 'IdV: Verify setup errors visited' },
+      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
+      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin + 1.day },
+      { 'user_id' => 'user1', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin + 2.days },
 
-      { 'user_id' => 'user2', 'name' => 'IdV: Verify setup errors visited' },
+      { 'user_id' => 'user2', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
 
-      { 'user_id' => 'user3', 'name' => 'IdV: Verify please call visited' },
-      { 'user_id' => 'user3', 'name' => 'IdV: Verify setup errors visited' },
+      { 'user_id' => 'user3', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
+      { 'user_id' => 'user3', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
 
-      { 'user_id' => 'user4', 'name' => 'IdV: Verify please call visited' },
-      { 'user_id' => 'user4', 'name' => 'IdV: Verify setup errors visited' },
+      { 'user_id' => 'user4', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
+      { 'user_id' => 'user4', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
 
-      { 'user_id' => 'user5', 'name' => 'IdV: Verify please call visited' },
-      { 'user_id' => 'user5', 'name' => 'IdV: Verify setup errors visited' },
+      { 'user_id' => 'user5', 'name' => 'IdV: Verify please call visited', 'time' => time_range.begin },
+      { 'user_id' => 'user5', 'name' => 'IdV: Verify setup errors visited', 'time' => time_range.begin },
 
-      { 'user_id' => 'user6', 'name' => 'User Suspension: Suspended' },
-      { 'user_id' => 'user6', 'name' => 'User Suspension: Reinstated' },
+      { 'user_id' => 'user6', 'name' => 'User Suspension: Suspended', 'time' => time_range.begin },
+      { 'user_id' => 'user6', 'name' => 'User Suspension: Reinstated', 'time' => time_range.end },
 
-      { 'user_id' => 'user7', 'name' => 'User Suspension: Suspended' }
+      { 'user_id' => 'user7', 'name' => 'User Suspension: Suspended', 'time' => time_range.end }
     ]
   end
 
@@ -59,7 +59,7 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
       Event.create!(
         id: SecureRandom.uuid,
         message: event,
-        cloudwatch_timestamp: Time.now,
+        cloudwatch_timestamp: event['time'],
         name: event['name'],
         user_id: event['user_id'],
         new_event: true,
