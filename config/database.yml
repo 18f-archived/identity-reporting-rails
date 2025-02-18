@@ -35,7 +35,7 @@ development:
     migrations_paths: db/worker_jobs_migrate
   data_warehouse:
     <<: *defaults
-    database: identity_reporting_rails_data_warehouse2_<%= Rails.env %>
+    database: identity_reporting_rails_data_warehouse_<%= Rails.env %>
     schema_search_path: 'logs,public,system_tables'
     migrations_paths: db/data_warehouse_migrate
 
