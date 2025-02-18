@@ -40,7 +40,8 @@ class RedshiftUnexpectedUserDetectionJob < ApplicationJob
 
   def lambda_users
     env_name = Identity::Hostdata.env
-    ["IAMR:#{env_name}_db_consumption", "IAMR:#{env_name}_stale_data_check"]
+    ["IAMR:#{env_name}_db_consumption", "IAMR:#{env_name}_stale_data_check",
+     "IAMR:#{env_name}_log_consumption", "IAMR:#{env_name}-log-consumption-lambda-role"]
   end
 
   def local_users_query
