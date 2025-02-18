@@ -33,9 +33,6 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
-
   config.action_mailer.perform_caching = false
 
   # Print deprecation notices to the Rails logger.
@@ -64,4 +61,18 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  config.action_mailer.default_url_options = {
+    host: IdentityConfig.store.domain_name,
+    protocol: ENV['HTTPS'] == 'on' ? 'https' : 'http',
+  }
+  config.action_mailer.asset_host = IdentityConfig.store.mailer_domain_name
+  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.show_previews = IdentityConfig.store.rails_mailer_previews_enabled
+  config.action_mailer.delivery_method = IdentityConfig.store.development_mailer_deliver_method
+  if IdentityConfig.store.development_mailer_deliver_method == :letter_opener
+    config.action_mailer.perform_deliveries = true
+  end
+
+  routes.default_url_options[:protocol] = 'https' if ENV['HTTPS'] == 'on'
 end

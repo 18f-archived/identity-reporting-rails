@@ -10,7 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2023_12_13_185739) do
+ActiveRecord::Schema[7.2].define(version: 2025_02_18_155310) do
+  create_schema "idp"
+  create_schema "logs"
+  create_schema "system_tables"
+  create_schema "test_pg_catalog"
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -89,5 +94,17 @@ ActiveRecord::Schema[7.2].define(version: 2023_12_13_185739) do
     t.index ["priority", "created_at"], name: "index_good_jobs_jobs_on_priority_created_at_when_unfinished", order: { priority: "DESC NULLS LAST" }, where: "(finished_at IS NULL)"
     t.index ["queue_name", "scheduled_at"], name: "index_good_jobs_on_queue_name_and_scheduled_at", where: "(finished_at IS NULL)"
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
+  end
+
+  create_table "stl_unload_log", id: false, force: :cascade do |t|
+    t.integer "userid"
+    t.integer "query"
+    t.integer "pid"
+    t.string "path"
+    t.datetime "start_time", precision: nil
+    t.datetime "end_time", precision: nil
+    t.bigint "line_count"
+    t.bigint "transfer_size"
+    t.string "file_format"
   end
 end

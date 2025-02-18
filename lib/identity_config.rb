@@ -7,6 +7,12 @@ class IdentityConfig
     user_sync_identity_devops: '/usersync/identity-devops',
   }
 
+  # Shorthand to allow using old syntax to access configs, minimizes merge conflicts
+  # while migrating to newer syntax
+  def self.store
+    Identity::Hostdata.config
+  end
+
   # rubocop:disable Metrics/BlockLength
   CONFIG_BUILDER = proc do |config|
     #  ______________________________________
@@ -47,6 +53,16 @@ class IdentityConfig
     config.add(:redshift_host, type: :string)
     config.add(:data_freshness_threshold_hours, type: :integer)
     config.add(:unload_line_count_threshold, type: :integer)
+    config.add(:domain_name, type: :string)
+    config.add(:team_daily_fraud_metrics_emails, type: :json)
+    config.add(:team_monthly_fraud_metrics_emails, type: :json)
+    config.add(:rails_mailer_previews_enabled, type: :boolean)
+    config.add(:development_mailer_deliver_method, type: :symbol, enum: [:file, :letter_opener])
+    config.add(:mailer_domain_name)
+    config.add(:email_from, type: :string)
+    config.add(:email_from_display_name, type: :string)
+    config.add(:s3_report_public_bucket_prefix, type: :string)
+    config.add(:report_timeout, type: :integer)
 
     "redshift/#{Identity::Hostdata.env || 'local'}-analytics-superuser".
       then do |redshift_secrets_manager_key|

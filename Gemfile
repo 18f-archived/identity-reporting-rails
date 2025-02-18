@@ -16,6 +16,8 @@ gem 'pg'
 gem 'rack', '>= 2.2.3.1'
 gem 'redacted_struct'
 gem 'tzinfo-data', platforms: %i[ windows jruby ]
+gem 'caxlsx', require: false
+gem 'simple_xlsx_reader', require: false
 
 group :development do
   gem 'better_errors', '>= 2.5.1'
