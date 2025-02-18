@@ -26,10 +26,47 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
     ]
   end
 
+  let(:events) do
+    [
+      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited' },
+      { 'user_id' => 'user1', 'name' => 'IdV: Verify please call visited' },
+      { 'user_id' => 'user1', 'name' => 'IdV: Verify setup errors visited' },
+
+      { 'user_id' => 'user2', 'name' => 'IdV: Verify setup errors visited' },
+
+      { 'user_id' => 'user3', 'name' => 'IdV: Verify please call visited' },
+      { 'user_id' => 'user3', 'name' => 'IdV: Verify setup errors visited' },
+
+      { 'user_id' => 'user4', 'name' => 'IdV: Verify please call visited' },
+      { 'user_id' => 'user4', 'name' => 'IdV: Verify setup errors visited' },
+
+      { 'user_id' => 'user5', 'name' => 'IdV: Verify please call visited' },
+      { 'user_id' => 'user5', 'name' => 'IdV: Verify setup errors visited' },
+
+      { 'user_id' => 'user6', 'name' => 'User Suspension: Suspended' },
+      { 'user_id' => 'user6', 'name' => 'User Suspension: Reinstated' },
+
+      { 'user_id' => 'user7', 'name' => 'User Suspension: Suspended' }
+    ]
+  end
+
   subject(:report) { Reporting::FraudMetricsLg99Report.new(time_range:) }
 
   before do
     travel_to Time.zone.now.beginning_of_day
+
+    events.each do |event|
+      Event.create!(
+        id: SecureRandom.uuid,
+        message: event,
+        cloudwatch_timestamp: Time.now,
+        name: event['name'],
+        user_id: event['user_id'],
+        new_event: true,
+        success: true
+      )
+    end
+
     user7.profiles.verified.last.update(created_at: 1.day.ago, activated_at: 1.day.ago) if user7
   end
 

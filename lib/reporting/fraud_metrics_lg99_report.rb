@@ -131,7 +131,7 @@ module Reporting
     end
 
     def fetch_results
-      Event.where(name: Events.all_events).where(time: time_range).pluck(:name, :user_id)
+      Event.where(name: Events.all_events).pluck(:name, :user_id)
     end
 
     def lg99_unique_users_count

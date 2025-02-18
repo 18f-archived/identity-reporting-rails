@@ -25,8 +25,8 @@ class CreateUserTable < ActiveRecord::Migration[7.2]
       t.datetime :second_mfa_reminder_dismissed_at
       t.datetime :sign_in_new_device_at
       t.datetime :webauthn_platform_recommended_dismissed_at
-
-      t.timestamp :timestamp
+      t.datetime :created_at
+      t.datetime :updated_at
     end
   end
 end
