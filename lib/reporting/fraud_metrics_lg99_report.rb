@@ -146,7 +146,7 @@ module Reporting
     end
 
     def user_days_to_suspension_avg
-      user_data = User.where(uuid: data[Events::SUSPENDED_USERS]).pluck(:created_at, :suspended_at)
+      user_data = []#User.where(uuid: data[Events::SUSPENDED_USERS]).pluck(:created_at, :suspended_at)
       return 'n/a' if user_data.empty?
 
       difference = user_data.map { |created_at, suspended_at| suspended_at - created_at }
@@ -154,9 +154,7 @@ module Reporting
     end
 
     def user_days_proofed_to_suspension_avg
-      user_data = User.where(uuid: data[Events::SUSPENDED_USERS]).includes(:profiles).
-        merge(Profile.active).
-        pluck(:activated_at, :suspended_at)
+      user_data = []
 
       return 'n/a' if user_data.empty?
 
@@ -169,10 +167,7 @@ module Reporting
     end
 
     def user_days_to_reinstatement_avg
-      user_data = User.where(uuid: data[Events::REINSTATED_USERS]).pluck(
-        :suspended_at,
-        :reinstated_at,
-      )
+      user_data = []
       return 'n/a' if user_data.empty?
 
       difference = user_data.map { |suspended_at, reinstated_at| reinstated_at - suspended_at }
