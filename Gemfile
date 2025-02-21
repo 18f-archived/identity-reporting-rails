@@ -60,3 +60,4 @@ group :test do
   gem 'webmock'
   gem 'zonebie'
 end
+gem 'propshaft'

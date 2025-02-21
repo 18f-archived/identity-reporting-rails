@@ -1,0 +1,243 @@
+//  Foundation for Emails Settings
+//  ------------------------------
+//
+//  Table of Contents:
+//
+//   1. Global
+//   2. Grid
+//   3. Block Grid
+//   4. Typography
+//   5. Button
+//   6. Callout
+//   7. Menu
+//   8. Thumbnail
+
+// 1. Global
+// ---------
+
+$primary-color: #0071bb;
+$secondary-color: #112e51;
+$success-color: #3adb76;
+$warning-color: #ffae00;
+$alert-color: #ec5840;
+$light-gray: #f3f3f3;
+$black: #111;
+$white: #fff;
+$gray: #5b616a;
+$medium-gray: #cacaca;
+$dark-gray: #212121;
+$blue-light: #ebf3fa;
+$red: #e21c3d;
+$red-lightest: #fff7f8;
+$pre-color: #ff6908;
+$global-width: 580px;
+$global-width-small: 95%;
+$global-gutter: 60px;
+$global-gutter-small: 16px;
+$body-background: $blue-light;
+$container-background: $white;
+$global-padding: 16px;
+$global-margin: 16px;
+$global-radius: 5px;
+$global-rounded: 500px;
+$global-breakpoint: 596px;
+
+// 2. Grid
+// -------
+
+$grid-column-count: 12;
+$column-padding-bottom: $global-padding;
+$container-radius: 5px;
+
+// 3. Block Grid
+// -------------
+
+$block-grid-max: 8;
+$block-grid-gutter: $global-gutter;
+
+// 4. Typography
+// -------------
+
+$global-font-color: $gray;
+$body-font-family: 'Arial', 'Helvetica', sans-serif;
+$global-font-weight: normal;
+$header-color: inherit;
+$global-line-height: 1.5;
+$global-font-size: 16px;
+$body-line-height: $global-line-height;
+$header-font-family: $body-font-family;
+$header-font-weight: 700;
+$h1-font-size: 28px;
+$h2-font-size: 22px;
+$h3-font-size: 18px;
+$h4-font-size: 16px;
+$h5-font-size: 14px;
+$h6-font-size: 12px;
+$header-margin-bottom: 16px;
+$paragraph-margin-bottom: 10px;
+$small-font-size: 80%;
+$small-font-color: $medium-gray;
+$lead-font-size: $global-font-size;
+$lead-line-height: $global-line-height;
+$text-padding: 10px;
+$subheader-lineheight: 1.4;
+$subheader-color: $dark-gray;
+$subheader-font-weight: $global-font-weight;
+$subheader-margin-top: 4px;
+$subheader-margin-bottom: 8px;
+$hr-width: $global-width;
+$hr-border: 2px solid $blue-light;
+$hr-margin: 10px auto;
+$anchor-text-decoration: none;
+$anchor-color: $primary-color;
+$anchor-color-visited: $anchor-color;
+$anchor-color-hover: darken($primary-color, 10%);
+$anchor-color-active: $anchor-color-hover;
+$stat-font-size: 40px;
+
+// 5. Button
+// ---------
+
+$button-padding: (
+  tiny: 4px 8px 4px 8px,
+  small: 5px 10px 5px 10px,
+  default: 8px 16px 8px 16px,
+  large: 10px 20px 10px 20px,
+);
+$button-font-size: (
+  tiny: 10px,
+  small: 12px,
+  default: 16px,
+  large: 20px,
+);
+$button-color: $white;
+$button-color-alt: $medium-gray;
+$button-font-weight: bold;
+$button-margin: 0 0 $global-margin 0;
+$button-background: $primary-color;
+$button-border: 2px solid $button-background;
+$button-radius: $global-radius;
+$button-rounded: $global-rounded;
+
+// 6. Callout
+// ----------
+
+$callout-background: $white;
+$callout-background-fade: 85%;
+$callout-padding: 10px;
+$callout-margin-bottom: $global-margin;
+$callout-border: 1px solid darken($callout-background, 20%);
+$callout-border-secondary: 1px solid darken($secondary-color, 20%);
+$callout-border-success: 1px solid darken($success-color, 20%);
+$callout-border-warning: 1px solid darken($warning-color, 20%);
+$callout-border-alert: 1px solid darken($alert-color, 20%);
+
+// 7. Menu
+// -------
+
+$menu-item-padding: 10px;
+$menu-item-gutter: 10px;
+$menu-item-color: $primary-color;
+
+// 8. Thumbnail
+// ------------
+
+$thumbnail-border: solid 4px $white;
+$thumbnail-margin-bottom: $global-margin;
+$thumbnail-shadow: 0 0 0 1px rgba($black, 0.2);
+$thumbnail-shadow-hover: 0 0 6px 1px rgba($primary-color, 0.5);
+$thumbnail-transition: box-shadow 200ms ease-out;
+$thumbnail-radius: $global-radius;
+
+@forward 'foundation-emails/scss/foundation-emails' with (
+  $primary-color: $primary-color,
+  $secondary-color: $secondary-color,
+  $success-color: $success-color,
+  $warning-color: $warning-color,
+  $alert-color: $alert-color,
+  $light-gray: $light-gray,
+  $black: $black,
+  $white: $white,
+  $medium-gray: $medium-gray,
+  $dark-gray: $dark-gray,
+  $pre-color: $pre-color,
+  $global-width: $global-width,
+  $global-width-small: $global-width-small,
+  $global-gutter: $global-gutter,
+  $global-gutter-small: $global-gutter-small,
+  $body-background: $body-background,
+  $container-background: $container-background,
+  $global-padding: $global-padding,
+  $global-margin: $global-margin,
+  $global-radius: $global-radius,
+  $global-rounded: $global-rounded,
+  $global-breakpoint: $global-breakpoint,
+  $grid-column-count: $grid-column-count,
+  $column-padding-bottom: $column-padding-bottom,
+  $container-radius: $container-radius,
+  $block-grid-max: $block-grid-max,
+  $block-grid-gutter: $block-grid-gutter,
+  $global-font-color: $global-font-color,
+  $body-font-family: $body-font-family,
+  $global-font-weight: $global-font-weight,
+  $header-color: $header-color,
+  $global-line-height: $global-line-height,
+  $global-font-size: $global-font-size,
+  $body-line-height: $body-line-height,
+  $header-font-family: $header-font-family,
+  $header-font-weight: $header-font-weight,
+  $h1-font-size: $h1-font-size,
+  $h2-font-size: $h2-font-size,
+  $h3-font-size: $h3-font-size,
+  $h4-font-size: $h4-font-size,
+  $h5-font-size: $h5-font-size,
+  $h6-font-size: $h6-font-size,
+  $header-margin-bottom: $header-margin-bottom,
+  $paragraph-margin-bottom: $paragraph-margin-bottom,
+  $small-font-size: $small-font-size,
+  $small-font-color: $small-font-color,
+  $lead-font-size: $lead-font-size,
+  $lead-line-height: $lead-line-height,
+  $text-padding: $text-padding,
+  $subheader-lineheight: $subheader-lineheight,
+  $subheader-color: $subheader-color,
+  $subheader-font-weight: $subheader-font-weight,
+  $subheader-margin-top: $subheader-margin-top,
+  $subheader-margin-bottom: $subheader-margin-bottom,
+  $hr-width: $hr-width,
+  $hr-border: $hr-border,
+  $hr-margin: $hr-margin,
+  $anchor-text-decoration: $anchor-text-decoration,
+  $anchor-color: $anchor-color,
+  $anchor-color-visited: $anchor-color-visited,
+  $anchor-color-hover: $anchor-color-hover,
+  $anchor-color-active: $anchor-color-active,
+  $stat-font-size: $stat-font-size,
+  $button-padding: $button-padding,
+  $button-font-size: $button-font-size,
+  $button-color: $button-color,
+  $button-color-alt: $button-color-alt,
+  $button-font-weight: $button-font-weight,
+  $button-margin: $button-margin,
+  $button-background: $button-background,
+  $button-border: $button-border,
+  $button-radius: $button-radius,
+  $button-rounded: $button-rounded,
+  $callout-background-fade: $callout-background-fade,
+  $callout-padding: $callout-padding,
+  $callout-margin-bottom: $callout-margin-bottom,
+  $callout-border: $callout-border,
+  $callout-border-secondary: $callout-border-secondary,
+  $callout-border-success: $callout-border-success,
+  $callout-border-warning: $callout-border-warning,
+  $callout-border-alert: $callout-border-alert,
+  $menu-item-padding: $menu-item-padding,
+  $menu-item-gutter: $menu-item-gutter,
+  $menu-item-color: $menu-item-color,
+  $thumbnail-border: $thumbnail-border,
+  $thumbnail-margin-bottom: $thumbnail-margin-bottom,
+  $thumbnail-shadow: $thumbnail-shadow,
+  $thumbnail-shadow-hover: $thumbnail-shadow-hover,
+  $thumbnail-transition: $thumbnail-transition,
+  $thumbnail-radius: $thumbnail-radius
+);
