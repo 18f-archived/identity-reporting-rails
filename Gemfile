@@ -61,3 +61,4 @@ group :test do
   gem 'zonebie'
 end
 gem 'propshaft'
+gem 'cssbundling-rails'
