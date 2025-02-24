@@ -28,53 +28,79 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
 
   let(:events) do
     [
-      { 'user_id' => 'user1',
+      {
+        'user_id' => 'user1',
         'name' => 'IdV: Verify please call visited',
-        'time' => time_range.begin },
-      { 'user_id' => 'user1',
+        'time' => time_range.begin,
+      },
+      {
+        'user_id' => 'user1',
         'name' => 'IdV: Verify please call visited',
-        'time' => time_range.begin + 1.day },
-      { 'user_id' => 'user1',
+        'time' => time_range.begin + 1.day,
+      },
+      {
+        'user_id' => 'user1',
         'name' => 'IdV: Verify setup errors visited',
-        'time' => time_range.begin + 2.days },
+        'time' => time_range.begin + 2.days,
+      },
 
-      { 'user_id' => 'user2',
+      {
+        'user_id' => 'user2',
         'name' => 'IdV: Verify setup errors visited',
-        'time' => time_range.begin },
+        'time' => time_range.begin + 3.days,
+      },
 
-      { 'user_id' => 'user3',
+      {
+        'user_id' => 'user3',
         'name' => 'IdV: Verify please call visited',
-        'time' => time_range.begin },
-      { 'user_id' => 'user3',
+        'time' => time_range.begin + 4.days,
+      },
+      {
+        'user_id' => 'user3',
         'name' => 'IdV: Verify setup errors visited',
-        'time' => time_range.begin },
-
-      { 'user_id' => 'user4',
+        'time' => time_range.begin + 5.days,
+      },
+      {
+        'user_id' => 'user4',
         'name' => 'IdV: Verify please call visited',
-        'time' => time_range.begin },
-      { 'user_id' => 'user4',
+        'time' => time_range.begin + 6.days,
+      },
+      {
+        'user_id' => 'user4',
         'name' => 'IdV: Verify setup errors visited',
-        'time' => time_range.begin },
-
-      { 'user_id' => 'user5',
+        'time' => time_range.begin + 7.days,
+      },
+      {
+        'user_id' => 'user5',
         'name' => 'IdV: Verify please call visited',
-        'time' => time_range.begin },
-      { 'user_id' => 'user5',
+        'time' => time_range.begin + 8.days,
+      },
+      {
+        'user_id' => 'user5',
         'name' => 'IdV: Verify setup errors visited',
-        'time' => time_range.begin },
-
-      { 'user_id' => 'user6', 'name' => 'User Suspension: Suspended', 'time' => time_range.begin },
-      { 'user_id' => 'user6', 'name' => 'User Suspension: Reinstated', 'time' => time_range.end },
-
-      { 'user_id' => 'user7', 'name' => 'User Suspension: Suspended', 'time' => time_range.end },
+        'time' => time_range.begin + 9.days,
+      },
+      {
+        'user_id' => 'user6',
+        'name' => 'User Suspension: Suspended',
+        'time' => time_range.begin,
+      },
+      {
+        'user_id' => 'user6',
+        'name' => 'User Suspension: Reinstated',
+        'time' => time_range.end,
+      },
+      {
+        'user_id' => 'user7',
+        'name' => 'User Suspension: Suspended',
+        'time' => time_range.end,
+      },
     ]
   end
 
   subject(:report) { Reporting::FraudMetricsLg99Report.new(time_range:) }
 
   before do
-    travel_to Time.zone.now.beginning_of_day
-
     events.each do |event|
       Event.create!(
         id: SecureRandom.uuid,

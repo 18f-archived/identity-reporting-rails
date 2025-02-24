@@ -13,6 +13,7 @@
 # if you're sharing your code publicly.
 
 # Make sure any new entries you add are enclosed in single quotes.
+asset_host: ''
 database_pool_reporting: 5
 database_socket: ''
 database_sslmode: 'verify-full'
@@ -38,6 +39,9 @@ s3_report_public_bucket_prefix: login-gov-pubdata
 report_timeout: 0
 s3_reports_enabled: false
 s3_report_bucket_prefix: login-gov.reports
+aws_ses_client_pool_size: 5
+ses_configuration_set_name: ''
+disable_email_sending: true
 
 development:
   database_host: ''
@@ -78,6 +82,7 @@ production:
   redshift_host: ''
   report_timeout: 1_000_000
   s3_reports_enabled: true
+  disable_email_sending: false
 
 test:
   database_host: ''

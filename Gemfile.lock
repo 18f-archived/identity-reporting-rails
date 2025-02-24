@@ -123,6 +123,9 @@ GEM
     aws-sdk-secretsmanager (1.112.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sigv4 (~> 1.5)
+    aws-sdk-ses (1.81.0)
+      aws-sdk-core (~> 3, >= 3.216.0)
+      aws-sigv4 (~> 1.5)
     aws-sigv4 (1.11.0)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.2.0)
@@ -445,12 +448,15 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord7-redshift-adapter-pennylane
+  aws-sdk-ses (~> 1.6)
   better_errors (>= 2.5.1)
   bootsnap (~> 1.0)
   brakeman
   bullet (~> 7.0)
   bundler-audit
   caxlsx
+  concurrent-ruby
+  connection_pool
   cssbundling-rails
   csv
   factory_bot_rails (>= 6.2.0)
