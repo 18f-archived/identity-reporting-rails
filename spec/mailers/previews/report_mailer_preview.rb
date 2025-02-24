@@ -2,8 +2,6 @@ class ReportMailerPreview < ActionMailer::Preview
   def fraud_metrics_report
     fraud_metrics_report = Reports::FraudMetricsReport.new(Time.zone.yesterday)
 
-    stub_cloudwatch_client(fraud_metrics_report.fraud_metrics_lg99_report)
-
     ReportMailer.tables_report(
       email: 'test@example.com',
       subject: "Example Fraud Key Metrics Report - #{Time.zone.now.to_date}",
@@ -45,29 +43,5 @@ class ReportMailerPreview < ActionMailer::Preview
         ),
       ],
     )
-  end
-
-  private
-
-  class FakeCloudwatchClient
-    def initialize(data:)
-      @data = data
-    end
-
-    def fetch(**)
-      @data
-    end
-  end
-
-  def stub_cloudwatch_client(report, data: [])
-    class << report
-      attr_accessor :_stubbed_cloudwatch_data
-
-      def cloudwatch_client
-        FakeCloudwatchClient.new(data: @_stubbed_cloudwatch_data)
-      end
-    end
-    report._stubbed_cloudwatch_data = data
-    report
   end
 end
