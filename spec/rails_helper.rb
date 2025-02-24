@@ -51,6 +51,24 @@ RSpec.configure do |config|
     Rails.cache.clear
   end
 
+  if !ENV['CI'] && !ENV['SKIP_BUILD']
+    config.before(js: true) do
+      # rubocop:disable Style/GlobalVars
+      next if defined?($ran_asset_build)
+      $ran_asset_build = true
+      # rubocop:enable Style/GlobalVars
+      # rubocop:disable Rails/Output
+      print '                       Bundling JavaScript and stylesheets... '
+      system 'yarn concurrently "yarn:build:*" > /dev/null 2>&1'
+      puts '✨ Done!'
+      # rubocop:enable Rails/Output
+
+      # The JavaScript assets manifest is cached by the application. Since the preceding build will
+      # write a new manifest, instruct the application to refresh the cache from disk.
+      Rails.application.config.asset_sources.load_manifest
+    end
+  end
+
   config.around(:each, freeze_time: true) do |example|
     freeze_time { example.run }
   end
