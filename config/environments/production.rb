@@ -35,5 +35,4 @@ Rails.application.configure do
   config.action_dispatch.ip_spoofing_check = false
 
   config.log_level = :info
-  config.lograge.ignore_actions = ['Api::Internal::SessionsController#show']
 end
