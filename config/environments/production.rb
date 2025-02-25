@@ -1,7 +1,5 @@
 require 'active_support/core_ext/integer/time'
 Rails.application.configure do
-  config.cache_classes = true
-  config.cache_store = :redis_cache_store, { url: IdentityConfig.store.redis_url, pool: false }
   config.eager_load = true
   config.consider_all_requests_local = false
   config.public_file_server.enabled = true
