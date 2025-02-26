@@ -29,10 +29,5 @@ Rails.application.configure do
   end
 
   routes.default_url_options[:protocol] = :https
-
-  # turn off IP spoofing protection since the network configuration in the production environment
-  # creates false positive results.
-  config.action_dispatch.ip_spoofing_check = false
-
   config.log_level = :info
 end
