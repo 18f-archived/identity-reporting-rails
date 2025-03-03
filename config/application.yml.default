@@ -63,6 +63,7 @@ development:
   rails_mailer_previews_enabled: true
   s3_report_public_bucket_prefix: ''
   s3_report_bucket_prefix: ''
+  redshift_sia_v3_enabled: true
 
 # These values serve as defaults for all production-like environments
 production:
@@ -83,6 +84,7 @@ production:
   report_timeout: 1_000_000
   s3_reports_enabled: true
   disable_email_sending: false
+  redshift_sia_v3_enabled: false
 
 test:
   database_host: ''
@@ -103,3 +105,4 @@ test:
   redshift/local-analytics-superuser: '{"username":"","password":""}'
   s3_report_public_bucket_prefix: ''
   s3_report_bucket_prefix: ''
+  redshift_sia_v3_enabled: true

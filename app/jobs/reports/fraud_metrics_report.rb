@@ -15,8 +15,12 @@ module Reports
     end
 
     def perform(date = Time.zone.yesterday.end_of_day)
-      @report_date = date
+      unless IdentityConfig.store.redshift_sia_v3_enabled
+        Rails.logger.warn 'Redhsift SIA V3 is disabled'
+        return false
+      end
 
+      @report_date = date
       email_addresses = emails.select(&:present?)
       if email_addresses.empty?
         Rails.logger.warn 'No email addresses received - Fraud Metrics Report NOT SENT'

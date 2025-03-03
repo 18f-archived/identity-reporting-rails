@@ -68,6 +68,7 @@ class IdentityConfig
     config.add(:report_timeout, type: :integer)
     config.add(:disable_email_sending, type: :boolean)
     config.add(:s3_report_bucket_prefix, type: :string)
+    config.add(:redshift_sia_v3_enabled, type: :boolean)
 
     "redshift/#{Identity::Hostdata.env || 'local'}-analytics-superuser".
       then do |redshift_secrets_manager_key|
