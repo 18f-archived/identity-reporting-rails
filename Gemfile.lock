@@ -123,9 +123,6 @@ GEM
     aws-sdk-secretsmanager (1.112.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-ses (1.81.0)
-      aws-sdk-core (~> 3, >= 3.216.0)
-      aws-sigv4 (~> 1.5)
     aws-sigv4 (1.11.0)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.2.0)
@@ -159,8 +156,6 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
-    cssbundling-rails (1.4.1)
-      railties (>= 6.0.0)
     csv (3.3.2)
     date (3.4.1)
     diff-lcs (1.6.0)
@@ -218,10 +213,6 @@ GEM
     knapsack (4.0.0)
       rake
     language_server-protocol (3.17.0.4)
-    launchy (2.5.2)
-      addressable (~> 2.8)
-    letter_opener (1.8.1)
-      launchy (>= 2.2, < 3)
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -274,11 +265,6 @@ GEM
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
-    propshaft (1.1.0)
-      actionpack (>= 7.0.0)
-      activesupport (>= 7.0.0)
-      rack
-      railties (>= 7.0.0)
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -448,16 +434,12 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord7-redshift-adapter-pennylane
-  aws-sdk-ses (~> 1.6)
   better_errors (>= 2.5.1)
   bootsnap (~> 1.0)
   brakeman
   bullet (~> 7.0)
   bundler-audit
   caxlsx
-  concurrent-ruby
-  connection_pool
-  cssbundling-rails
   csv
   factory_bot_rails (>= 6.2.0)
   faker
@@ -467,12 +449,10 @@ DEPENDENCIES
   identity_validations!
   irb
   knapsack
-  letter_opener (~> 1.8.0)
   listen
   nokogiri (>= 1.16.5)
   pg
   pg_query
-  propshaft
   pry-byebug
   pry-doc (>= 1.5.0)
   pry-rails
