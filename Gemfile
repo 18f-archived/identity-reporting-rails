@@ -3,13 +3,9 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}.git" }
 
 ruby "~> #{File.read(File.join(__dir__, '.ruby-version')).strip}"
 gem 'activerecord7-redshift-adapter-pennylane'
-gem 'aws-sdk-ses', '~> 1.6'
-gem 'cssbundling-rails'
 gem 'rails', '~> 7.2.1'
 gem 'bootsnap', '~> 1.0', require: false
 gem 'csv'
-gem 'concurrent-ruby'
-gem 'connection_pool'
 gem 'faker'
 gem 'good_job', '~> 3.0'
 gem 'identity-hostdata', github: '18F/identity-hostdata', tag: 'v4.1.0'
@@ -22,13 +18,11 @@ gem 'redacted_struct'
 gem 'tzinfo-data', platforms: %i[ windows jruby ]
 gem 'caxlsx', require: false
 gem 'simple_xlsx_reader', require: false
-gem 'propshaft'
 
 group :development do
   gem 'better_errors', '>= 2.5.1'
   gem 'irb'
   gem 'rack-mini-profiler', '>= 1.1.3', require: false
-  gem 'letter_opener', '~> 1.8.0'
 end
 
 group :development, :test do

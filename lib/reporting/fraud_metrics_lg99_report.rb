@@ -17,45 +17,27 @@ module Reporting
       end
     end
 
-    def initialize(
-      time_range:,
-      verbose: false,
-      progress: false,
-      slice: 6.hours,
-      threads: 1
-    )
+    def initialize(time_range:)
       @time_range = time_range
-      @verbose = verbose
-      @progress = progress
-      @slice = slice
-      @threads = threads
     end
 
-    def verbose?
-      @verbose
-    end
-
-    def progress?
-      @progress
-    end
-
-    def as_emailable_reports
+    def as_reports
       [
-        Reporting::EmailableReport.new(
+        {
           title: "Monthly LG-99 Metrics #{stats_month}",
           table: lg99_metrics_table,
           filename: 'lg99_metrics',
-        ),
-        Reporting::EmailableReport.new(
+        },
+        {
           title: "Monthly Suspended User Metrics #{stats_month}",
           table: suspended_metrics_table,
           filename: 'suspended_metrics',
-        ),
-        Reporting::EmailableReport.new(
+        },
+        {
           title: "Monthly Reinstated User Metrics #{stats_month}",
           table: reinstated_metrics_table,
           filename: 'reinstated_metrics',
-        ),
+        },
       ]
     end
 

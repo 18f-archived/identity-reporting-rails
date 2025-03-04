@@ -214,25 +214,25 @@ RSpec.describe Reporting::FraudMetricsLg99Report do
   describe '#as_emailable_reports' do
     let(:expected_reports) do
       [
-        Reporting::EmailableReport.new(
+        {
           title: 'Monthly LG-99 Metrics Jan-2022',
           filename: 'lg99_metrics',
           table: expected_lg99_metrics_table,
-        ),
-        Reporting::EmailableReport.new(
+        },
+        {
           title: 'Monthly Suspended User Metrics Jan-2022',
           filename: 'suspended_metrics',
           table: expected_suspended_metrics_table,
-        ),
-        Reporting::EmailableReport.new(
+        },
+        {
           title: 'Monthly Reinstated User Metrics Jan-2022',
           filename: 'reinstated_metrics',
           table: expected_reinstated_metrics_table,
-        ),
+        },
       ]
     end
     it 'return expected table for email' do
-      expect(report.as_emailable_reports).to eq expected_reports
+      expect(report.as_reports).to eq expected_reports
     end
   end
 end

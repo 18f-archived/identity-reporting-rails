@@ -13,12 +13,6 @@ variables:
 default:
   image: '${ECR_REGISTRY}/idp/ci@${IDP_CI_SHA}'
 
-.yarn_install: &yarn_install
-  - yarn install --frozen-lockfile --ignore-engines --cache-folder .yarn-cache
-
-.yarn_production_install: &yarn_production_install
-  - yarn install --production --frozen-lockfile --ignore-engines --cache-folder .yarn-cache
-
 .bundle_install: &bundle_install
   - bundle check || bundle install --deployment --jobs=4 --retry=3 --without deploy development doc production --path vendor/ruby
 
@@ -29,30 +23,6 @@ default:
         - Gemfile.lock
     paths:
       - vendor/ruby
-    policy: pull
-
-  - &yarn_cache
-    key:
-      files:
-        - yarn.lock
-    paths:
-      - .yarn-cache/
-    policy: pull
-
-  - &yarn_production_cache
-    key:
-      files:
-        - yarn.lock
-    paths:
-      - .yarn-cache/
-    policy: pull
-
-  - &assets_cache
-    key: $CI_COMMIT_SHA
-    paths:
-      - tmp/cache/assets
-      - public/assets
-      - public/packs
     policy: pull
 
 stages:
@@ -73,20 +43,12 @@ install:
   stage: build
   variables:
     RAILS_ENV: test
-    SKIP_YARN_INSTALL: 'true'
   cache:
     - <<: *ruby_cache
       policy: pull-push
-    - <<: *yarn_cache
-      policy: pull-push
-    - <<: *assets_cache
-      policy: push
 
   script:
     - *bundle_install
-    - *yarn_install
-    - bundle exec rake assets:precompile
-    - bundle exec rake assets:precompile
 
 specs:
   stage: test
@@ -95,8 +57,6 @@ specs:
   parallel: 22
   cache:
     - <<: *ruby_cache
-    - <<: *yarn_cache
-    - <<: *assets_cache
   variables:
     AWS_ACCESS_KEY_ID: test
     AWS_DEFAULT_REGION: us-west-2
@@ -124,7 +84,6 @@ specs:
       junit: rspec.xml
   script:
     - *bundle_install
-    - *yarn_install
     - cp config/application.yml.default config/application.yml
     - bundle exec rake db:create db:migrate --trace
     - bundle exec rake db:seed

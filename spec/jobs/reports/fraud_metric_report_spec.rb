@@ -55,9 +55,6 @@ RSpec.describe Reports::FraudMetricsReport do
     ]
   end
 
-  let(:mock_team_fraud_emails) { ['mock_feds@example.com', 'mock_contractors@example.com'] }
-  let(:mock_test_fraud_emails) { ['mock_agnes@example.com', 'mock_daily@example.com'] }
-
   before do
     allow(Identity::Hostdata).to receive(:env).and_return('int')
     allow(Identity::Hostdata).to receive(:aws_account_id).and_return('1234')
@@ -71,11 +68,6 @@ RSpec.describe Reports::FraudMetricsReport do
       },
     }
 
-    allow(IdentityConfig.store).to receive(:team_daily_fraud_metrics_emails).
-      and_return(mock_test_fraud_emails)
-    allow(IdentityConfig.store).to receive(:team_monthly_fraud_metrics_emails).
-      and_return(mock_team_fraud_emails)
-
     allow(report.fraud_metrics_lg99_report).to receive(:lg99_metrics_table).
       and_return(mock_identity_verification_lg99_data)
 
@@ -84,44 +76,6 @@ RSpec.describe Reports::FraudMetricsReport do
 
     allow(report.fraud_metrics_lg99_report).to receive(:reinstated_metrics_table).
       and_return(mock_reinstated_metrics_table)
-  end
-
-  it 'sends out a report to just to team agnes' do
-    expect(ReportMailer).to receive(:tables_report).once.with(
-      email: anything,
-      subject: 'Fraud Metrics Report - 2021-03-02',
-      reports: anything,
-      message: report.preamble,
-      attachment_format: :xlsx,
-    ).and_call_original
-
-    report.perform(report_date)
-  end
-
-  context 'when queued from the first of the month' do
-    let(:report_date) { Date.new(2021, 3, 1).prev_day }
-
-    it 'sends out a report to everybody' do
-      expect(ReportMailer).to receive(:tables_report).once.with(
-        email: anything,
-        subject: 'Fraud Metrics Report - 2021-02-28',
-        reports: anything,
-        message: report.preamble,
-        attachment_format: :xlsx,
-      ).and_call_original
-
-      report.perform(report_date)
-    end
-  end
-
-  it 'does not send out a report with no emails' do
-    allow(IdentityConfig.store).to receive(:team_daily_fraud_metrics_emails).and_return('')
-
-    expect(report).to_not receive(:reports)
-
-    expect(ReportMailer).not_to receive(:tables_report)
-
-    report.perform(report_date)
   end
 
   it 'uploads a file to S3 based on the report date' do
@@ -133,49 +87,5 @@ RSpec.describe Reports::FraudMetricsReport do
     end
 
     report.perform(report_date)
-  end
-
-  describe '#emails' do
-    context 'on the first of the month' do
-      let(:report_date) { Date.new(2021, 3, 1).prev_day }
-
-      it 'emails the whole fraud team' do
-        expected_array = mock_test_fraud_emails
-        expected_array += mock_team_fraud_emails
-
-        expect(report.emails).to match_array(expected_array)
-      end
-    end
-
-    context 'during the rest of the month' do
-      let(:report_date) { Date.new(2021, 3, 2).prev_day }
-      it 'only emails test_fraud_reports' do
-        expect(report.emails).to match_array(
-          mock_test_fraud_emails,
-        )
-      end
-    end
-  end
-
-  describe '#preamble' do
-    let(:env) { 'prod' }
-    subject(:preamble) { report.preamble(env:) }
-
-    it 'has a blank preamble' do
-      expect(preamble).to be_blank
-    end
-
-    context 'in a non-prod environment' do
-      let(:env) { 'staging' }
-
-      it 'has an alert with the environment name' do
-        expect(preamble).to be_html_safe
-
-        doc = Nokogiri::XML(preamble)
-
-        alert = doc.at_css('.usa-alert')
-        expect(alert.text).to include(env)
-      end
-    end
   end
 end
