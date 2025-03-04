@@ -63,6 +63,7 @@ class IdentityConfig
     config.add(:email_from, type: :string)
     config.add(:email_from_display_name, type: :string)
     config.add(:s3_report_public_bucket_prefix, type: :string)
+    config.add(:s3_reports_enabled, type: :boolean)
     config.add(:aws_ses_client_pool_size, type: :integer)
     config.add(:ses_configuration_set_name, type: :string)
     config.add(:report_timeout, type: :integer)
