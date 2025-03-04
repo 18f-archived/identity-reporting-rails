@@ -59,14 +59,6 @@ module IdentityReportingRails
     config.good_job.queue_select_limit = Identity::Hostdata.config.good_job_queue_select_limit
     # see config/initializers/job_configurations.rb for cron schedule
 
-    config.action_mailer.default_options = {
-      from: Mail::Address.new.tap do |mail|
-        mail.address = Identity::Hostdata.config.email_from
-        mail.display_name = Identity::Hostdata.config.email_from_display_name
-      end.to_s,
-    }
-    # config.action_mailer.observers = %w[EmailDeliveryObserver]
-
     includes_star_queue = config.good_job.queues.split(';').any? do |name_threads|
       name, _threads = name_threads.split(':', 2)
       name == '*'
