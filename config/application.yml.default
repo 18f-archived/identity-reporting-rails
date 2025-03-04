@@ -13,7 +13,6 @@
 # if you're sharing your code publicly.
 
 # Make sure any new entries you add are enclosed in single quotes.
-asset_host: ''
 database_pool_reporting: 5
 database_socket: ''
 database_sslmode: 'verify-full'
@@ -27,21 +26,10 @@ good_job_queue_select_limit: 5_000
 rack_mini_profiler: false
 rack_timeout_service_timeout_seconds: 15
 unload_line_count_threshold: 10000
-email_from: no-reply@login.gov
-email_from_display_name: Login.gov
-domain_name: login.gov
-team_daily_fraud_metrics_emails: '[]'
-team_monthly_fraud_metrics_emails: '[]'
-rails_mailer_previews_enabled: false
-development_mailer_deliver_method: letter_opener
-mailer_domain_name: http://localhost:3000
 s3_report_public_bucket_prefix: login-gov-pubdata
 report_timeout: 0
 s3_reports_enabled: false
 s3_report_bucket_prefix: login-gov.reports
-aws_ses_client_pool_size: 5
-ses_configuration_set_name: ''
-disable_email_sending: true
 
 development:
   database_host: ''
@@ -60,7 +48,6 @@ development:
   redshift_database_name: ''
   redshift_host: ''
   redshift/local-analytics-superuser: '{"username":"","password":""}'
-  rails_mailer_previews_enabled: true
   s3_report_public_bucket_prefix: ''
   s3_report_bucket_prefix: ''
   redshift_sia_v3_enabled: true
@@ -83,7 +70,6 @@ production:
   redshift_host: ''
   report_timeout: 1_000_000
   s3_reports_enabled: true
-  disable_email_sending: false
   redshift_sia_v3_enabled: false
 
 test:
