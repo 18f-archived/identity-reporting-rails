@@ -5,13 +5,13 @@ RSpec.describe RedshiftSchemaUpdater do
   let!(:redshift_schema_updater) { RedshiftSchemaUpdater.new('idp') }
   let!(:file_path) { Rails.root.join('spec', 'fixtures', 'includes_columns.yml') }
   let!(:file_path2) { Rails.root.join('spec', 'fixtures', 'includes_columns2.yml') }
-  let!(:users_table) { 'idp.users' }
+  let!(:users_table) { 'idp.new_users' }
   let!(:events_table) { 'idp.events' }
   let!(:expected_columns) { ['id', 'name', 'email', 'created_at', 'updated_at'] }
   let!(:yaml_data) do
     [
       {
-        'table' => 'users',
+        'table' => 'new_users',
         'schema' => 'public',
         'include_columns' => [
           { 'name' => 'id', 'datatype' => 'integer' },

@@ -79,4 +79,3 @@ Run `make lint` to look for errors; `make lintfix` can repair some linting error
 ## Running jobs
 
 We run background jobs / workers with ActiveJob and GoodJob. You shouldn't normally have to start it manually because `make run` runs [the `Procfile`](../Procfile), which handles it. The manual command is: `bundle exec good_job start`
-

@@ -1,4 +1,4 @@
-- table: users
+- table: new_users
   schema: public
   include_columns:
     - name: id

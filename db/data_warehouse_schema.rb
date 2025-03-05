@@ -14,6 +14,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_28_111230) do
   create_schema "idp"
   create_schema "logs"
   create_schema "system_tables"
+  create_schema "test_pg_catalog"
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"

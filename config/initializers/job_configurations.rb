@@ -1,6 +1,7 @@
 cron_30m = '*/30 * * * *'
 cron_5m = '0/5 * * * *'
 cron_1d = '0 6 * * *' # 6:00am UTC or 2:00am EST
+cron_24h_and_a_bit = '12 0 * * *' # 0000 UTC + 12 min, staggered from whatever else runs at 0000 UTC
 
 if defined?(Rails::Console)
   Rails.logger.info 'job_configurations: console detected, skipping schedule'
@@ -38,6 +39,12 @@ else
       redshift_unload_log_checker_job: {
         class: 'RedshiftUnloadLogCheckerJob',
         cron: cron_5m,
+      },
+      # Send fraud metrics to Team Judy
+      fraud_metrics_report: {
+        class: 'Reports::FraudMetricsReport',
+        cron: cron_24h_and_a_bit,
+        args: -> { [Time.zone.yesterday.end_of_day] },
       },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
