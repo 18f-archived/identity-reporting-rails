@@ -13,8 +13,10 @@ module Reports
 
       DataWarehouseApplicationRecord.connected_to(role: :reading, shard: :read_replica) do
         DataWarehouseApplicationRecord.transaction do
-          quoted_timeout = DataWarehouseApplicationRecord.connection.quote(IdentityConfig.store.report_timeout)
-          DataWarehouseApplicationRecord.connection.execute("SET LOCAL statement_timeout = #{quoted_timeout}")
+          quoted_timeout = DataWarehouseApplicationRecord.connection.
+            quote(IdentityConfig.store.report_timeout)
+          DataWarehouseApplicationRecord.connection.
+            execute("SET LOCAL statement_timeout = #{quoted_timeout}")
           yield
         end
       end
