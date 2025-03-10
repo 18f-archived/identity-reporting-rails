@@ -1,6 +1,7 @@
 cron_30m = '*/30 * * * *'
 cron_5m = '0/5 * * * *'
 cron_1d = '0 6 * * *' # 6:00am UTC or 2:00am EST
+cron_24h = '0 0 * * *'
 cron_24h_and_a_bit = '12 0 * * *' # 0000 UTC + 12 min, staggered from whatever else runs at 0000 UTC
 
 if defined?(Rails::Console)
@@ -45,6 +46,12 @@ else
         class: 'Reports::FraudMetricsReport',
         cron: cron_24h_and_a_bit,
         args: -> { [Time.zone.yesterday.end_of_day] },
+      },
+      # Idv Legacy Conversion Supplement Report to S3
+      idv_legacy_conversion_supplement_report: {
+        class: 'Reports::IdvLegacyConversionSupplementReport',
+        cron: cron_24h,
+        args: -> { [Time.zone.today] },
       },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
