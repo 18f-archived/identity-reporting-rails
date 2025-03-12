@@ -11,10 +11,12 @@ module Reports
       # connections mid-test, so we just skip for now :[
       return yield if rails_env.test?
 
-      ActiveRecord::Base.connected_to(role: :reading, shard: :read_replica) do
-        ActiveRecord::Base.transaction do
-          quoted_timeout = ActiveRecord::Base.connection.quote(IdentityConfig.store.report_timeout)
-          ActiveRecord::Base.connection.execute("SET LOCAL statement_timeout = #{quoted_timeout}")
+      DataWarehouseApplicationRecord.connected_to(role: :reading, shard: :read_replica) do
+        DataWarehouseApplicationRecord.transaction do
+          quoted_timeout = DataWarehouseApplicationRecord.connection.
+            quote(IdentityConfig.store.report_timeout)
+          DataWarehouseApplicationRecord.connection.
+            execute("SET LOCAL statement_timeout = #{quoted_timeout}")
           yield
         end
       end
@@ -45,6 +47,7 @@ module Reports
         logger.info('Not uploading report to S3, s3_reports_enabled is false')
         return body
       end
+
       upload_file_to_s3_timestamped_and_latest(report_name, body, extension)
     end
 
