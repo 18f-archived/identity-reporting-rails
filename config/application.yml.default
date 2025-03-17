@@ -30,6 +30,7 @@ s3_report_public_bucket_prefix: login-gov-pubdata
 report_timeout: 0
 s3_reports_enabled: false
 s3_report_bucket_prefix: login-gov.reports
+weekly_auth_funnel_report_config: '[]'
 
 development:
   database_host: ''

@@ -3,6 +3,7 @@ cron_5m = '0/5 * * * *'
 cron_1d = '0 6 * * *' # 6:00am UTC or 2:00am EST
 cron_24h = '0 0 * * *'
 cron_24h_and_a_bit = '12 0 * * *' # 0000 UTC + 12 min, staggered from whatever else runs at 0000 UTC
+cron_every_monday = 'every Monday at 0:25 UTC' # equivalent to '25 0 * * 1'
 
 if defined?(Rails::Console)
   Rails.logger.info 'job_configurations: console detected, skipping schedule'
@@ -52,6 +53,12 @@ else
         class: 'Reports::IdvLegacyConversionSupplementReport',
         cron: cron_24h,
         args: -> { [Time.zone.today] },
+      },
+      # Send previous week's authentication reports to partners
+      weekly_authentication_report: {
+        class: 'Reports::AuthenticationReport',
+        cron: cron_every_monday,
+        args: -> { [Time.zone.yesterday.end_of_day] },
       },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
