@@ -236,6 +236,7 @@ GEM
     mini_portile2 (2.8.8)
     minitest (5.25.4)
     msgpack (1.8.0)
+    multiset (0.5.3)
     net-imap (0.5.6)
       date
       net-protocol
@@ -336,6 +337,7 @@ GEM
       io-console (~> 0.5)
     request_store (1.7.0)
       rack (>= 1.4)
+    retries (0.0.5)
     rexml (3.4.1)
     rouge (4.5.1)
     rspec (3.13.0)
@@ -450,6 +452,7 @@ DEPENDENCIES
   irb
   knapsack
   listen
+  multiset
   nokogiri (>= 1.16.5)
   pg
   pg_query
@@ -463,6 +466,7 @@ DEPENDENCIES
   rack-test (>= 1.1.0)
   rails (~> 7.2.1)
   redacted_struct
+  retries
   rexml (>= 3.3.3)
   rspec (~> 3.13.0)
   rspec-rails (~> 6.0)

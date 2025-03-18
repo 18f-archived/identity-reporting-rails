@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+module Reports
+  module QueryHelpers
+    def quote(value)
+      if value.is_a?(Array)
+        "(#{value.map { |v| DataWarehouseApplicationRecord.connection.quote(v) }.join(', ')})"
+      else
+        DataWarehouseApplicationRecord.connection.quote(value)
+      end
+    end
+  end
+end

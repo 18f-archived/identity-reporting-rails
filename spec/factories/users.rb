@@ -2,6 +2,7 @@ FactoryBot.define do
   Faker::Config.locale = :en
 
   factory :user do
+    uuid { SecureRandom.uuid }
     transient do
       with { {} }
       sequence(:email) { |n| "user#{n}@example.com" }

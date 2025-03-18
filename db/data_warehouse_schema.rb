@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_03_175409) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_17_223111) do
   create_schema "idp"
   create_schema "logs"
   create_schema "system_tables"
@@ -80,6 +80,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_03_175409) do
     t.decimal "estimated_amount", precision: 12, scale: 2
     t.integer "pricing_model", default: 2
     t.bigint "iaa_gtc_id"
+  end
+
+  create_table "integration_statuses", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "order", null: false
+    t.string "partner_name"
+    t.index ["name"], name: "index_integration_statuses_on_name"
+    t.index ["order"], name: "index_integration_statuses_on_order"
   end
 
   create_table "integration_usages", force: :cascade do |t|
@@ -196,6 +204,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_03_175409) do
     t.string "post_idv_follow_up_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "sp_return_logs", force: :cascade do |t|
+    t.datetime "requested_at"
+    t.string "request_id", null: false
+    t.integer "ial"
+    t.string "issuer", null: false
+    t.integer "user_id"
+    t.datetime "returned_at"
+    t.boolean "billable", default: false, null: false
+    t.bigint "profile_id"
+    t.datetime "profile_verified_at"
+    t.string "profile_requested_issuer"
+    t.index ["request_id"], name: "index_sp_return_logs_on_request_id"
   end
 
   create_table "sp_upgraded_biometric_profiles", force: :cascade do |t|

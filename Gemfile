@@ -11,10 +11,12 @@ gem 'good_job', '~> 3.0'
 gem 'identity-hostdata', github: '18F/identity-hostdata', tag: 'v4.1.0'
 gem 'identity-logging', github: '18F/identity-logging', tag: 'v0.1.0'
 gem 'identity_validations', github: '18F/identity-validations', tag: 'v0.7.2'
+gem 'multiset'
 gem 'puma', '>= 5.6.7'
 gem 'pg'
 gem 'rack', '>= 2.2.3.1'
 gem 'redacted_struct'
+gem 'retries'
 gem 'tzinfo-data', platforms: %i[ windows jruby ]
 gem 'caxlsx', require: false
 gem 'simple_xlsx_reader', require: false
