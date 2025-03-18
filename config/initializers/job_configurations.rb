@@ -53,6 +53,11 @@ else
         cron: cron_24h,
         args: -> { [Time.zone.today] },
       },
+      combined_invoice_supplement_report_v2: {
+        class: 'Reports::CombinedInvoiceSupplementReportV2',
+        cron: cron_24h,
+        args: -> { [Time.zone.today] },
+      },
     }
     Rails.logger.info 'job_configurations: jobs scheduled with good_job.cron'
   end
