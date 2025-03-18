@@ -209,7 +209,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jmespath (1.6.2)
-    json (2.10.1)
+    json (2.10.2)
     knapsack (4.0.0)
       rake
     language_server-protocol (3.17.0.4)
@@ -284,7 +284,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (3.1.10)
+    rack (3.1.12)
     rack-mini-profiler (3.3.1)
       rack (>= 1.2.0)
     rack-session (2.1.0)
