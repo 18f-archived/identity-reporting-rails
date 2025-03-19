@@ -91,4 +91,21 @@ tables:
     column_keys:
       - 'userid'
       - 'query'
+  - source_table: "sys_connection_log"
+    target_table: "sys_connection_log"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "record_time"
+    column_keys:
+      - 'event'
+      - 'record_time'
+  - source_table: "sys_userlog"
+    target_table: "sys_userlog"
+    source_schema: 'pg_catalog'
+    target_schema: 'system_tables'
+    timestamp_column: "record_time"
+    column_keys:
+      - 'user_id'
+      - 'user_name'
+      - 'record_time'
   # Add more tables as needed
