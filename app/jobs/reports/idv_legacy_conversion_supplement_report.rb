@@ -34,11 +34,11 @@ module Reports
         INNER JOIN idp.iaa_gtcs ON idp.iaa_gtcs.id = idp.iaa_orders.iaa_gtc_id
         INNER JOIN idp.service_providers ON idp.service_providers.issuer = idp.integrations.issuer
         INNER JOIN (
-          SELECT DISTINCT ON (user_id) *
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY upgraded_at DESC) AS rn
           FROM idp.sp_upgraded_biometric_profiles
-        ) upgrade ON upgrade.issuer = idp.integrations.issuer
+        ) upgrade ON upgrade.issuer = idp.integrations.issuer AND upgrade.rn = 1
         WHERE upgrade.upgraded_at BETWEEN idp.iaa_orders.start_date AND idp.iaa_orders.end_date
-        GROUP BY idp.iaa_orders.id, upgrade.issuer, year_month, idp.iaa_gtcs.gtc_number, idp.service_providers.friendly_name
+        GROUP BY idp.iaa_orders.start_date, idp.iaa_orders.end_date, idp.iaa_orders.order_number, idp.iaa_orders.id, upgrade.issuer, year_month, idp.iaa_gtcs.gtc_number, idp.service_providers.friendly_name
         ORDER BY idp.iaa_orders.id, year_month
       SQL
 
