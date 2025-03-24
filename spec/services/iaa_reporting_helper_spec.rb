@@ -183,7 +183,7 @@ RSpec.describe IaaReportingHelper do
           ),
           IaaReportingHelper::PartnerConfig.new(
             partner: partner_account2.requesting_agency,
-            issuers: [service_provider2.issuer, service_provider3.issuer].sort,
+            issuers: [service_provider2.issuer, service_provider3.issuer],
             start_date: iaa2_range.begin,
             end_date: iaa2_range.end,
           ),

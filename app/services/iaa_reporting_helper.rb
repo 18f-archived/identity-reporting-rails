@@ -32,7 +32,7 @@ module IaaReportingHelper
         iaa_order.order_number,
         iaa_order.start_date,
         iaa_order.end_date,
-        ARRAY_AGG(DISTINCT integration.issuer ORDER BY integration.issuer) AS issuers
+        listagg(integration.issuer, ',') AS issuers
       FROM idp.iaa_gtcs gtc
       JOIN idp.iaa_orders iaa_order ON iaa_order.iaa_gtc_id = gtc.id
       JOIN idp.integration_usages iu ON iu.iaa_order_id = iaa_order.id
@@ -58,7 +58,7 @@ module IaaReportingHelper
     sql = <<~SQL
       SELECT
         partner_account.requesting_agency AS partner,
-        ARRAY_AGG(DISTINCT sp.issuer ORDER BY sp.issuer) AS issuers,
+        listagg(sp.issuer, ',') AS issuers,
         MIN(iaa_order.start_date) AS start_date,
         MAX(iaa_order.end_date) AS end_date
       FROM idp.partner_accounts partner_account
@@ -74,7 +74,7 @@ module IaaReportingHelper
     results.map do |partner|
       PartnerConfig.new(
         partner: partner['partner'],
-        issuers: partner['issuers'][1..-2].split(',').map(&:strip), # Convert string to array
+        issuers: partner['issuers'].split(',').map(&:strip), # Convert string to array
         start_date: partner['start_date'],
         end_date: partner['end_date'],
       )
