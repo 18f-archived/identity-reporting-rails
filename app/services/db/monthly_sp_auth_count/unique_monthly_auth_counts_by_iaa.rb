@@ -20,6 +20,7 @@ module Db
         # Query a month at a time, to keep query time/result size fairly reasonable
         # The results are rows with [user_id, ial, auth_count, year_month]
         months = Reports::MonthHelper.months(date_range)
+
         queries = build_queries(issuers: issuers, months: months)
 
         ial_to_year_month_to_users = Hash.new do |ial_h, ial_k|
@@ -27,7 +28,6 @@ module Db
         end
 
         all_year_month_to_users = Hash.new { |h, ym_k| h[ym_k] = Set.new }
-
         queries.each do |query|
           by_ial_temp_copy = ial_to_year_month_to_users.deep_dup
           all_temp_copy = all_year_month_to_users.deep_dup
@@ -119,18 +119,18 @@ module Db
 
           format(<<~SQL, params)
             SELECT
-              idp.sp_return_logs.user_id
+              sp_return_logs.user_id
             , %{year_month} AS year_month
-            , COUNT(idp.sp_return_logs.id) AS auth_count
-            , idp.sp_return_logs.ial
-            FROM idp.sp_return_logs
+            , COUNT(sp_return_logs.id) AS auth_count
+            , sp_return_logs.ial
+            FROM idp.sp_return_logs sp_return_logs
             WHERE
-                  idp.sp_return_logs.returned_at::date BETWEEN %{range_start} AND %{range_end}
-              AND idp.sp_return_logs.issuer IN %{issuers}
-              AND idp.sp_return_logs.billable = true
+                  sp_return_logs.returned_at::date BETWEEN %{range_start} AND %{range_end}
+              AND sp_return_logs.issuer IN %{issuers}
+              AND sp_return_logs.billable = true
             GROUP BY
-              idp.sp_return_logs.user_id
-            , idp.sp_return_logs.ial
+              sp_return_logs.user_id
+            , sp_return_logs.ial
           SQL
         end
       end

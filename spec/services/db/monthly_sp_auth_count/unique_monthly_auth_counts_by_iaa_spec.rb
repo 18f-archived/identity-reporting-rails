@@ -56,7 +56,7 @@ RSpec.describe Db::MonthlySpAuthCount::UniqueMonthlyAuthCountsByIaa do
       let(:issuer2) { 'issuer2' }
       let(:issuer3) { 'issuer3' }
 
-      # let(:agency) { create(:agency, name: 'FOO') }
+      let(:agency) { create(:agency, name: 'FOO') }
 
       let!(:sps) do
         [issuer1, issuer2, issuer3].map do |issuer|
@@ -196,7 +196,6 @@ RSpec.describe Db::MonthlySpAuthCount::UniqueMonthlyAuthCountsByIaa do
             unique_users: 3,
           },
         ]
-
         expect(results).to match_array(rows)
       end
     end

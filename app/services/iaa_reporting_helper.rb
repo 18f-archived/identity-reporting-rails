@@ -30,9 +30,9 @@ module IaaReportingHelper
       SELECT
         gtc.gtc_number,
         iaa_order.order_number,
+        listagg(integration.issuer, ',') AS issuers,
         iaa_order.start_date,
-        iaa_order.end_date,
-        listagg(integration.issuer, ',') AS issuers
+        iaa_order.end_date
       FROM idp.iaa_gtcs gtc
       JOIN idp.iaa_orders iaa_order ON iaa_order.iaa_gtc_id = gtc.id
       JOIN idp.integration_usages iu ON iu.iaa_order_id = iaa_order.id
@@ -46,7 +46,7 @@ module IaaReportingHelper
       IaaConfig.new(
         gtc_number: iaa['gtc_number'],
         order_number: iaa['order_number'],
-        issuers: parse_pg_array(iaa['issuers']),
+        issuers: iaa['issuers'].split(','),
         start_date: iaa['start_date'],
         end_date: iaa['end_date'],
       )
@@ -56,25 +56,25 @@ module IaaReportingHelper
   # @return [Array<PartnerConfig>]
   def partner_accounts
     sql = <<~SQL
-      SELECT
-        partner_account.requesting_agency AS partner,
-        listagg(sp.issuer, ',') AS issuers,
-        MIN(iaa_order.start_date) AS start_date,
-        MAX(iaa_order.end_date) AS end_date
+      SELECT DISTINCT  partner_account.requesting_agency as partner,
+      listagg(sp.issuer, ',') as issuers,
+      min(iaa_order.start_date) as start_date,
+      max(iaa_order.end_date) as end_date
       FROM idp.partner_accounts partner_account
       JOIN idp.integrations integration ON integration.partner_account_id = partner_account.id
       JOIN idp.service_providers sp ON sp.issuer = integration.issuer
-      JOIN idp.integration_usages iu ON iu.integration_id = integration.id
-      JOIN idp.iaa_orders iaa_order ON iaa_order.id = iu.iaa_order_id
+      LEFT JOIN idp.integration_usages iu ON iu.integration_id = integration.id
+      LEFT JOIN idp.iaa_orders iaa_order ON iaa_order.id = iu.iaa_order_id
       GROUP BY partner_account.requesting_agency
-      ORDER BY partner_account.requesting_agency
+
     SQL
 
     results = DataWarehouseApplicationRecord.connection.select_all(sql)
+
     results.map do |partner|
       PartnerConfig.new(
         partner: partner['partner'],
-        issuers: partner['issuers'].split(',').map(&:strip), # Convert string to array
+        issuers: partner['issuers'].split(','), # Convert string to array
         start_date: partner['start_date'],
         end_date: partner['end_date'],
       )
@@ -83,9 +83,5 @@ module IaaReportingHelper
 
   def key(gtc_number:, order_number:)
     "#{gtc_number}-#{format('%04d', order_number)}"
-  end
-
-  def parse_pg_array(pg_array)
-    pg_array[1..-2].split(',').map(&:strip)
   end
 end
