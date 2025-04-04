@@ -49,7 +49,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
       columns.each do |column_info|
         column_name, column_data_type = column_info.values_at('column', 'type')
 
-        t.column column_name, column_data_type
+        t.column column_name, redshift_data_type(column_data_type)
       end
     end
 
@@ -188,6 +188,17 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     sync_metadata = SystemTablesSyncMetadata.find_or_initialize_by(table_name: @target_table)
     sync_metadata.last_sync_time = Time.zone.now
     sync_metadata.save!
+  end
+
+  def redshift_data_type(data_type)
+    case data_type
+    when 'json', 'jsonb'
+      'super'
+    when 'text'
+      'string'
+    else
+      data_type
+    end
   end
 
   def log_info(message, success, additional_info = {})
