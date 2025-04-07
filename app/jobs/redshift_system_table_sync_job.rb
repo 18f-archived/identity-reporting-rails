@@ -195,7 +195,7 @@ class RedshiftSystemTableSyncJob < ApplicationJob
     when 'json', 'jsonb'
       'super'
     when 'text'
-      'string'
+      'VARCHAR(MAX)'
     else
       data_type
     end
