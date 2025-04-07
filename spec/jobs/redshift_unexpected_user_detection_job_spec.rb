@@ -57,6 +57,8 @@ RSpec.describe RedshiftUnexpectedUserDetectionJob, type: :job do
           CREATE USER "superuser";
           CREATE USER "rdsadmin";
           CREATE USER "rdsdb";
+          CREATE USER "postgres";
+          CREATE USER "security_audit";
         SQL
         DataWarehouseApplicationRecord.connection.execute(query)
       end
