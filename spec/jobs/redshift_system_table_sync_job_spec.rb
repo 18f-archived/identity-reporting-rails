@@ -247,7 +247,7 @@ RSpec.describe RedshiftSystemTableSyncJob, type: :job do
 
     context 'when datatype is :text' do
       it 'returns :string' do
-        expect(job.send(:redshift_data_type, 'text')).to eq('string')
+        expect(job.send(:redshift_data_type, 'text')).to eq('VARCHAR(MAX)')
       end
     end
 
