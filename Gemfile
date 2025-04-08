@@ -7,13 +7,13 @@ gem 'rails', '~> 7.2.1'
 gem 'bootsnap', '~> 1.0', require: false
 gem 'csv'
 gem 'faker'
-gem 'good_job', '~> 3.0'
-gem 'identity-hostdata', github: '18F/identity-hostdata', tag: 'v4.1.0'
-gem 'identity-logging', github: '18F/identity-logging', tag: 'v0.1.0'
+gem 'good_job', '~> 4.0'
+gem 'identity-hostdata', github: '18F/identity-hostdata', tag: 'v4.4.1'
+gem 'identity-logging', github: '18F/identity-logging', tag: 'v0.1.1'
 gem 'identity_validations', github: '18F/identity-validations', tag: 'v0.7.2'
-gem 'puma', '>= 5.6.7'
+gem 'puma', '~> 6.0'
 gem 'pg'
-gem 'rack', '>= 2.2.3.1'
+gem 'rack', '~> 3.1.12'
 gem 'redacted_struct'
 gem 'tzinfo-data', platforms: %i[ windows jruby ]
 gem 'caxlsx', require: false
@@ -30,7 +30,7 @@ group :development, :test do
   gem 'bullet', '~> 7.0'
   gem 'knapsack'
   gem 'listen'
-  gem 'nokogiri', '>= 1.16.5'
+  gem 'nokogiri', '~> 1.18.0'
   gem 'pg_query', require: false
   gem 'pry-byebug'
   gem 'pry-doc', '>= 1.5.0'

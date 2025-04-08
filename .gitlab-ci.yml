@@ -6,7 +6,7 @@
 variables:
   GITLAB_CI: 'true'
   ECR_REGISTRY: '${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
-  IDP_CI_SHA: 'sha256:5c4953f8efba18b7a6d6a9a961cb77ba7143059cbb2176499432b4275fbe67db'
+  IDP_CI_SHA: 'sha256:96e9cfbcedcc8d2c6736d736ebc6462bbd2fed3250f513facb632f6f87c0c862'
   JUNIT_OUTPUT: 'true'
   DS_IMAGE_SUFFIX: "-fips"
 
