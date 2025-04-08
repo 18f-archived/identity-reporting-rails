@@ -137,7 +137,7 @@ GEM
     brakeman (7.0.0)
       racc
     builder (3.3.0)
-    bullet (7.2.0)
+    bullet (8.0.3)
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
     bundler-audit (0.9.2)
@@ -351,10 +351,10 @@ GEM
     rspec-mocks (3.13.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-rails (6.1.5)
-      actionpack (>= 6.1)
-      activesupport (>= 6.1)
-      railties (>= 6.1)
+    rspec-rails (7.1.1)
+      actionpack (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
       rspec-core (~> 3.13)
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
@@ -440,7 +440,7 @@ DEPENDENCIES
   better_errors (>= 2.5.1)
   bootsnap (~> 1.0)
   brakeman
-  bullet (~> 7.0)
+  bullet (~> 8.0)
   bundler-audit
   caxlsx
   csv
@@ -468,7 +468,7 @@ DEPENDENCIES
   redacted_struct
   rexml (>= 3.3.3)
   rspec (~> 3.13.0)
-  rspec-rails (~> 6.0)
+  rspec-rails (~> 7.0)
   rspec-retry
   rspec-support (~> 3.13.1)
   rspec_junit_formatter

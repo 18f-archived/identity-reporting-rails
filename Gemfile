@@ -27,7 +27,7 @@ end
 
 group :development, :test do
   gem 'brakeman', require: false
-  gem 'bullet', '~> 7.0'
+  gem 'bullet', '~> 8.0'
   gem 'knapsack'
   gem 'listen'
   gem 'nokogiri', '~> 1.18.0'
@@ -39,7 +39,7 @@ group :development, :test do
   gem 'rexml', '>= 3.3.3'
   gem 'rspec', '~> 3.13.0'
   gem 'rspec-support', '~> 3.13.1'
-  gem 'rspec-rails', '~> 6.0'
+  gem 'rspec-rails', '~> 7.0'
   gem 'rubocop', '~> 1.70.0', require: false
   gem 'rubocop-performance', '~> 1.23.0', require: false
   gem 'rubocop-rails', '>= 2.27.2', require: false
