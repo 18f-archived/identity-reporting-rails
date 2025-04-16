@@ -200,6 +200,16 @@ class RedshiftSchemaUpdater
       return
     end
 
+    # Ensure the primary key column is NOT NULL
+    alter_column_to_not_null_sql = <<~SQL
+      ALTER TABLE #{table_name}
+      ALTER COLUMN #{primary_key} SET NOT NULL;
+    SQL
+    DataWarehouseApplicationRecord.connection.execute(
+      DataWarehouseApplicationRecord.sanitize_sql(alter_column_to_not_null_sql),
+    )
+    log_info("Column #{primary_key} set to NOT NULL for table: #{table_name}")
+
     sql = if using_redshift_adapter?
             "ALTER TABLE #{table_name} ADD PRIMARY KEY (#{primary_key});"
           else
