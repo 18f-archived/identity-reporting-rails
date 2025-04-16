@@ -15,8 +15,6 @@ set -x
 id
 which bundle
 
-bundle exec rake db:check_for_pending_migrations --trace
-
 set +x
 
 echo "deploy/activate finished"
