@@ -4,6 +4,7 @@
   include_columns:
     - name: id
       datatype: integer
+      not_null: true
     - name: name
       datatype: string
     - name: email
@@ -24,6 +25,7 @@
   include_columns:
     - name: id
       datatype: integer
+      not_null: true
     - name: name
       datatype: string
     - name: new_user_id

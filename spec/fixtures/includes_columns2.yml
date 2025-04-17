@@ -4,6 +4,7 @@
   include_columns:
     - name: id
       datatype: bigint
+      not_null: true
     - name: name
       datatype: string
     - name: email
@@ -29,6 +30,7 @@
   include_columns:
     - name: id
       datatype: integer
+      not_null: true
     - name: name
       datatype: string
     - name: event_type
