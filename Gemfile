@@ -31,7 +31,7 @@ group :development, :test do
   gem 'knapsack'
   gem 'listen'
   gem 'nokogiri', '~> 1.18.0'
-  gem 'pg_query', require: false
+  gem 'pg_query', '~> 6.1.0', require: false
   gem 'pry-byebug'
   gem 'pry-doc', '>= 1.5.0'
   gem 'pry-rails'

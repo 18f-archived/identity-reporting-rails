@@ -5,12 +5,8 @@ namespace :db do
   task check_for_pending_migrations: :environment do
     require 'identity/hostdata'
 
-    if Identity::Hostdata.instance_role == 'migration'
-      warn('Skipping pending migration check on migration instance')
-    elsif Identity::Hostdata.host_config.dig(
-      :default_attributes, :login_dot_gov, :idp_run_migrations
-    )
-      warn('Skipping pending migration check, idp_run_migrations=true')
+    if Identity::Hostdata.instance_role == 'analytics-migration'
+      warn('Skipping pending migration check on analytics migration instance')
     else
       ActiveRecord::Migration.check_all_pending!
     end

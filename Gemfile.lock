@@ -174,7 +174,6 @@ GEM
     ffi (1.17.1)
     ffi (1.17.1-arm64-darwin)
     ffi (1.17.1-x86_64-darwin)
-    ffi (1.17.1-x86_64-linux-gnu)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -187,16 +186,13 @@ GEM
       fugit (>= 1.11.0)
       railties (>= 6.1.0)
       thor (>= 1.0.0)
-    google-protobuf (4.29.3)
+    google-protobuf (4.30.2)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.29.3-arm64-darwin)
+    google-protobuf (4.30.2-arm64-darwin)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.29.3-x86_64-darwin)
-      bigdecimal
-      rake (>= 13)
-    google-protobuf (4.29.3-x86_64-linux)
+    google-protobuf (4.30.2-x86_64-darwin)
       bigdecimal
       rake (>= 13)
     hashdiff (1.1.2)
@@ -253,14 +249,12 @@ GEM
       racc (~> 1.4)
     nokogiri (1.18.2-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.2-x86_64-linux-gnu)
-      racc (~> 1.4)
     parallel (1.26.3)
     parser (3.3.7.4)
       ast (~> 2.4.1)
       racc
     pg (1.5.9)
-    pg_query (6.0.0)
+    pg_query (6.1.0)
       google-protobuf (>= 3.25.3)
     pp (0.6.2)
       prettyprint
@@ -430,10 +424,10 @@ PLATFORMS
   arm64-darwin-21
   arm64-darwin-22
   arm64-darwin-23
+  arm64-darwin-24
   ruby
   x86_64-darwin-22
   x86_64-darwin-23
-  x86_64-linux
 
 DEPENDENCIES
   activerecord7-redshift-adapter-pennylane
@@ -455,7 +449,7 @@ DEPENDENCIES
   listen
   nokogiri (~> 1.18.0)
   pg
-  pg_query
+  pg_query (~> 6.1.0)
   pry-byebug
   pry-doc (>= 1.5.0)
   pry-rails
