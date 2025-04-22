@@ -3,7 +3,7 @@
   primary_key: id
   include_columns:
     - name: id
-      datatype: bigint
+      datatype: integer
       not_null: true
     - name: name
       datatype: string

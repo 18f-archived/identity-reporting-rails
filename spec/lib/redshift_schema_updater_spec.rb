@@ -17,7 +17,7 @@ RSpec.describe RedshiftSchemaUpdater do
         'primary_key' => 'id',
         'include_columns' => [
           { 'name' => 'id', 'datatype' => 'integer', 'not_null' => true },
-          { 'name' => 'name', 'datatype' => 'string' },
+          { 'name' => 'name', 'datatype' => 'string', 'not_null' => true },
           { 'name' => 'email', 'datatype' => 'string' },
           { 'name' => 'created_at', 'datatype' => 'datetime' },
           { 'name' => 'updated_at', 'datatype' => 'datetime' },
@@ -33,6 +33,13 @@ RSpec.describe RedshiftSchemaUpdater do
             'references' => {
               'table' => 'new_users',
               'column' => 'id',
+            },
+          },
+          {
+            'column' => 'name',
+            'references' => {
+              'table' => 'new_users',
+              'column' => 'name',
             },
           },
         ],
@@ -95,7 +102,6 @@ RSpec.describe RedshiftSchemaUpdater do
 
     context 'when table already exists' do
       let(:existing_columns) { [{ 'name' => 'id', 'datatype' => 'integer' }] }
-      let(:primary_key) { nil }
       let(:foreign_keys) { [] }
 
       before do
@@ -169,7 +175,6 @@ RSpec.describe RedshiftSchemaUpdater do
         [{ 'name' => 'id', 'datatype' => 'integer' },
          { 'name' => 'some_numeric_column', 'datatype' => 'decimal' }]
       end
-      let(:primary_key) { nil }
       let(:foreign_keys) { [] }
 
       before do
@@ -210,7 +215,6 @@ RSpec.describe RedshiftSchemaUpdater do
          { 'name' => 'string_with_limit', 'datatype' => 'string', 'limit' => 100 }]
       end
       let(:foreign_keys) { [] }
-      let(:primary_key) { nil }
 
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
@@ -237,8 +241,6 @@ RSpec.describe RedshiftSchemaUpdater do
          { 'name' => 'string_with_limit', 'datatype' => 'string' }]
       end
       let(:foreign_keys) { [] }
-      let(:primary_key) { nil }
-
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
@@ -255,6 +257,40 @@ RSpec.describe RedshiftSchemaUpdater do
         columns_objs = DataWarehouseApplicationRecord.connection.columns(users_table)
         string_col = columns_objs.find { |col| col.name == 'string_with_limit' }
         expect(string_col.limit).to eq(300)
+      end
+    end
+
+    context 'when table already exist skip primary and foreign key' do
+      let(:existing_columns) do
+        [{ 'name' => 'id', 'datatype' => 'integer', 'not_null' => true }]
+      end
+      let(:foreign_keys) { [] }
+      before do
+        allow(redshift_schema_updater).to receive(:log_info)
+        allow(redshift_schema_updater).to receive(:log_error)
+        allow(redshift_schema_updater).to receive(:log_warning)
+        DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
+        redshift_schema_updater.
+          create_table(users_table, existing_columns, primary_key, foreign_keys)
+      end
+
+      it 'updates columns and skips primary and foreign key' do
+        expect(redshift_schema_updater.table_exists?(users_table)).to eq(true)
+        existing_columns = DataWarehouseApplicationRecord.connection.columns(users_table)
+        expect(existing_columns.map(&:name)).to eq(['id'])
+
+        redshift_schema_updater.update_schema_from_yaml(file_path)
+
+        new_columns = DataWarehouseApplicationRecord.connection.columns(users_table).map(&:name)
+
+        expect(new_columns).to eq(expected_columns)
+        # validate primary and foreign keys validation is skipped logs
+        allow(Rails.logger).to receive(:info).and_call_original
+
+        msg = "Primary key column already exists: #{users_table}.id"
+        msg2 = "Foreign keys are not processed with update_existing_table for table: #{users_table}"
+        expect(redshift_schema_updater).to have_received(:log_info).with(msg)
+        expect(redshift_schema_updater).to have_received(:log_info).with(msg2)
       end
     end
   end

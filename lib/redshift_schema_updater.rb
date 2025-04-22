@@ -1,8 +1,26 @@
 require 'yaml'
 
 class RedshiftSchemaUpdater
+  PRIMARY_KEY_QUERY = <<~SQL.freeze
+    SELECT kcu.column_name
+    FROM information_schema.table_constraints tco
+    JOIN information_schema.key_column_usage kcu
+    ON kcu.constraint_name = tco.constraint_name
+    WHERE tco.table_name = ? AND tco.constraint_type = 'PRIMARY KEY'
+  SQL
+
+  FOREIGN_KEY_QUERY = <<~SQL.freeze
+    SELECT kcu.column_name
+    FROM information_schema.table_constraints tco
+    JOIN information_schema.key_column_usage kcu
+    ON kcu.constraint_name = tco.constraint_name
+    WHERE tco.table_name = ? AND tco.constraint_type = 'FOREIGN KEY'
+    AND kcu.column_name = ?
+  SQL
+
   def initialize(schema_name)
     @schema_name = schema_name
+    @pending_foreign_keys = []
   end
 
   def using_redshift_adapter?
@@ -21,14 +39,15 @@ class RedshiftSchemaUpdater
       foreign_key_columns = table_data['foreign_keys'] || []
 
       if table_exists?(table_name)
-        update_existing_table(table_name, columns, primary_key_column, foreign_key_columns)
+        update_existing_table(table_name, columns, primary_key_column, [])
       else
         create_table(table_name, columns, primary_key_column, foreign_key_columns)
       end
     end
+    # Process foreign keys after all tables have been created or updated
+    process_foreign_keys
   rescue StandardError => e
     log_error("Error updating schema from YAML: #{e.message}")
-    DataWarehouseApplicationRecord.connection.rollback_db_transaction
     raise e
   end
 
@@ -45,21 +64,10 @@ class RedshiftSchemaUpdater
   end
 
   def primary_key_exists?(table_name, column_name)
-    # Check if the table has a primary key
     return false unless table_exists?(table_name) && column_exists?(table_name, column_name)
-    query = <<~SQL
-      SELECT kcu.column_name
-      FROM information_schema.table_constraints tco
-      JOIN information_schema.key_column_usage kcu
-      ON kcu.constraint_name = tco.constraint_name
-      WHERE tco.table_name = ? AND tco.constraint_type = 'PRIMARY KEY'
-    SQL
-    # Check if the primary key exists for a given table
+
     if using_redshift_adapter?
-      primary_key_info =
-        DataWarehouseApplicationRecord.connection.exec_query(
-          DataWarehouseApplicationRecord.sanitize_sql([query, table_name]),
-        ).to_a
+      primary_key_info = execute_query(PRIMARY_KEY_QUERY, table_name)
       primary_key_info.any? { |pk| pk['column_name'] == column_name }
     else
       DataWarehouseApplicationRecord.connection.primary_key(table_name) == column_name
@@ -70,23 +78,10 @@ class RedshiftSchemaUpdater
   end
 
   def foreign_key_exists?(table_name, foreign_column)
-    # Check if the table has a foreign key
     return false unless table_exists?(table_name) && column_exists?(table_name, foreign_column)
 
-    # Check if the foreign key exists for a given table
     if using_redshift_adapter?
-      query = <<~SQL
-        SELECT kcu.column_name
-        FROM information_schema.table_constraints tco
-        JOIN information_schema.key_column_usage kcu
-        ON kcu.constraint_name = tco.constraint_name
-        WHERE tco.table_name = ? AND tco.constraint_type = 'FOREIGN KEY'
-        AND kcu.column_name = ?
-      SQL
-      foreign_key_info =
-        DataWarehouseApplicationRecord.connection.exec_query(
-          DataWarehouseApplicationRecord.sanitize_sql([query, table_name, foreign_column]),
-        ).to_a
+      foreign_key_info = execute_query(FOREIGN_KEY_QUERY, table_name, foreign_column)
       foreign_key_info.any?
     else
       DataWarehouseApplicationRecord.connection.foreign_keys(table_name).any? do |fk|
@@ -100,17 +95,16 @@ class RedshiftSchemaUpdater
 
   def get_config_column_options(column_info)
     config_column_data_type = column_info.fetch('datatype')
-    default_varchar_limit = nil
-    if using_redshift_adapter? && ['string', 'text'].include?(config_column_data_type)
-      default_varchar_limit = 256
-    end
+    default_varchar_limit = (using_redshift_adapter? &&
+      ['string', 'text'].include?(config_column_data_type)) ? 256 : nil
     {
       limit: column_info.fetch('limit', default_varchar_limit),
       if_not_exists: true,
+      null: !column_info.fetch('not_null', false),
     }
   end
 
-  def update_existing_table(table_name, columns, primary_key, foreign_keys)
+  def update_existing_table(table_name, columns, primary_key, _foreign_keys)
     columns_objs = DataWarehouseApplicationRecord.connection.columns(table_name)
     existing_columns = columns_objs.map(&:name)
 
@@ -164,26 +158,10 @@ class RedshiftSchemaUpdater
         )
       end
     end
-    # check if primary key exists on the table other wise add it
-    if primary_key && !primary_key_exists?(table_name, primary_key)
-      add_primary_key(table_name, primary_key)
-    elsif primary_key && primary_key_exists?(table_name, primary_key)
-      log_info("Primary key column already exists: #{primary_key}")
-    else
-      log_error("No primary key found in the YAML file for table: #{table_name}")
-    end
 
-    # add foreign keys if they do not exist
-    if foreign_keys.any?
-      foreign_keys.each do |foreign_key|
-        foreign_key_column = foreign_key['column']
-        if foreign_key_exists?(table_name, foreign_key_column)
-          log_warning("Foreign key column already exists: #{foreign_key_column}")
-        else
-          add_foreign_key(table_name, foreign_key)
-        end
-      end
-    end
+    log_primary_key_status(table_name, primary_key)
+    # Skip processing foreign keys
+    log_info("Foreign keys are not processed with update_existing_table for table: #{table_name}")
   rescue StandardError => e
     log_error("Error updating existing table: #{e.message}")
     raise e
@@ -195,20 +173,12 @@ class RedshiftSchemaUpdater
     table_short_value = table_name.split('.').last
     primary_key_name = "  #{table_short_value}_#{primary_key}_pkey "
 
-    if primary_key_exists?(table_name, primary_key)
-      log_info("Primary key column already exists: #{primary_key}")
+    if column_is_not_null?(table_name, primary_key)
+      log_info("Verified Primary key column is not null: #{primary_key}")
+    else
+      log_warning("Primary key column is null: #{primary_key}")
       return
     end
-
-    # Ensure the primary key column is NOT NULL
-    alter_column_to_not_null_sql = <<~SQL
-      ALTER TABLE #{table_name}
-      ALTER COLUMN #{primary_key} SET NOT NULL;
-    SQL
-    DataWarehouseApplicationRecord.connection.execute(
-      DataWarehouseApplicationRecord.sanitize_sql(alter_column_to_not_null_sql),
-    )
-    log_info("Column #{primary_key} set to NOT NULL for table: #{table_name}")
 
     sql = if using_redshift_adapter?
             "ALTER TABLE #{table_name} ADD PRIMARY KEY (#{primary_key});"
@@ -234,12 +204,23 @@ class RedshiftSchemaUpdater
     foreign_key_reference_table = "#{@schema_name}.#{foreign_key['references']['table']}"
     foreign_key_reference_column = foreign_key['references']['column']
     table_short_name = table_name.split('.').last
+    # timestamp = Time.now.to_i
     foreign_key_name = "#{table_short_name}_#{foreign_key_column}_fkey"
     # check if reference table exists
+
     unless table_exists?(foreign_key_reference_table)
       log_error("Reference table does not exist: #{foreign_key_reference_table}")
       return
     end
+
+    unless column_has_unique_constraint?(foreign_key_reference_table, foreign_key_reference_column)
+      log_error(
+        "Referenced column #{foreign_key_reference_column} in table #{foreign_key_reference_table}
+      must have a unique constraint or primary key.",
+      )
+      return
+    end
+
     sql = <<~SQL
       ALTER TABLE #{table_name}
       ADD CONSTRAINT #{foreign_key_name}
@@ -256,6 +237,82 @@ class RedshiftSchemaUpdater
     raise e
   end
 
+  def process_foreign_keys
+    @pending_foreign_keys.each do |entry|
+      table_name = entry[:table_name]
+      foreign_key = entry[:foreign_key]
+      foreign_key_column = entry[:foreign_key]['column']
+
+      add_foreign_key(table_name, foreign_key) unless foreign_key_exists?(
+        table_name,
+        foreign_key_column,
+      )
+    end
+    log_info('Foreign keys processed successfully')
+  rescue StandardError => e
+    log_error("Error processing foreign keys: #{e.message}")
+    raise e
+  end
+
+  def column_has_unique_constraint?(table_name, column_name)
+    query = <<~SQL
+      SELECT 1
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.constraint_column_usage ccu
+        ON tc.constraint_name = ccu.constraint_name
+      WHERE tc.table_name = ?
+        AND ccu.column_name = ?
+        AND (tc.constraint_type = 'PRIMARY KEY' OR tc.constraint_type = 'UNIQUE');
+    SQL
+
+    result = DataWarehouseApplicationRecord.connection.exec_query(
+      DataWarehouseApplicationRecord.sanitize_sql([query, table_name.split('.').last, column_name]),
+    ).to_a
+
+    result.any?
+  rescue StandardError => e
+    log_error(
+      "Error checking unique constraint for column #{column_name} in table #{table_name}:
+    #{e.message}",
+    )
+    raise e
+  end
+
+  def column_is_not_null?(table_name, column_name)
+    schema_name = table_name.split('.').first
+    table_short_name = table_name.split('.').last
+
+    if using_redshift_adapter?
+      query = <<~SQL
+        SELECT "column"
+        FROM pg_table_def
+        WHERE schemaname = ?
+        AND tablename = ?
+        AND "column" = ?
+        AND NOT nullable;
+      SQL
+    else
+      query = <<~SQL
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = ?
+        AND table_name = ?
+        AND column_name = ?
+        AND is_nullable = 'NO';
+      SQL
+    end
+    result = DataWarehouseApplicationRecord.connection.exec_query(
+      DataWarehouseApplicationRecord.sanitize_sql(
+        [query, schema_name, table_short_name,
+         column_name],
+      ),
+    ).to_a
+    result.any?
+  rescue StandardError => e
+    log_error("Error checking column nullability: #{e.message}")
+    raise e
+  end
+
   def create_table(table_name, columns, primary_key, foreign_keys)
     DataWarehouseApplicationRecord.connection.create_table(table_name, id: false) do |t|
       columns.each do |column_info|
@@ -266,20 +323,19 @@ class RedshiftSchemaUpdater
       end
     end
     log_info("Table created: #{table_name}")
+
     if primary_key
-      add_primary_key(table_name, primary_key) unless primary_key_exists?(table_name, primary_key)
+      add_primary_key(table_name, primary_key) unless primary_key_exists?(
+        table_name,
+        primary_key,
+      )
     else
       log_error("No primary key found in the YAML file for table: #{table_name}")
     end
+
+    # collect foreign keys for later processing
     if foreign_keys.any?
-      foreign_keys.each do |foreign_key|
-        foreign_key_column = foreign_key['column']
-        add_foreign_key(table_name, foreign_key) unless foreign_key_exists?(
-          table_name,
-          foreign_key_column,
-        )
-      end
-      Rails.logger.debug { "Foreign keys added: #{foreign_keys}" }
+      collect_foreign_keys(table_name, foreign_keys)
     end
   rescue StandardError => e
     log_error("Error creating table: #{e.message}")
@@ -351,31 +407,46 @@ class RedshiftSchemaUpdater
 
   private
 
+  def execute_query(query, *args)
+    DataWarehouseApplicationRecord.connection.exec_query(
+      DataWarehouseApplicationRecord.sanitize_sql([query, *args]),
+    ).to_a
+  end
+
+  def log_primary_key_status(table_name, primary_key)
+    if primary_key && primary_key_exists?(table_name, primary_key)
+      log_info("Primary key column already exists: #{table_name}.#{primary_key}")
+    elsif primary_key
+      log_warning("Primary key column is not processed for table: #{table_name}")
+    else
+      log_warning("No primary key found in the YAML file for table: #{table_name}")
+    end
+  end
+
+  def collect_foreign_keys(table_name, foreign_keys)
+    foreign_keys.each do |foreign_key|
+      @pending_foreign_keys << {
+        table_name: table_name,
+        foreign_key: foreign_key,
+      }
+    end
+    log_info("Foreign keys collected for table: #{table_name}")
+  end
+
+  def log_message(level, message)
+    logger.send(level, { name: self.class.name, level => message }.to_json)
+  end
+
   def log_error(message)
-    logger.error(
-      {
-        name: self.class.name,
-        error: message,
-      }.to_json,
-    )
+    log_message(:error, message)
   end
 
   def log_info(message)
-    logger.info(
-      {
-        name: self.class.name,
-        info: message,
-      }.to_json,
-    )
+    log_message(:info, message)
   end
 
   def log_warning(message)
-    logger.warn(
-      {
-        name: self.class.name,
-        warning: message,
-      }.to_json,
-    )
+    log_message(:warn, message)
   end
 
   def logger

@@ -7,6 +7,7 @@
       not_null: true
     - name: name
       datatype: string
+      not_null: true
     - name: email
       datatype: string
     - name: created_at
@@ -22,6 +23,10 @@
       references:
         table: new_users
         column: id
+    - column: name
+      references:
+        table: new_users
+        column: name
   include_columns:
     - name: id
       datatype: integer
