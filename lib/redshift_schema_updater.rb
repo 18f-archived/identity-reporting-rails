@@ -282,31 +282,35 @@ class RedshiftSchemaUpdater
     schema_name = table_name.split('.').first
     table_short_name = table_name.split('.').last
 
-    if using_redshift_adapter?
-      query = <<~SQL
-        SELECT "column"
-        FROM pg_table_def
-        WHERE schemaname = ?
-        AND tablename = ?
-        AND "column" = ?
-        AND NOT nullable;
-      SQL
-    else
-      query = <<~SQL
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_schema = ?
-        AND table_name = ?
-        AND column_name = ?
-        AND is_nullable = 'NO';
-      SQL
-    end
+    query = if using_redshift_adapter?
+              <<~SQL
+                SELECT a.attname AS column_name
+                FROM pg_catalog.pg_namespace n
+                JOIN pg_catalog.pg_class c ON n.oid = c.relnamespace
+                JOIN pg_catalog.pg_attribute a ON c.oid = a.attrelid
+                WHERE n.nspname = ?
+                  AND c.relname = ?
+                  AND a.attname = ?
+                  AND a.attnotnull = true
+                  AND a.attnum > 0;
+              SQL
+            else
+              <<~SQL
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = ?
+                  AND table_name = ?
+                  AND column_name = ?
+                  AND is_nullable = 'NO';
+              SQL
+            end
     result = DataWarehouseApplicationRecord.connection.exec_query(
       DataWarehouseApplicationRecord.sanitize_sql(
         [query, schema_name, table_short_name,
          column_name],
       ),
     ).to_a
+
     result.any?
   rescue StandardError => e
     log_error("Error checking column nullability: #{e.message}")
