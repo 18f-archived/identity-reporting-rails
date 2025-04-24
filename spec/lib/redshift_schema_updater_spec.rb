@@ -27,7 +27,7 @@ RSpec.describe RedshiftSchemaUpdater do
         'table' => 'events',
         'schema' => 'public',
         'primary_key' => 'id',
-        'foreign_keys' => [
+        'foreign_key' => [
           {
             'column' => 'new_user_id',
             'references' => {
@@ -102,11 +102,11 @@ RSpec.describe RedshiftSchemaUpdater do
 
     context 'when table already exists' do
       let(:existing_columns) { [{ 'name' => 'id', 'datatype' => 'integer' }] }
-      let(:foreign_keys) { [] }
+      let(:foreign_key) { [] }
 
       before do
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_keys)
+          create_table(users_table, existing_columns, primary_key, foreign_key)
       end
 
       it 'adds new columns' do
@@ -125,12 +125,12 @@ RSpec.describe RedshiftSchemaUpdater do
       let(:existing_columns) do
         [{ 'name' => 'id', 'datatype' => 'integer' }, { 'name' => 'phone', 'datatype' => 'string' }]
       end
-      let(:foreign_keys) { [] }
+      let(:foreign_key) { [] }
       let(:primary_key) { nil }
 
       before do
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_keys)
+          create_table(users_table, existing_columns, primary_key, foreign_key)
       end
 
       it 'updates columns and removes columns not exist in YAML file' do
@@ -142,31 +142,6 @@ RSpec.describe RedshiftSchemaUpdater do
 
         new_columns = DataWarehouseApplicationRecord.connection.columns(users_table).map(&:name)
         expect(new_columns).to eq(expected_columns)
-
-        # primary_key_query = <<~SQL
-        #   SELECT kcu.column_name
-        #   FROM information_schema.table_constraints tco
-        #   JOIN information_schema.key_column_usage kcu
-        #   ON kcu.constraint_name = tco.constraint_name
-        #   WHERE tco.table_name = 'events' AND tco.constraint_type = 'PRIMARY KEY';
-        # SQL
-        # primary_key_result = DataWarehouseApplicationRecord.
-        #   connection.exec_query(primary_key_query).to_a
-        # expect(primary_key_result.map { |row| row['column_name'] }).to include('id')
-        # foreign_key_query = <<~SQL
-        #   SELECT kcu.column_name, ccu.table_name, ccu.column_name as referenced_column_name
-        #   FROM information_schema.table_constraints tco
-        #   JOIN information_schema.key_column_usage kcu
-        #   ON kcu.constraint_name = tco.constraint_name
-        #   JOIN information_schema.constraint_column_usage ccu
-        #   ON ccu.constraint_name = tco.constraint_name
-        #   WHERE tco.table_name = 'events' AND tco.constraint_type = 'FOREIGN KEY';
-        # SQL
-        # foreign_key_result = DataWarehouseApplicationRecord.
-        #   connection.exec_query(foreign_key_query).to_a
-        # expect(foreign_key_result.map { |row| row['column_name'] }).to include('new_user_id')
-        # expect(foreign_key_result.map { |row| row['table_name'] }).to include('new_users')
-        # expect(foreign_key_result.map { |row| row['referenced_column_name'] }).to include('id')
       end
     end
 
@@ -175,12 +150,12 @@ RSpec.describe RedshiftSchemaUpdater do
         [{ 'name' => 'id', 'datatype' => 'integer' },
          { 'name' => 'some_numeric_column', 'datatype' => 'decimal' }]
       end
-      let(:foreign_keys) { [] }
+      let(:foreign_key) { [] }
 
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_keys)
+          create_table(users_table, existing_columns, primary_key, foreign_key)
         DataWarehouseApplicationRecord.connection.execute(
           DataWarehouseApplicationRecord.sanitize_sql(
             "INSERT INTO #{users_table} (id, some_numeric_column) VALUES (1, 999.0)",
@@ -214,12 +189,12 @@ RSpec.describe RedshiftSchemaUpdater do
         [{ 'name' => 'id', 'datatype' => 'integer' },
          { 'name' => 'string_with_limit', 'datatype' => 'string', 'limit' => 100 }]
       end
-      let(:foreign_keys) { [] }
+      let(:foreign_key) { [] }
 
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_keys)
+          create_table(users_table, existing_columns, primary_key, foreign_key)
       end
 
       it 'updates column with new limit' do
@@ -240,11 +215,11 @@ RSpec.describe RedshiftSchemaUpdater do
         [{ 'name' => 'id', 'datatype' => 'integer' },
          { 'name' => 'string_with_limit', 'datatype' => 'string' }]
       end
-      let(:foreign_keys) { [] }
+      let(:foreign_key) { [] }
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_keys)
+          create_table(users_table, existing_columns, primary_key, foreign_key)
       end
 
       it 'updates column with new limit' do
@@ -264,14 +239,14 @@ RSpec.describe RedshiftSchemaUpdater do
       let(:existing_columns) do
         [{ 'name' => 'id', 'datatype' => 'integer', 'not_null' => true }]
       end
-      let(:foreign_keys) { [] }
+      let(:foreign_key) { [] }
       before do
         allow(redshift_schema_updater).to receive(:log_info)
         allow(redshift_schema_updater).to receive(:log_error)
         allow(redshift_schema_updater).to receive(:log_warning)
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_keys)
+          create_table(users_table, existing_columns, primary_key, foreign_key)
       end
 
       it 'updates columns and skips primary and foreign key' do
