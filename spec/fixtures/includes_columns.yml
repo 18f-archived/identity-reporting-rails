@@ -18,7 +18,7 @@
 - table: events
   schema: public
   primary_key: id
-  foreign_key:
+  foreign_keys:
     - column: new_user_id
       references:
         table: new_users

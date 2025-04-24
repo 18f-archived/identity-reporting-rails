@@ -36,7 +36,7 @@ class RedshiftSchemaUpdater
       table_name = "#{@schema_name}.#{table_data['table']}"
       columns = table_data['include_columns']
       primary_key_column = table_data['primary_key']
-      foreign_key_columns = table_data['foreign_key'] || []
+      foreign_key_columns = table_data['foreign_keys'] || []
 
       if table_exists?(table_name)
         update_existing_table(table_name, columns, primary_key_column, [])

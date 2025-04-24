@@ -27,7 +27,7 @@ RSpec.describe RedshiftSchemaUpdater do
         'table' => 'events',
         'schema' => 'public',
         'primary_key' => 'id',
-        'foreign_key' => [
+        'foreign_keys' => [
           {
             'column' => 'new_user_id',
             'references' => {
@@ -102,11 +102,11 @@ RSpec.describe RedshiftSchemaUpdater do
 
     context 'when table already exists' do
       let(:existing_columns) { [{ 'name' => 'id', 'datatype' => 'integer' }] }
-      let(:foreign_key) { [] }
+      let(:foreign_keys) { [] }
 
       before do
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_key)
+          create_table(users_table, existing_columns, primary_key, foreign_keys)
       end
 
       it 'adds new columns' do
@@ -125,12 +125,12 @@ RSpec.describe RedshiftSchemaUpdater do
       let(:existing_columns) do
         [{ 'name' => 'id', 'datatype' => 'integer' }, { 'name' => 'phone', 'datatype' => 'string' }]
       end
-      let(:foreign_key) { [] }
+      let(:foreign_keys) { [] }
       let(:primary_key) { nil }
 
       before do
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_key)
+          create_table(users_table, existing_columns, primary_key, foreign_keys)
       end
 
       it 'updates columns and removes columns not exist in YAML file' do
@@ -150,12 +150,12 @@ RSpec.describe RedshiftSchemaUpdater do
         [{ 'name' => 'id', 'datatype' => 'integer' },
          { 'name' => 'some_numeric_column', 'datatype' => 'decimal' }]
       end
-      let(:foreign_key) { [] }
+      let(:foreign_keys) { [] }
 
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_key)
+          create_table(users_table, existing_columns, primary_key, foreign_keys)
         DataWarehouseApplicationRecord.connection.execute(
           DataWarehouseApplicationRecord.sanitize_sql(
             "INSERT INTO #{users_table} (id, some_numeric_column) VALUES (1, 999.0)",
@@ -189,12 +189,12 @@ RSpec.describe RedshiftSchemaUpdater do
         [{ 'name' => 'id', 'datatype' => 'integer' },
          { 'name' => 'string_with_limit', 'datatype' => 'string', 'limit' => 100 }]
       end
-      let(:foreign_key) { [] }
+      let(:foreign_keys) { [] }
 
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_key)
+          create_table(users_table, existing_columns, primary_key, foreign_keys)
       end
 
       it 'updates column with new limit' do
@@ -215,11 +215,11 @@ RSpec.describe RedshiftSchemaUpdater do
         [{ 'name' => 'id', 'datatype' => 'integer' },
          { 'name' => 'string_with_limit', 'datatype' => 'string' }]
       end
-      let(:foreign_key) { [] }
+      let(:foreign_keys) { [] }
       before do
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_key)
+          create_table(users_table, existing_columns, primary_key, foreign_keys)
       end
 
       it 'updates column with new limit' do
@@ -239,14 +239,14 @@ RSpec.describe RedshiftSchemaUpdater do
       let(:existing_columns) do
         [{ 'name' => 'id', 'datatype' => 'integer', 'not_null' => true }]
       end
-      let(:foreign_key) { [] }
+      let(:foreign_keys) { [] }
       before do
         allow(redshift_schema_updater).to receive(:log_info)
         allow(redshift_schema_updater).to receive(:log_error)
         allow(redshift_schema_updater).to receive(:log_warning)
         DataWarehouseApplicationRecord.establish_connection(:data_warehouse)
         redshift_schema_updater.
-          create_table(users_table, existing_columns, primary_key, foreign_key)
+          create_table(users_table, existing_columns, primary_key, foreign_keys)
       end
 
       it 'updates columns and skips primary and foreign key' do
