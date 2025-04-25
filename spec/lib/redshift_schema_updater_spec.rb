@@ -97,6 +97,9 @@ RSpec.describe RedshiftSchemaUpdater do
         expect(foreign_key_result.map { |row| row['column_name'] }).to include('new_user_id')
         expect(foreign_key_result.map { |row| row['table_name'] }).to include('new_users')
         expect(foreign_key_result.map { |row| row['referenced_column_name'] }).to include('id')
+        expect(foreign_key_result.map { |row| row['column_name'] }).to include('name')
+        expect(foreign_key_result.map { |row| row['table_name'] }).to include('new_users')
+        expect(foreign_key_result.map { |row| row['referenced_column_name'] }).to include('name')
       end
     end
 

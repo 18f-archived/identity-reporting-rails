@@ -204,9 +204,7 @@ class RedshiftSchemaUpdater
     foreign_key_reference_table = "#{@schema_name}.#{foreign_key['references']['table']}"
     foreign_key_reference_column = foreign_key['references']['column']
     table_short_name = table_name.split('.').last
-    # timestamp = Time.now.to_i
     foreign_key_name = "#{table_short_name}_#{foreign_key_column}_fkey"
-    # check if reference table exists
 
     unless table_exists?(foreign_key_reference_table)
       log_error("Reference table does not exist: #{foreign_key_reference_table}")
@@ -214,11 +212,14 @@ class RedshiftSchemaUpdater
     end
 
     unless column_has_unique_constraint?(foreign_key_reference_table, foreign_key_reference_column)
-      log_error(
+      log_warning(
         "Referenced column #{foreign_key_reference_column} in table #{foreign_key_reference_table}
       must have a unique constraint or primary key.",
       )
-      return
+      add_unique_constraint(
+        foreign_key_reference_table,
+        foreign_key_reference_column,
+      )
     end
 
     sql = <<~SQL
@@ -234,6 +235,26 @@ class RedshiftSchemaUpdater
     log_info("Foreign key column added: #{foreign_key_name} on column: #{foreign_key_column}")
   rescue StandardError => e
     log_error("Error adding foreign keys: #{e.message}")
+    raise e
+  end
+
+  def add_unique_constraint(table_name, column_name)
+    unique_constraint_name = "#{table_name.split('.').last}_#{column_name}_unique"
+    sql = if using_redshift_adapter?
+            "ALTER TABLE #{table_name} ADD UNIQUE (#{column_name});"
+          else
+            <<~SQL
+              ALTER TABLE #{table_name}
+              ADD CONSTRAINT #{unique_constraint_name}
+              UNIQUE (#{column_name});
+            SQL
+          end
+    DataWarehouseApplicationRecord.connection.execute(
+      DataWarehouseApplicationRecord.sanitize_sql(sql),
+    )
+    log_info("Unique constraint added for column: #{column_name}")
+  rescue StandardError => e
+    log_error("Error adding unique constraint: #{e.message}")
     raise e
   end
 
@@ -269,7 +290,7 @@ class RedshiftSchemaUpdater
       DataWarehouseApplicationRecord.sanitize_sql([query, table_name.split('.').last, column_name]),
     ).to_a
 
-    result.any?
+    result.any? { |row| row['1'] == 1 }
   rescue StandardError => e
     log_error(
       "Error checking unique constraint for column #{column_name} in table #{table_name}:
@@ -311,7 +332,7 @@ class RedshiftSchemaUpdater
       ),
     ).to_a
 
-    result.any?
+    result.any? { |row| row['column_name'] == column_name }
   rescue StandardError => e
     log_error("Error checking column nullability: #{e.message}")
     raise e
