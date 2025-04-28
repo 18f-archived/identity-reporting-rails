@@ -39,7 +39,7 @@ class RedshiftSchemaUpdater
       foreign_key_columns = table_data['foreign_keys'] || []
 
       if table_exists?(table_name)
-        update_existing_table(table_name, columns, primary_key_column, [])
+        update_existing_table(table_name, columns)
       else
         create_table(table_name, columns, primary_key_column, foreign_key_columns)
       end
@@ -47,7 +47,7 @@ class RedshiftSchemaUpdater
     # Process foreign keys after all tables have been created or updated
     process_foreign_keys
   rescue StandardError => e
-    log_error("Error updating schema from YAML: #{e.message}")
+    log_error(e.message)
     raise e
   end
 
@@ -55,8 +55,7 @@ class RedshiftSchemaUpdater
     DataWarehouseApplicationRecord.connection.table_exists?(table_name)
   rescue StandardError => e
     log_error("Error checking table existence: #{e.message}")
-    DataWarehouseApplicationRecord.connection.rollback_db_transaction
-    false
+    raise e
   end
 
   def column_exists?(table_name, column_name)
@@ -104,7 +103,7 @@ class RedshiftSchemaUpdater
     }
   end
 
-  def update_existing_table(table_name, columns, primary_key, _foreign_keys)
+  def update_existing_table(table_name, columns)
     columns_objs = DataWarehouseApplicationRecord.connection.columns(table_name)
     existing_columns = columns_objs.map(&:name)
 
@@ -158,10 +157,7 @@ class RedshiftSchemaUpdater
         )
       end
     end
-
-    log_primary_key_status(table_name, primary_key)
-    # Skip processing foreign keys
-    log_info("Foreign keys are not processed with update_existing_table for table: #{table_name}")
+    log_info('Foreign keys and Primary_keys are not processed')
   rescue StandardError => e
     log_error("Error updating existing table: #{e.message}")
     raise e

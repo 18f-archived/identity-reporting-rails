@@ -265,10 +265,8 @@ RSpec.describe RedshiftSchemaUpdater do
         # validate primary and foreign keys validation is skipped logs
         allow(Rails.logger).to receive(:info).and_call_original
 
-        msg = "Primary key column already exists: #{users_table}.id"
-        msg2 = "Foreign keys are not processed with update_existing_table for table: #{users_table}"
+        msg = 'Foreign keys and Primary_keys are not processed'
         expect(redshift_schema_updater).to have_received(:log_info).with(msg)
-        expect(redshift_schema_updater).to have_received(:log_info).with(msg2)
       end
     end
   end
