@@ -1,8 +1,10 @@
 - table: new_users
   schema: public
+  primary_key: id
   include_columns:
     - name: id
-      datatype: bigint
+      datatype: integer
+      not_null: true
     - name: name
       datatype: string
     - name: email
@@ -19,12 +21,21 @@
 
 - table: events
   schema: public
+  primary_key: id
+  foreign_keys:
+    - column: new_user_id
+      references:
+        table: new_users
+        column: id
   include_columns:
     - name: id
       datatype: integer
+      not_null: true
     - name: name
       datatype: string
     - name: event_type
+      datatype: integer
+    - name: new_user_id
       datatype: integer
     - name: created_at
       datatype: datetime
