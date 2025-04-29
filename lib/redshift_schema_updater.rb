@@ -360,7 +360,6 @@ class RedshiftSchemaUpdater
     end
   rescue StandardError => e
     log_error("Error creating table: #{e.message}")
-    DataWarehouseApplicationRecord.connection.rollback_db_transaction
     raise e
   end
 
@@ -432,16 +431,6 @@ class RedshiftSchemaUpdater
     DataWarehouseApplicationRecord.connection.exec_query(
       DataWarehouseApplicationRecord.sanitize_sql([query, *args]),
     ).to_a
-  end
-
-  def log_primary_key_status(table_name, primary_key)
-    if primary_key && primary_key_exists?(table_name, primary_key)
-      log_info("Primary key column already exists: #{table_name}.#{primary_key}")
-    elsif primary_key
-      log_warning("Primary key column is not processed for table: #{table_name}")
-    else
-      log_warning("No primary key found in the YAML file for table: #{table_name}")
-    end
   end
 
   def collect_foreign_keys(table_name, foreign_keys)
