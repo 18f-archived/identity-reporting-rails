@@ -15,7 +15,7 @@ class BackupEventsAndProductionTables < ActiveRecord::Migration[7.2]
         SELECT * FROM logs.production WHERE cloudwatch_timestamp >= CURRENT_DATE - INTERVAL '30 days';
       SQL
     else
-      raise "This migration is only supported for Redshift."
+      Rails.logger.warn("Skipping BackupEventsAndProductionTables for non Redshift.")
     end
   end
 
@@ -25,7 +25,7 @@ class BackupEventsAndProductionTables < ActiveRecord::Migration[7.2]
       execute 'DROP TABLE IF EXISTS logs.events_backup;'
       execute 'DROP TABLE IF EXISTS logs.production_backup;'
     else
-      raise "This migration is only supported for Redshift."
+      Rails.logger.warn("Skipping BackupEventsAndProductionTables for non Redshift.")
     end
   end
 end

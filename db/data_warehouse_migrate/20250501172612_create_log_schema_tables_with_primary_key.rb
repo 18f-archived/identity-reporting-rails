@@ -65,7 +65,7 @@ class CreateLogSchemaTablesWithPrimaryKey < ActiveRecord::Migration[7.2]
         );
       SQL
     else
-      raise "unsupported adapter: #{connection.adapter_name}.This is only supported for redshift"
+      Rails.logger.warn("unsupported adapter: #{connection.adapter_name}.This is only supported for redshift")
     end
   end
 end
