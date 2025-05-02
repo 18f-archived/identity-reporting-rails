@@ -17,7 +17,7 @@ class CreateLogSchemaTablesWithPrimaryKey < ActiveRecord::Migration[7.2]
           visitor_id VARCHAR(256),
           visit_id VARCHAR(256),
           log_filename VARCHAR(256),
-          new_events BOOLEAN,
+          new_event BOOLEAN,
           path VARCHAR(12000),
           user_id VARCHAR(256),
           locale VARCHAR(256),
